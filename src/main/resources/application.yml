@@ -55,3 +55,7 @@ spring:
   jackson:
     time-zone: ${user.timezone:GMT+08:00}
     date-format: yyyy-MM-dd HH:mm:ss
+logging:
+  level:
+    root: error
+
