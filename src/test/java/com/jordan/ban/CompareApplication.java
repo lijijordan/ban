@@ -1,10 +1,7 @@
 package com.jordan.ban;
 
-import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.Differ;
 import com.jordan.ban.domain.Symbol;
-import com.jordan.ban.es.ElasticSearchClient;
-import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -207,7 +204,7 @@ public class CompareApplication {
      * @throws JSONException the json exception
      */
     public static void main(String[] args) throws IOException, JSONException {
-        ElasticSearchClient.initClient("localhost", 9300);
+//        ElasticSearchClient.initClient("localhost", 9300);
 //
 //        runCompare(parseBinanceTickers(), parseOtcBtcTickers());
 //        runCompare(parseLBankTickers(), parseBittrexTickers());
@@ -279,7 +276,7 @@ public class CompareApplication {
                 differObject.setCreateTime(new Date());
                 differObject.setDifferPlatform(symbol1.getPlatform() + "-" + symbol2.getPlatform());
                 differs.add(differObject);
-                ElasticSearchClient.index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differObject));
+//                ElasticSearElasticSearchClientchClient.index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differObject));
             }
         });
     }
