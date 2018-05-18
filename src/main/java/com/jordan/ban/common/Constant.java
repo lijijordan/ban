@@ -1,0 +1,10 @@
+package com.jordan.ban.common;
+
+/**
+ * User: liji
+ * Date: 18/5/17
+ * Time: 上午10:55
+ */
+public class Constant {
+    public static final String INDEX_NAME = "differ_binance_otcbtc_3";
+}
