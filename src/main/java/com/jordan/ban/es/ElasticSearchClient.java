@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.Differ;
 import com.jordan.ban.utils.JSONUtil;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -12,6 +16,7 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -26,6 +31,8 @@ import java.util.Date;
 public class ElasticSearchClient {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ElasticSearchClient.class);
+    private static final CloseableHttpClient closeableHttpClient = HttpClients.custom()
+            .build();
     private static TransportClient client;
 
     /**
@@ -52,7 +59,6 @@ public class ElasticSearchClient {
         }
     }
 
-
     /**
      * Index.
      */
@@ -68,6 +74,19 @@ public class ElasticSearchClient {
             e.printStackTrace();
         }
     }
+
+    public static void indexRestApi(String data, String index, String type) throws IOException {
+        HttpPost httpPost = new HttpPost(String.format("http://206.189.183.68:9223/%s/data", index));
+        httpPost.setHeader("Content-Type", "application/json");
+        StringEntity params = new StringEntity(data);
+        httpPost.setEntity(params);
+        closeableHttpClient.execute(httpPost);
+        /*CloseableHttpResponse response = closeableHttpClient.execute(httpPost);
+        HttpEntity entity = response.getEntity();
+        String body = EntityUtils.toString(entity, "UTF-8");
+        System.out.println(body);*/
+    }
+
 
     /**
      * index document
@@ -88,13 +107,15 @@ public class ElasticSearchClient {
                 .setSource(json).get();
     }
 
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws IOException {
         Differ differ = new Differ();
         differ.setCreateTime(new Date());
         differ.setDiffer(0.21f);
         differ.setPercentDiffer("21");
         differ.setSymbol("fff");
-        initClient("localhost", 9300);
-        index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differ));
+//        initClient("206.189.183.68", 9323);
+        System.out.println(JSONUtil.toJsonString(differ));
+        indexRestApi(JSONUtil.toJsonString(differ), Constant.INDEX_NAME, null);
+//        index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differ));
     }
 }

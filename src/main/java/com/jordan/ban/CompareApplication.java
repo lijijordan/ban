@@ -1,7 +1,10 @@
 package com.jordan.ban;
 
+import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.Differ;
 import com.jordan.ban.domain.Symbol;
+import com.jordan.ban.es.ElasticSearchClient;
+import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -182,8 +185,8 @@ public class CompareApplication {
                     }
                     sum = sum + current;
                     avg = sum / i;
-                    System.out.println(String.format("Compare method cost time:【%s】ms, " +
-                            "avg:【%s】ms, max:【%s】ms, min:【%s】ms", current, avg, max, min));
+                    System.out.println(String.format("Compare method cost time:%sms, " +
+                            "avg:%sms, max:%sms, min:%sms", current, avg, max, min));
                 } catch (Exception e) {
                     try {
                         client.close();
@@ -258,7 +261,6 @@ public class CompareApplication {
      * @param m2 the m 2
      */
     public static void comparePrice(Map<String, Symbol> m1, Map<String, Symbol> m2) {
-        List<Differ> differs = new ArrayList<>();
         m1.forEach((m, k) -> {
             String symbol = m;
             Symbol symbol1 = k, symbol2 = m2.get(symbol);
@@ -275,7 +277,11 @@ public class CompareApplication {
                 differObject.setPercentDiffer(formattedPercent);
                 differObject.setCreateTime(new Date());
                 differObject.setDifferPlatform(symbol1.getPlatform() + "-" + symbol2.getPlatform());
-                differs.add(differObject);
+                try {
+                    ElasticSearchClient.indexRestApi(JSONUtil.toJsonString(differObject), Constant.INDEX_NAME, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 //                ElasticSearElasticSearchClientchClient.index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differObject));
             }
         });
