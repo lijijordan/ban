@@ -9,7 +9,7 @@ public class MessageSenderTest {
     @Test
     public void send() throws IOException {
         MessageSender messageSender = new MessageSender();
-        for (int i = 1; i <= 10000; i++) {
+        for (int i = 1; i <= 10; i++) {
             messageSender.send("test-1", "Hello BTC  " + i);
         }
     }

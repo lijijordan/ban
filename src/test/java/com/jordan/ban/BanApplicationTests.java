@@ -16,13 +16,13 @@ import java.util.Date;
 @SpringBootTest
 public class BanApplicationTests {
 
-    @Test
+
     public void contextLoads() {
         System.out.println("Let us rock!");
     }
 
 
-    @Test
+
     public void compare() {
         int timeout = 2;
         RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000).
