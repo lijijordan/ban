@@ -20,7 +20,10 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * User: liji
@@ -59,8 +62,8 @@ public class CompareApplication {
                 symbol.setSymbol(s1);
                 symbol.setPlatform("LBank");
                 symbol.setPrice(record.getJSONObject("ticker").getDouble("latest"));
-                // FIXME use server time:"Created": "2017-08-04T16:58:43.087"
-                symbol.setTime(new Date(System.currentTimeMillis()));
+                // FIXME use server createTime:"Created": "2017-08-04T16:58:43.087"
+                symbol.setCreateTime(new Date(System.currentTimeMillis()));
                 map.put(symbol.getSymbol(), symbol);
             }
         }
@@ -76,6 +79,7 @@ public class CompareApplication {
      * @throws JSONException the json exception
      */
     public static Map<String, Symbol> parseBittrexTickers() throws IOException, JSONException {
+        System.out.println("parseBittrexTickers");
         Map<String, Symbol> map = new HashMap<>();
         HttpGet httpGet = new HttpGet("https://bittrex.com/api/v1.1/public/getmarketsummaries");
         httpGet.setHeader("Content-Type", "application/json");
@@ -94,8 +98,8 @@ public class CompareApplication {
                 symbol.setSymbol(s1);
                 symbol.setPlatform("Bittrex");
                 symbol.setPrice(record.getDouble("Last"));
-                // FIXME use server time:"Created": "2017-08-04T16:58:43.087"
-                symbol.setTime(new Date(System.currentTimeMillis()));
+                // FIXME use server createTime:"Created": "2017-08-04T16:58:43.087"
+                symbol.setCreateTime(new Date(System.currentTimeMillis()));
                 map.put(symbol.getSymbol(), symbol);
             }
         }
@@ -120,7 +124,7 @@ public class CompareApplication {
         for (int i = 0; i < jsonArray.length(); i++) {
             Symbol symbol = new Symbol();
             symbol.setPlatform("Binance");
-            symbol.setTime(new Date(System.currentTimeMillis()));
+            symbol.setCreateTime(new Date(System.currentTimeMillis()));
             JSONObject jsonObject = (JSONObject) jsonArray.get(i);
             String s = jsonObject.get("symbol").toString();
             String p = jsonObject.get("price").toString();
@@ -150,7 +154,7 @@ public class CompareApplication {
         while (keys.hasNext()) {
             Symbol symbol = new Symbol();
             symbol.setPlatform("OTCBTC");
-            symbol.setTime(new Date(System.currentTimeMillis()));
+            symbol.setCreateTime(new Date(System.currentTimeMillis()));
             String s = (String) keys.next();
             JSONObject object = (JSONObject) jsonObject.get(s);
             double price = ((JSONObject) object.get("ticker")).getDouble("last");
@@ -185,7 +189,7 @@ public class CompareApplication {
                     }
                     sum = sum + current;
                     avg = sum / i;
-                    System.out.println(String.format("Compare method cost time:%sms, " +
+                    System.out.println(String.format("Compare method cost createTime:%sms, " +
                             "avg:%sms, max:%sms, min:%sms", current, avg, max, min));
                 } catch (Exception e) {
                     try {
@@ -207,7 +211,9 @@ public class CompareApplication {
      * @throws JSONException the json exception
      */
     public static void main(String[] args) throws IOException, JSONException {
-//        ElasticSearchClient.initClient("localhost", 9300);
+        ElasticSearchClient.initClient();
+//        System.out.println(parseOtcBtcTickers());
+//        System.out.println(parseBinanceTickers());
 //
 //        runCompare(parseBinanceTickers(), parseOtcBtcTickers());
 //        runCompare(parseLBankTickers(), parseBittrexTickers());
@@ -221,7 +227,7 @@ public class CompareApplication {
                 i++;
                 try {
                     long start = System.currentTimeMillis();
-                    comparePrice(parseBittrexTickers(), parseBinanceTickers());
+                    comparePrice(parseOtcBtcTickers(), parseBittrexTickers());
                     long end = System.currentTimeMillis();
                     current = end - start;
                     if (max < current) {
@@ -232,8 +238,8 @@ public class CompareApplication {
                     }
                     sum = sum + current;
                     avg = sum / i;
-                    System.out.println(String.format("Compare method cost time:【%s】ms, " +
-                            "avg:【%s】ms, max:【%s】ms, min:【%s】ms , time: %s", current, avg, max, min, new Date()));
+                    System.out.println(String.format("Compare method cost createTime:【%s】ms, " +
+                            "avg:【%s】ms, max:【%s】ms, min:【%s】ms , createTime: %s", current, avg, max, min, new Date()));
                 } catch (Exception e) {
                     try {
                         client.close();
@@ -277,12 +283,7 @@ public class CompareApplication {
                 differObject.setPercentDiffer(formattedPercent);
                 differObject.setCreateTime(new Date());
                 differObject.setDifferPlatform(symbol1.getPlatform() + "-" + symbol2.getPlatform());
-                try {
-                    ElasticSearchClient.indexRestApi(JSONUtil.toJsonString(differObject), Constant.INDEX_NAME, null);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//                ElasticSearElasticSearchClientchClient.index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differObject));
+                ElasticSearchClient.index(JSONUtil.toJsonString(differObject));
             }
         });
     }

@@ -7,4 +7,8 @@ package com.jordan.ban.common;
  */
 public class Constant {
     public static final String INDEX_NAME = "differ_binance_otcbtc_3";
+
+    public static final String BINANCE_NAME = "binance";
+
+    public static final String INDEX_NAME_SYMBOLS = "symbols";
 }

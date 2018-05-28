@@ -32,6 +32,7 @@ public class JSONUtil {
         String jsonString = "{}";
         try {
             jsonString = objectMapper.writeValueAsString(object);
+            System.out.println("index json string:" + jsonString);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

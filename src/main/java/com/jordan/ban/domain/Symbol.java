@@ -14,7 +14,7 @@ public class Symbol {
 
     private String symbol;
 
-    private Date time;
+    private Date createTime;
 
     private double price;
 

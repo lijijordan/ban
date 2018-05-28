@@ -22,7 +22,7 @@ public class Differ {
      */
     private String percentDiffer;
     /**
-     * create time
+     * create createTime
      */
     private Date createTime;
     /**

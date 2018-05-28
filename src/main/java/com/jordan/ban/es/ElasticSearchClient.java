@@ -3,15 +3,21 @@ package com.jordan.ban.es;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.Differ;
+import com.jordan.ban.domain.Symbol;
+import com.jordan.ban.domain.Test;
 import com.jordan.ban.utils.JSONUtil;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -47,75 +53,37 @@ public class ElasticSearchClient {
     /**
      * Init client.
      *
-     * @param hostName the host name
-     * @param port     the port
      * @throws UnknownHostException the unknown host exception
      */
-    public static void initClient(String hostName, int port) throws UnknownHostException {
-        if (client == null) {
-            client = new PreBuiltTransportClient(Settings.EMPTY)
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), port));
+    public static void initClient() throws UnknownHostException {
+        client = new PreBuiltTransportClient(Settings.EMPTY)
+                .addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
 
-        }
     }
 
-    /**
-     * Index.
-     */
-    @Async(value = "indexExecutor")
-    public static void index(Object data, String index, String type) {
-        logger.info("************************* index {} *************************", index);
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            IndexResponse response = client.prepareIndex(index, type)
-                    .setSource(mapper.writeValueAsBytes(data)).get();
-        } catch (Exception e) {
-            logger.error("Index DeviceEventLog Error: {}", e.toString());
-            e.printStackTrace();
-        }
+    public static void index(String json) {
+        IndexResponse response = client.prepareIndex(Constant.INDEX_NAME, "data")
+                .setSource(json, XContentType.JSON)
+                .get();
+        System.out.println(response);
     }
 
-    public static void indexRestApi(String data, String index, String type) throws IOException {
-        HttpPost httpPost = new HttpPost(String.format("http://206.189.183.68:9223/%s/data", index));
-        httpPost.setHeader("Content-Type", "application/json");
-        StringEntity params = new StringEntity(data);
-        httpPost.setEntity(params);
-        closeableHttpClient.execute(httpPost);
-        /*CloseableHttpResponse response = closeableHttpClient.execute(httpPost);
-        HttpEntity entity = response.getEntity();
-        String body = EntityUtils.toString(entity, "UTF-8");
-        System.out.println(body);*/
+    public static void index(String json, String name) {
+        IndexResponse response = client.prepareIndex(name, "data")
+                .setSource(json, XContentType.JSON)
+                .get();
+        System.out.println(response);
     }
 
-
-    /**
-     * index document
-     *
-     * @param index
-     * @param type
-     * @param json
-     */
-//    @Async(value = "indexExecutor")
-    public static void index(String index, String type, String json) {
-        IndexResponse response = client.prepareIndex(index, type)
-                .setSource(json).get();
-    }
-
-    @Async(value = "indexExecutor")
-    public static void index(String index, String type, String json, String id) {
-        IndexResponse response = client.prepareIndex(index, type, id)
-                .setSource(json).get();
-    }
 
     public static void main(String[] args) throws IOException {
+        initClient();
         Differ differ = new Differ();
+        differ.setDifferPlatform("plat");
+        differ.setDiffer(11);
         differ.setCreateTime(new Date());
-        differ.setDiffer(0.21f);
-        differ.setPercentDiffer("21");
-        differ.setSymbol("fff");
-//        initClient("206.189.183.68", 9323);
-        System.out.println(JSONUtil.toJsonString(differ));
-        indexRestApi(JSONUtil.toJsonString(differ), Constant.INDEX_NAME, null);
-//        index(Constant.INDEX_NAME, "data", JSONUtil.toJsonString(differ));
+        differ.setPercentDiffer("%12");
+        differ.setSymbol("etcbtc");
+        index(JSONUtil.toJsonString(differ));
     }
 }

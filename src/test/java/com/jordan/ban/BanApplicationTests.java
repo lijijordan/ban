@@ -48,8 +48,8 @@ public class BanApplicationTests {
                     }
                     sum = sum + current;
                     avg = sum / i;
-                    System.out.println(String.format("Compare method cost time:【%s】ms, " +
-                            "avg:【%s】ms, max:【%s】ms, min:【%s】ms , time: %s", current, avg, max, min, new Date()));
+                    System.out.println(String.format("Compare method cost createTime:【%s】ms, " +
+                            "avg:【%s】ms, max:【%s】ms, min:【%s】ms , createTime: %s", current, avg, max, min, new Date()));
                 } catch (Exception e) {
                     try {
                         closeableHttpClient.close();
