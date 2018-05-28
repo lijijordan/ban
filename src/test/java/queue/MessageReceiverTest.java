@@ -1,9 +1,8 @@
 package queue;
 
-import com.jordan.ban.market.MarketParserApplication;
+import com.jordan.ban.market.ProductApplication;
 import com.jordan.ban.mq.MessageReceiveCallback;
 import com.jordan.ban.mq.MessageReceiver;
-import org.junit.Test;
 
 import java.io.IOException;
 
@@ -16,7 +15,7 @@ public class MessageReceiverTest {
                 System.out.println(String.format("Get message:%s", message));
             }
         });
-        receiver.onReceived(MarketParserApplication.TOPIC);
+        receiver.onReceived(ProductApplication.TOPIC);
         try {
             Thread.sleep(1000 * 1000);
         } catch (InterruptedException e) {
@@ -26,6 +25,6 @@ public class MessageReceiverTest {
 
     public static void main(String[] args) throws IOException {
         MessageReceiver receiver = new MessageReceiver((topic, message) -> System.out.println(String.format("Get message:%s", message)));
-        receiver.onReceived(MarketParserApplication.TOPIC);
+        receiver.onReceived(ProductApplication.TOPIC);
     }
 }

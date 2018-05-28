@@ -1,29 +1,22 @@
 package com.jordan.ban.market;
 
-import com.jordan.ban.common.Constant;
-import com.jordan.ban.domain.Differ;
 import com.jordan.ban.domain.Symbol;
-import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.market.parser.DragonexParser;
 import com.jordan.ban.market.parser.HuobiParser;
 import com.jordan.ban.mq.MessageSender;
 import com.jordan.ban.utils.JSONUtil;
-import org.elasticsearch.client.ElasticsearchClient;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.text.DecimalFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MarketParserApplication {
+public class ProductApplication {
 
     public static final String TOPIC = "NEOUSDT";
 
     private final MessageSender sender;
 
-    public MarketParserApplication() {
+    public ProductApplication() {
         sender = new MessageSender();
     }
 
@@ -34,7 +27,7 @@ public class MarketParserApplication {
     public static void main(String[] args) {
         DragonexParser dragonexParser = new DragonexParser();
         HuobiParser huobiParser = new HuobiParser();
-        MarketParserApplication application = new MarketParserApplication();
+        ProductApplication application = new ProductApplication();
 
         Timer timer1 = new Timer();
         timer1.schedule(new TimerTask() {
