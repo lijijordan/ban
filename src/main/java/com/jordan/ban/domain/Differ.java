@@ -29,4 +29,9 @@ public class Differ {
      * compare platform name
      */
     private String differPlatform;
+
+    /**
+     * Differ cost time as long
+     */
+    private long diffCostTime;
 }

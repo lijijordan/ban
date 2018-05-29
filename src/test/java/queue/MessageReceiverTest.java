@@ -1,6 +1,6 @@
 package queue;
 
-import com.jordan.ban.market.ProductApplication;
+import com.jordan.ban.ProductApplication;
 import com.jordan.ban.mq.MessageReceiveCallback;
 import com.jordan.ban.mq.MessageReceiver;
 
@@ -15,7 +15,7 @@ public class MessageReceiverTest {
                 System.out.println(String.format("Get message:%s", message));
             }
         });
-        receiver.onReceived(ProductApplication.TOPIC);
+        receiver.onReceived("topic");
         try {
             Thread.sleep(1000 * 1000);
         } catch (InterruptedException e) {
@@ -25,6 +25,6 @@ public class MessageReceiverTest {
 
     public static void main(String[] args) throws IOException {
         MessageReceiver receiver = new MessageReceiver((topic, message) -> System.out.println(String.format("Get message:%s", message)));
-        receiver.onReceived(ProductApplication.TOPIC);
+        receiver.onReceived("topic");
     }
 }

@@ -123,7 +123,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.jordan.ban.market.ProductApplication</mainClass>
+                    <mainClass>com.jordan.ban.ProductApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

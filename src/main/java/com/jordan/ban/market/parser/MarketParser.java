@@ -1,5 +1,6 @@
 package com.jordan.ban.market.parser;
 
+import com.jordan.ban.domain.Stacks;
 import com.jordan.ban.domain.Symbol;
 
 import java.io.IOException;
@@ -11,9 +12,10 @@ import java.io.IOException;
  */
 public interface MarketParser {
 
-    void parse();
+    Symbol getPrice(String symbol);
 
-    Symbol parse(String symbol);
+    Symbol getPrice(String symbol, int symbolId);
 
-    Symbol parse(String symbol, int symbolId);
+    Stacks getStacks(String symbol);
+
 }

@@ -1,4 +1,4 @@
-package com.jordan.ban.market;
+package com.jordan.ban;
 
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.es.ElasticSearchClient;
@@ -10,13 +10,14 @@ public class ConsumerApplication {
 
     public static void main(String[] args) throws IOException {
 
+        String symbol = "NEOUSDT-differ";
         ElasticSearchClient.initClient();
 
         MessageReceiver receiver = new MessageReceiver((topic, message) -> {
             System.out.println(String.format("Get message:%s", message));
-            ElasticSearchClient.index(message, Constant.INDEX_NAME_SYMBOLS);
+            ElasticSearchClient.index(message, Constant.INDEX_NAME);
         });
-        receiver.onReceived(ProductApplication.TOPIC);
+        receiver.onReceived(symbol);
         System.out.println("Consumer Started!");
     }
 }

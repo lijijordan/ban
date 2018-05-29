@@ -1,5 +1,6 @@
 package com.jordan.ban.market.parser;
 
+import com.jordan.ban.domain.Stacks;
 import com.jordan.ban.domain.Symbol;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.java.Log;
@@ -14,20 +15,21 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Date;
 
-
 @Log
-public class HuobiParser implements MarketParser {
+public class Dragonex implements MarketParser {
 
-    private static String URL_TEMPLATE = "https://api.huobipro.com/market/detail/merged?symbol=%s";
+    private static final String URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/real/?symbol_id=%s";
+
+    private static final String PLATFORM_NAME = "Dragonex";
 
     @Override
-    public void parse() {
-
+    public Symbol getPrice(String symbol) {
+        return null;
     }
 
     @Override
-    public Symbol parse(String symbol) {
-        String url = String.format(URL_TEMPLATE, symbol);
+    public Symbol getPrice(String symbol, int symbolId) {
+        String url = String.format(URL_TEMPLATE, symbolId);
         log.info("load url:" + url);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Content-Type", "application/json");
@@ -43,11 +45,14 @@ public class HuobiParser implements MarketParser {
         try {
             body = EntityUtils.toString(entity, "UTF-8");
             JSONObject jsonObject = new JSONObject(body);
-            JSONObject tick = jsonObject.getJSONObject("tick");
-            s1.setSymbol(symbol.toUpperCase());
-            s1.setPrice(tick.getDouble("close"));
-            s1.setPlatform("Huobi");
-            s1.setCreateTime(new Date(jsonObject.getLong("ts")));
+            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject object = (JSONObject) jsonArray.get(i);
+                s1.setCreateTime(new Date(object.getLong("timestamp") * 1000));
+                s1.setPlatform(PLATFORM_NAME);
+                s1.setPrice(object.getDouble("close_price"));
+                s1.setSymbol(symbol);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -57,7 +62,7 @@ public class HuobiParser implements MarketParser {
     }
 
     @Override
-    public Symbol parse(String symbol, int symbolId) {
+    public Stacks getStacks(String symbol) {
         return null;
     }
 }

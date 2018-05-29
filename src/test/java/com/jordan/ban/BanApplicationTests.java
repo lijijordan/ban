@@ -72,12 +72,12 @@ public class BanApplicationTests {
 
 	/*@Test
     public void index() throws UnknownHostException {
-		Differ differ = new Differ();
-		differ.setCreateTime(new Date());
-		differ.setDiffer(0.21f);
-		differ.setPercentDiffer("21");
-		differ.setSymbol("ETHBTT");
+		Differ policy = new Differ();
+		policy.setCreateTime(new Date());
+		policy.setDiffer(0.21f);
+		policy.setPercentDiffer("21");
+		policy.setSymbol("ETHBTT");
 		ElasticSearchClient.initClient("localhost", 9300);
-		ElasticSearchClient.index("differ_binance_otcbtc_1", "data", JSONUtil.toJsonString(differ));
+		ElasticSearchClient.index("differ_binance_otcbtc_1", "data", JSONUtil.toJsonString(policy));
 	}*/
 }

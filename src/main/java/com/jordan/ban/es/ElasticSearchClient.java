@@ -1,18 +1,10 @@
 package com.jordan.ban.es;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.Differ;
-import com.jordan.ban.domain.Symbol;
-import com.jordan.ban.domain.Test;
 import com.jordan.ban.utils.JSONUtil;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -20,7 +12,6 @@ import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 
 import java.io.IOException;
 import java.net.InetAddress;

@@ -1,5 +1,6 @@
 package com.jordan.ban.market.parser;
 
+import com.jordan.ban.domain.Stacks;
 import com.jordan.ban.domain.Symbol;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.java.Log;
@@ -7,33 +8,24 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
 
+
 @Log
-public class DragonexParser implements MarketParser {
+public class Huobi implements MarketParser {
 
-    private static final String URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/real/?symbol_id=%s";
+    public static final String PLATFORM_NAME = "Huobi";
 
-    private static final String PLATFORM_NAME = "Dragonex";
-
-    @Override
-    public void parse() {
-
-    }
+    private static String URL_TEMPLATE = "https://api.huobipro.com/market/detail/merged?symbol=%s";
 
     @Override
-    public Symbol parse(String symbol) {
-        return null;
-    }
-
-    @Override
-    public Symbol parse(String symbol, int symbolId) {
-        String url = String.format(URL_TEMPLATE, symbolId);
+    public Symbol getPrice(String symbol) {
+        symbol = symbol.toLowerCase();
+        String url = String.format(URL_TEMPLATE, symbol);
         log.info("load url:" + url);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Content-Type", "application/json");
@@ -49,19 +41,26 @@ public class DragonexParser implements MarketParser {
         try {
             body = EntityUtils.toString(entity, "UTF-8");
             JSONObject jsonObject = new JSONObject(body);
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject object = (JSONObject) jsonArray.get(i);
-                s1.setCreateTime(new Date(object.getLong("timestamp") * 1000));
-                s1.setPlatform(PLATFORM_NAME);
-                s1.setPrice(object.getDouble("close_price"));
-                s1.setSymbol(symbol);
-            }
+            JSONObject tick = jsonObject.getJSONObject("tick");
+            s1.setSymbol(symbol.toUpperCase());
+            s1.setPrice(tick.getDouble("close"));
+            s1.setPlatform(PLATFORM_NAME);
+            s1.setCreateTime(new Date(jsonObject.getLong("ts")));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return s1;
+    }
+
+    @Override
+    public Symbol getPrice(String symbol, int symbolId) {
+        return this.getPrice(symbol);
+    }
+
+    @Override
+    public Stacks getStacks(String symbol) {
+        return null;
     }
 }
