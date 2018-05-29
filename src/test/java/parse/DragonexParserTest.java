@@ -20,7 +20,7 @@ public class DragonexParserTest {
     @Test
     public void testParse() {
         Assert.assertTrue(true);
-        Symbol symbol = dragonexParser.getPrice("NEOUSDT",129);
+        Symbol symbol = dragonexParser.getPrice("NEOUSDT");
         Assert.assertNotNull(symbol);
         log.info(symbol.toString());
     }

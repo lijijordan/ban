@@ -68,8 +68,7 @@ public class MarketDiffer {
 
     public Callable<Symbol> getSymbol(String market, String symbol) {
         MarketParser marketParser = MarketFactory.getMarket(market);
-        // FIXME 129 symbolId
-        Callable<Symbol> task = () -> marketParser.getPrice(symbol, 129);
+        Callable<Symbol> task = () -> marketParser.getPrice(symbol);
         return task;
     }
 }

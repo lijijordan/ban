@@ -22,13 +22,19 @@ public class Dragonex implements MarketParser {
 
     private static final String PLATFORM_NAME = "Dragonex";
 
-    @Override
-    public Symbol getPrice(String symbol) {
-        return null;
-    }
 
     @Override
-    public Symbol getPrice(String symbol, int symbolId) {
+    public Symbol getPrice(String symbol) {
+        int symbolId = 0;
+        // fixme : https://openapi.dragonex.im/api/v1/symbol/all/
+        switch (symbol.toLowerCase()) {
+            case "neousdt":
+                symbolId = 129;
+                break;
+            case "eosusdt":
+                symbolId = 113;
+                break;
+        }
         String url = String.format(URL_TEMPLATE, symbolId);
         log.info("load url:" + url);
         HttpGet httpGet = new HttpGet(url);

@@ -55,11 +55,6 @@ public class Huobi implements MarketParser {
     }
 
     @Override
-    public Symbol getPrice(String symbol, int symbolId) {
-        return this.getPrice(symbol);
-    }
-
-    @Override
     public Stacks getStacks(String symbol) {
         return null;
     }

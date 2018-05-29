@@ -25,14 +25,8 @@ public class ProductApplication {
         sender.send(topic, message);
     }
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
-
-        String symbol = "NEOUSDT";
+    public static void diff(String symbol, String market1, String market2, long period) {
         String topic = symbol + "-differ";
-        String market1 = "Huobi";
-        String market2 = "Dragonex";
-
-        // =======
         ProductApplication productApplication = new ProductApplication();
         MarketDiffer marketDiffer = new MarketDiffer();
         Timer timer1 = new Timer();
@@ -54,7 +48,13 @@ public class ProductApplication {
                 }
 
             }
-        }, 0, 2000);
+        }, 0, period);
+    }
 
+    public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
+        String market1 = "Huobi";
+        String market2 = "Dragonex";
+        diff("NEOUSDT", market1, market2, 2000);
+        diff("EOSUSDT", market1, market2, 2000);
     }
 }

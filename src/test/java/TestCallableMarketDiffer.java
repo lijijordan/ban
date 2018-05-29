@@ -45,7 +45,7 @@ public class TestCallableMarketDiffer {
 
     public static Callable<Symbol> getSymbol(String market, String symbol) {
         MarketParser marketParser = MarketFactory.getMarket(market);
-        Callable<Symbol> task = () -> marketParser.getPrice(symbol, 129);
+        Callable<Symbol> task = () -> marketParser.getPrice(symbol);
         return task;
     }
 }

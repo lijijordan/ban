@@ -14,8 +14,5 @@ public interface MarketParser {
 
     Symbol getPrice(String symbol);
 
-    Symbol getPrice(String symbol, int symbolId);
-
     Stacks getStacks(String symbol);
-
 }
