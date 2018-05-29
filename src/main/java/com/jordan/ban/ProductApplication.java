@@ -26,14 +26,35 @@ public class ProductApplication {
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
+
         String symbol = "NEOUSDT";
         String topic = symbol + "-differ";
+        String market1 = "Huobi";
+        String market2 = "Dragonex";
+
+        // =======
         ProductApplication productApplication = new ProductApplication();
         MarketDiffer marketDiffer = new MarketDiffer();
-        Differ differ = marketDiffer.differ(symbol, "Huobi", "Dragonex");
-        if (differ != null) {
-            productApplication.send(topic, JSONUtil.toJsonString(differ));
-        }
+        Timer timer1 = new Timer();
+        timer1.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Differ differ = null;
+                try {
+                    differ = marketDiffer.differ(symbol, market1, market2);
+                    if (differ != null) {
+                        productApplication.send(topic, JSONUtil.toJsonString(differ));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, 0, 2000);
 
     }
 }
