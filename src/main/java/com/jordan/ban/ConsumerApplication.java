@@ -28,13 +28,26 @@ public class ConsumerApplication {
         }
     }
 
-    public void receive(String symbol) {
-        MessageReceiver receiver = new MessageReceiver((topic, message) -> {
+    public void receive(String topic) {
+        MessageReceiver receiver = new MessageReceiver((t, message) -> {
             System.out.println(String.format("Get message:%s", message));
             ElasticSearchClient.index(message, Constant.INDEX_NAME);
         });
         try {
-            receiver.onReceived(symbol);
+            receiver.onReceived(topic);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void receiveRealDiff(String topic) {
+        MessageReceiver receiver = new MessageReceiver((t, message) -> {
+            System.out.println(String.format("Get message:%s", message));
+            ElasticSearchClient.index(message, Constant.REAL_DIFF_INDEX);
+        });
+        try {
+            receiver.onReceived(topic);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,8 +55,10 @@ public class ConsumerApplication {
 
     public static void main(String[] args) {
         ConsumerApplication application = new ConsumerApplication();
-        application.receive("NEOUSDT-differ");
-        application.receive("EOSUSDT-differ");
+//        application.receive("NEOUSDT-differ");
+//        application.receive("EOSUSDT-differ");
+        application.receiveRealDiff("NEOUSDT-differ-real");
+        application.receiveRealDiff("EOSUSDT-differ-real");
         System.out.println("Consumer Started!");
     }
 }

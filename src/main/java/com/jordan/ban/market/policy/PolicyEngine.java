@@ -14,9 +14,6 @@ public class PolicyEngine {
 
     private static final double DIFF_RELAY = 0.005;// 0.5%
 
-    private CompletionService<Depth> completionService;
-    private ExecutorService executorService;
-
     private Account huobiAccount;
     private Account dragonexAccount;
 
@@ -47,8 +44,6 @@ public class PolicyEngine {
         this.initAccount();
         this.huobi = new Huobi();
         this.dragonex = new Dragonex();
-        executorService = Executors.newCachedThreadPool();
-        completionService = new ExecutorCompletionService(executorService);
     }
 
 
@@ -56,12 +51,8 @@ public class PolicyEngine {
         DifferAskBid realDiff = null;
         long start = System.currentTimeMillis();
         // FIXME: use asynchronous
-        completionService.submit(getDepth(symbol, market1));
-        completionService.submit(getDepth(symbol, market2));
-
-        Depth depth1 = completionService.take().get();
-        Depth depth2 = completionService.take().get();
-
+        Depth depth1 = market1.getDepth(symbol);
+        Depth depth2 = market2.getDepth(symbol);
         realDiff = this.analysis(depth1, depth2);
         if (realDiff != null) {
             realDiff.setDiffCostTime(System.currentTimeMillis() - start);

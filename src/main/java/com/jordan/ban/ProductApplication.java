@@ -93,10 +93,13 @@ public class ProductApplication {
     public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
         String market1 = "Huobi";
         String market2 = "Dragonex";
+
+        // diff market
 //        diffMarket("NEOUSDT", market1, market2, 2000);
 //        diffMarket("EOSUSDT", market1, market2, 2000);
 
         diffAskBid("NEOUSDT");
+        diffAskBid("EOSUSDT");
 
     }
 }
