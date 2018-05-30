@@ -274,13 +274,9 @@ public class CompareApplication {
             if (symbol2 != null) {
                 double price2 = symbol2.getPrice();
                 double differ = (price1 - price2) / Math.max(price1, price2);
-                DecimalFormat df = new DecimalFormat("##.##%");
-                String formattedPercent = df.format(differ);
-//                System.out.println(String.format("Symbol:%s, Differ:%s", symbol, formattedPercent));
                 Differ differObject = new Differ();
                 differObject.setSymbol(symbol);
                 differObject.setDiffer((float) differ);
-                differObject.setPercentDiffer(formattedPercent);
                 differObject.setCreateTime(new Date());
                 differObject.setDifferPlatform(symbol1.getPlatform() + "-" + symbol2.getPlatform());
                 ElasticSearchClient.index(JSONUtil.toJsonString(differObject));

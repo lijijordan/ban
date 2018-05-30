@@ -43,18 +43,16 @@ public class MarketDiffer {
         return differ;
     }
 
+
     private Differ diffSymbol(Symbol symbol1, Symbol symbol2) {
         double price1 = symbol1.getPrice();
         Differ differObject = null;
         if (symbol2 != null) {
             double price2 = symbol2.getPrice();
             double differ = (price1 - price2) / Math.max(price1, price2);
-            DecimalFormat df = new DecimalFormat("##.##%");
-            String formattedPercent = df.format(differ);
             differObject = new Differ();
             differObject.setSymbol(symbol1.getSymbol());
             differObject.setDiffer((float) differ);
-            differObject.setPercentDiffer(formattedPercent);
             differObject.setCreateTime(new Date());
             differObject.setDifferPlatform(symbol1.getPlatform() + "-" + symbol2.getPlatform());
         }

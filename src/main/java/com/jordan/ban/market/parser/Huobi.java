@@ -1,6 +1,7 @@
 package com.jordan.ban.market.parser;
 
-import com.jordan.ban.domain.Stacks;
+import com.jordan.ban.domain.Depth;
+import com.jordan.ban.domain.Ticker;
 import com.jordan.ban.domain.Symbol;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.java.Log;
@@ -8,24 +9,28 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Log
-public class Huobi implements MarketParser {
+public class Huobi extends BaseMarket implements MarketParser {
 
     public static final String PLATFORM_NAME = "Huobi";
 
-    private static String URL_TEMPLATE = "https://api.huobipro.com/market/detail/merged?symbol=%s";
+    private static String PRICE_URL_TEMPLATE = "https://api.huobipro.com/market/detail/merged?symbol=%s";
+    private static String DEPTH_URL_TEMPLATE = "https://api.huobipro.com/market/depth?symbol=%s&type=step1";
 
     @Override
     public Symbol getPrice(String symbol) {
         symbol = symbol.toLowerCase();
-        String url = String.format(URL_TEMPLATE, symbol);
+        String url = String.format(PRICE_URL_TEMPLATE, symbol);
         log.info("load url:" + url);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Content-Type", "application/json");
@@ -54,8 +59,61 @@ public class Huobi implements MarketParser {
         return s1;
     }
 
+    /**
+     * {
+     * "status": "ok",
+     * "ch": "market.eosusdt.depth.step1",
+     * "ts": 1527570796433,
+     * "tick": {
+     * "bids": [
+     * [
+     * 11.233300000000000000,
+     * 1371.939900000000000000
+     * ],
+     * [
+     * 11.2275000000000000
+     *
+     * @param symbol
+     * @return
+     */
     @Override
-    public Stacks getStacks(String symbol) {
-        return null;
+    public Depth getDepth(String symbol) {
+        symbol = symbol.toLowerCase();
+        JSONObject jsonObject = super.parseJSONByURL(String.format(DEPTH_URL_TEMPLATE, symbol));
+        Depth depth = new Depth();
+        List<Ticker> bidList = new ArrayList();
+        List<Ticker> askList = new ArrayList();
+        try {
+            long time = jsonObject.getLong("ts");
+            JSONArray bids = jsonObject.getJSONObject("tick").getJSONArray("bids");
+            parseOrder(bidList, bids, bids);
+            JSONArray asks = jsonObject.getJSONObject("tick").getJSONArray("asks");
+            parseOrder(askList, bids, asks);
+            depth.setAsks(askList);
+            depth.setBids(bidList);
+            depth.setPlatform(PLATFORM_NAME);
+            depth.setSymbol(symbol);
+            depth.setTime(new Date(time));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return depth;
+    }
+
+    private void parseOrder(List<Ticker> askList, JSONArray bids, JSONArray asks) throws JSONException {
+        for (int i = 0; i < asks.length(); i++) {
+            JSONArray order = (JSONArray) bids.get(i);
+            double price = order.getDouble(0);
+            double size = order.getDouble(1);
+            Ticker order1 = new Ticker();
+            order1.setPrice(price);
+            order1.setVolume(size);
+            askList.add(order1);
+        }
+    }
+
+    public static void main(String[] args) {
+        Huobi huobi = new Huobi();
+        System.out.println(huobi.getDepth("EOSUSDT"));
     }
 }

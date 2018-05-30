@@ -5,12 +5,10 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * User: liji
- * Date: 18/5/16
- * Time: 下午3:24
+ * Real diffMarket for sell and buy list
  */
 @Data
-public class Differ {
+public class DifferAskBid {
 
     private String symbol;
     /**
@@ -30,4 +28,10 @@ public class Differ {
      * Differ cost time as long
      */
     private long diffCostTime;
+
+    private double ask1Price;
+    private double ask1Volume;
+
+    private double bid1Price;
+    private double bid1Volume;
 }

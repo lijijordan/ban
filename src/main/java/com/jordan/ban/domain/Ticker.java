@@ -2,8 +2,12 @@ package com.jordan.ban.domain;
 
 import lombok.Data;
 
+/**
+ * Sell or buy list
+ */
 @Data
-public class Sell {
+public class Ticker {
+
     private double price;
-    private double size;
+    private double volume;
 }

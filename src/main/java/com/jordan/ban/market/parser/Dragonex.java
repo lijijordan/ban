@@ -1,6 +1,7 @@
 package com.jordan.ban.market.parser;
 
-import com.jordan.ban.domain.Stacks;
+import com.jordan.ban.domain.Depth;
+import com.jordan.ban.domain.Ticker;
 import com.jordan.ban.domain.Symbol;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.java.Log;
@@ -13,29 +14,27 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+/**
+ * https://github.com/huobiapi/API_Docs/wiki/REST_api_reference
+ */
 @Log
-public class Dragonex implements MarketParser {
+public class Dragonex extends BaseMarket implements MarketParser {
 
-    private static final String URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/real/?symbol_id=%s";
+    private static final String PRICE_URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/real/?symbol_id=%s";
+    private static final String BIDS_DEPTH_URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/sell/?symbol_id=%s";
+    private static final String ASKS_DEPTH_URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/buy/?symbol_id=%s";
 
-    private static final String PLATFORM_NAME = "Dragonex";
+    public static final String PLATFORM_NAME = "Dragonex";
 
 
     @Override
     public Symbol getPrice(String symbol) {
-        int symbolId = 0;
-        // fixme : https://openapi.dragonex.im/api/v1/symbol/all/
-        switch (symbol.toLowerCase()) {
-            case "neousdt":
-                symbolId = 129;
-                break;
-            case "eosusdt":
-                symbolId = 113;
-                break;
-        }
-        String url = String.format(URL_TEMPLATE, symbolId);
+        int symbolId = getSymbolId(symbol);
+        String url = String.format(PRICE_URL_TEMPLATE, symbolId);
         log.info("load url:" + url);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Content-Type", "application/json");
@@ -67,8 +66,80 @@ public class Dragonex implements MarketParser {
         return s1;
     }
 
+    /*
+     https://openapi.dragonex.im/api/v1/market/buy/?symbol_id=129
+{
+  "ok": true,
+  "code": 1,
+  "data": [
+    {
+      "price": "48.3244",
+      "volume": "0.0428"
+    },
+    {
+      "price": "48.0000",
+      "volume": "0.8367"
+    },
+     * @param symbol
+     * @return
+     */
     @Override
-    public Stacks getStacks(String symbol) {
-        return null;
+    public Depth getDepth(String symbol) {
+        Depth depth = new Depth();
+        depth.setTime(new Date());
+        depth.setSymbol(symbol);
+        depth.setPlatform(PLATFORM_NAME);
+        try {
+            depth.setBids(getBids(symbol));
+            depth.setAsks(getAsks(symbol));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return depth;
+    }
+
+    private List<Ticker> getBids(String symbol) throws JSONException {
+        return getOrders(symbol, BIDS_DEPTH_URL_TEMPLATE);
+    }
+
+
+    private List<Ticker> getAsks(String symbol) throws JSONException {
+        return getOrders(symbol, ASKS_DEPTH_URL_TEMPLATE);
+    }
+
+    private List<Ticker> getOrders(String symbol, String asksDepthUrlTemplate) throws JSONException {
+        List<Ticker> list = new ArrayList<>();
+        int symbolId = getSymbolId(symbol);
+        JSONObject jsonObject = super.parseJSONByURL(String.format(asksDepthUrlTemplate, symbolId));
+        JSONArray jsonArray = jsonObject.getJSONArray("data");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            Ticker order = new Ticker();
+            JSONObject obj = (JSONObject) jsonArray.get(i);
+            double price = obj.getDouble("price");
+            double volume = obj.getDouble("volume");
+            order.setPrice(price);
+            order.setVolume(volume);
+            list.add(order);
+        }
+        return list;
+    }
+
+    // fixme : https://openapi.dragonex.im/api/v1/symbol/all/
+    private int getSymbolId(String symbol) {
+        int symbolId = 0;
+        switch (symbol.toLowerCase()) {
+            case "neousdt":
+                symbolId = 129;
+                break;
+            case "eosusdt":
+                symbolId = 113;
+                break;
+        }
+        return symbolId;
+    }
+
+    public static void main(String[] args){
+        Dragonex dragonex = new Dragonex();
+        System.out.println(dragonex.getDepth("EOSUSDT").toString());
     }
 }

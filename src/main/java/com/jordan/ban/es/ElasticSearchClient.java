@@ -73,7 +73,6 @@ public class ElasticSearchClient {
         differ.setDifferPlatform("plat");
         differ.setDiffer(11);
         differ.setCreateTime(new Date());
-        differ.setPercentDiffer("%12");
         differ.setSymbol("etcbtc");
         index(JSONUtil.toJsonString(differ));
     }
