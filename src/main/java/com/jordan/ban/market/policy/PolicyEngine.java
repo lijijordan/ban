@@ -78,11 +78,11 @@ public class PolicyEngine {
                 d1ask, d1bid, d2ask, d2bid));
         // market1 low. market2 high then market2 sell, market1 buy
         if (d1ask >= d2bid) {
-            return this.analysisAsksBids(depth1.getAsks(), depth2.getBids());
+            return this.analysisAsksBids(depth1.getAsks(), depth2.getBids(), 1);
         }
         // market2 low. market2 low then market 1 sell, market2 buy
         if (d2ask >= d1bid) {
-            return this.analysisAsksBids(depth2.getAsks(), depth1.getBids());
+            return this.analysisAsksBids(depth2.getAsks(), depth1.getBids(), -1);
         }
         return differAskBid;
     }
@@ -117,13 +117,13 @@ public class PolicyEngine {
                 List<Ticker> huobiAsks = huobiDepth.getAsks();
                 // Dragonex littler . then do buy. watch sell list.
                 List<Ticker> dragonexBids = dragonexDepth.getBids();
-                realDiff = this.analysisAsksBids(huobiAsks, dragonexBids);
+                realDiff = this.analysisAsksBids(huobiAsks, dragonexBids, 1);
             } else {
                 // [Dragonex] bigger . then do sell. watch buy list.
                 List<Ticker> huobiBids = huobiDepth.getBids();
                 // [Huobi] littler . then do buy. watch sell list.
                 List<Ticker> dragonexAsks = dragonexDepth.getAsks();
-                realDiff = this.analysisAsksBids(dragonexAsks, huobiBids);
+                realDiff = this.analysisAsksBids(dragonexAsks, huobiBids, -1);
             }
         }
 
@@ -142,7 +142,7 @@ public class PolicyEngine {
      * @param asks
      * @param bids
      */
-    private DifferAskBid analysisAsksBids(List<Ticker> asks, List<Ticker> bids) {
+    private DifferAskBid analysisAsksBids(List<Ticker> asks, List<Ticker> bids, int direct) {
         log.info("ASK : " + asks.toString());
         log.info("BID : " + bids.toString());
         DifferAskBid diff = null;
@@ -165,7 +165,7 @@ public class PolicyEngine {
             diff.setBid1Volume(bid1.getVolume());
             diff.setCreateTime(new Date());
 //            diffMarket.setDiffCostTime();
-            diff.setDiffer((float) realDiffer);
+            diff.setDiffer((float) realDiffer * direct);
         }
         return diff;
     }
