@@ -55,8 +55,8 @@ public class ConsumerApplication {
 
     public static void main(String[] args) {
         ConsumerApplication application = new ConsumerApplication();
-//        application.receive("NEOUSDT-differ");
-//        application.receive("EOSUSDT-differ");
+        application.receive("NEOUSDT-differ");
+        application.receive("EOSUSDT-differ");
         application.receiveRealDiff("NEOUSDT-differ-real");
         application.receiveRealDiff("EOSUSDT-differ-real");
         System.out.println("Consumer Started!");

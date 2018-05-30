@@ -95,8 +95,8 @@ public class ProductApplication {
         String market2 = "Dragonex";
 
         // diff market
-//        diffMarket("NEOUSDT", market1, market2, 2000);
-//        diffMarket("EOSUSDT", market1, market2, 2000);
+        diffMarket("NEOUSDT", market1, market2, 2000);
+        diffMarket("EOSUSDT", market1, market2, 2000);
 
         diffAskBid("NEOUSDT");
         diffAskBid("EOSUSDT");
