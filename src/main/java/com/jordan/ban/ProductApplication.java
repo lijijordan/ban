@@ -19,11 +19,7 @@ import java.util.concurrent.ExecutionException;
 @Log
 public class ProductApplication {
 
-    private final MessageSender sender;
-
-    public ProductApplication() {
-        sender = new MessageSender();
-    }
+    private static final MessageSender sender = new MessageSender();
 
     public void send(String topic, String message) throws IOException {
         sender.send(topic, message);
@@ -31,7 +27,6 @@ public class ProductApplication {
 
     public static void diffMarket(String symbol, String market1, String market2, long period) {
         String diffTopic = symbol + "-differ";
-        ProductApplication productApplication = new ProductApplication();
         MarketDiffer marketDiffer = new MarketDiffer();
         Timer timer1 = new Timer();
         timer1.schedule(new TimerTask() {
@@ -41,7 +36,7 @@ public class ProductApplication {
                 try {
                     differ = marketDiffer.differ(symbol, market1, market2);
                     if (differ != null) {
-                        productApplication.send(diffTopic, JSONUtil.toJsonString(differ));
+                        sender.send(diffTopic, JSONUtil.toJsonString(differ));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -62,7 +57,6 @@ public class ProductApplication {
         // 分析买卖盘
         Huobi huobi = new Huobi();
         Dragonex dragonex = new Dragonex();
-        ProductApplication productApplication = new ProductApplication();
         Timer timer1 = new Timer();
         timer1.schedule(new TimerTask() {
             @Override
@@ -76,9 +70,9 @@ public class ProductApplication {
                     e.printStackTrace();
                 }
                 if (realDiff != null) {
-//                    log.info(realDiff.toString());
+                    log.info(realDiff.toString());
                     try {
-                        productApplication.send(realDiffTopic, JSONUtil.toJsonString(realDiff));
+                        sender.send(realDiffTopic, JSONUtil.toJsonString(realDiff));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
