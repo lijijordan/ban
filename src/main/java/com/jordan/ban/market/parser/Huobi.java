@@ -86,11 +86,11 @@ public class Huobi extends BaseMarket implements MarketParser {
         try {
             long time = jsonObject.getLong("ts");
             JSONArray bids = jsonObject.getJSONObject("tick").getJSONArray("bids");
-            parseOrder(bidList, bids, bids);
             JSONArray asks = jsonObject.getJSONObject("tick").getJSONArray("asks");
-            parseOrder(askList, bids, asks);
-            depth.setAsks(askList);
+            parseOrder(bidList, bids);
+            parseOrder(askList, asks);
             depth.setBids(bidList);
+            depth.setAsks(askList);
             depth.setPlatform(PLATFORM_NAME);
             depth.setSymbol(symbol);
             depth.setTime(new Date(time));
@@ -100,15 +100,15 @@ public class Huobi extends BaseMarket implements MarketParser {
         return depth;
     }
 
-    private void parseOrder(List<Ticker> askList, JSONArray bids, JSONArray asks) throws JSONException {
-        for (int i = 0; i < asks.length(); i++) {
-            JSONArray order = (JSONArray) bids.get(i);
+    private void parseOrder(List<Ticker> tickers, JSONArray jsonArray) throws JSONException {
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONArray order = (JSONArray) jsonArray.get(i);
             double price = order.getDouble(0);
             double size = order.getDouble(1);
             Ticker order1 = new Ticker();
             order1.setPrice(price);
             order1.setVolume(size);
-            askList.add(order1);
+            tickers.add(order1);
         }
     }
 
