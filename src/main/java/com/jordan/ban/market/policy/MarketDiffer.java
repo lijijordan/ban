@@ -18,25 +18,19 @@ import java.util.concurrent.*;
 @Log
 public class MarketDiffer {
 
-    private CompletionService<Symbol> completionService;
-    private ExecutorService executorService;
-
-
-    public MarketDiffer() {
-        executorService = Executors.newCachedThreadPool();
-        completionService = new ExecutorCompletionService(executorService);
-    }
 
     public Differ differ(String symbol, String marketName1, String marketName2) throws InterruptedException, ExecutionException, IOException {
         long start = System.currentTimeMillis();
-        completionService.submit(getSymbol(marketName1, symbol));
-        completionService.submit(getSymbol(marketName2, symbol));
-        Symbol symbol1 = completionService.take().get();
-        Symbol symbol2 = completionService.take().get();
-        System.out.println(symbol1);
-        System.out.println(symbol2);
-        System.out.println("CompletionService all done.");
-        Differ differ = this.diffSymbol(symbol1, symbol2);
+//        completionService.submit(getSymbol(marketName1, symbol));
+//        completionService.submit(getSymbol(marketName2, symbol));
+//        Symbol symbol1 = completionService.take().get();
+//        Symbol symbol2 = completionService.take().get();
+        MarketParser market1 = MarketFactory.getMarket(marketName1);
+        MarketParser market2 = MarketFactory.getMarket(marketName2);
+//        System.out.println(market1.getPrice(symbol));
+//        System.out.println(market2.getPrice(symbol));
+//        System.out.println("CompletionService all done.");
+        Differ differ = this.diffSymbol(market1.getPrice(symbol), market2.getPrice(symbol));
         if (differ != null) {
             differ.setDiffCostTime(System.currentTimeMillis() - start);
         }
@@ -57,11 +51,6 @@ public class MarketDiffer {
             differObject.setDifferPlatform(symbol1.getPlatform() + "-" + symbol2.getPlatform());
         }
         return differObject;
-    }
-
-
-    public void shutdown() {
-        this.executorService.shutdown();
     }
 
     public Callable<Symbol> getSymbol(String market, String symbol) {
