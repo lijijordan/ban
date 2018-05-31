@@ -88,12 +88,19 @@ public class ProductApplication {
         String market1 = "Huobi";
         String market2 = "Dragonex";
 
+        String symbol1 = "NEOUSDT";
+        String symbol2 = "EOSUSDT";
+        String symbol3 = "BTCUSDT";
+
         // diff market
-        diffMarket("NEOUSDT", market1, market2, 2000);
-        diffMarket("EOSUSDT", market1, market2, 2000);
+        diffTask(symbol1, market1, market2, 2000);
+        diffTask(symbol2, market1, market2, 2000);
+        diffTask(symbol3, market1, market2, 2000);
 
-        diffAskBid("NEOUSDT");
-        diffAskBid("EOSUSDT");
+    }
 
+    private static void diffTask(String symbol, String market1, String market2, long period) throws ExecutionException, InterruptedException {
+        diffMarket(symbol, market1, market2, period);
+        diffAskBid(symbol);
     }
 }

@@ -134,11 +134,14 @@ public class Dragonex extends BaseMarket implements MarketParser {
             case "eosusdt":
                 symbolId = 113;
                 break;
+            case "btcusdt":
+                symbolId = 101;
+                break;
         }
         return symbolId;
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Dragonex dragonex = new Dragonex();
         System.out.println(dragonex.getDepth("EOSUSDT").toString());
     }

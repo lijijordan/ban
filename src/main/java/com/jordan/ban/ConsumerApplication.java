@@ -55,10 +55,15 @@ public class ConsumerApplication {
 
     public static void main(String[] args) {
         ConsumerApplication application = new ConsumerApplication();
-        application.receive("NEOUSDT-differ");
-        application.receive("EOSUSDT-differ");
-        application.receiveRealDiff("NEOUSDT-differ-real");
-        application.receiveRealDiff("EOSUSDT-differ-real");
+        receiveDiff(application, "NEOUSDT");
+        receiveDiff(application, "EOSUSDT");
+        receiveDiff(application, "BTCUSDT");
         System.out.println("Consumer Started!");
+    }
+
+    public static void receiveDiff(ConsumerApplication application, String topic) {
+        application.receive(topic + "-differ");
+        application.receiveRealDiff(topic + "-differ-real");
+
     }
 }
