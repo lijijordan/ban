@@ -30,6 +30,9 @@ public class ConsumerApplication {
 
     private Map<String, DifferAskBid> tradeHistory;
 
+    private String market1LastTradeRecord;
+    private String market2LastTradeRecord;
+
     public void initAccount() {
         // init huobi
         huobiAccount = new Account();
@@ -95,15 +98,27 @@ public class ConsumerApplication {
             return;
         }
         // only one time trade is important
-        String key = String.valueOf(diff.getAsk1Price()) + String.valueOf(diff.getAsk1Volume())
-                + String.valueOf(diff.getBid1Price()) + String.valueOf(diff.getBid1Volume());
+
+        String market1Tick = String.valueOf(diff.getAsk1Price()) + "    " + String.valueOf(diff.getAsk1Volume());
+        String market2Tick = String.valueOf(diff.getBid1Price()) + "    " + String.valueOf(diff.getBid1Volume());
+        String key = market1Tick + market2Tick;
         if (this.tradeHistory.get(key) != null) {
             return;
         } else {
             this.tradeHistory.put(key, diff);
         }
-        System.out.println("Check Diff:" + diff.getDiffer());
-        if (Math.abs(diff.getDiffer()) < 0.012) {
+
+        if (market1LastTradeRecord != null && this.market1LastTradeRecord.equals(market1Tick)) {
+            System.out.println("Trade over:" + market1Tick);
+            return;
+        }
+        if (market2LastTradeRecord != null && this.market2LastTradeRecord.equals(market2Tick)) {
+            System.out.println("Trade over:" + market2Tick);
+            return;
+        }
+
+        System.out.println("Check Diff:" + diff.getDiffer() * 100);
+        if (Math.abs(diff.getDiffer()) < 0.006) {
             return;
         }
         System.out.println("***************************************************************");
@@ -158,6 +173,8 @@ public class ConsumerApplication {
         dragonexAccount.setVirtualCurrency(coin2);
         printAccount();
         tradeCount++;
+        this.market1LastTradeRecord = market1Tick;
+        this.market2LastTradeRecord = market2Tick;
         System.out.println(String.format("\r\nTimes:%s     Trade volume:%s   Before Money:%s  \r\n Total Money:%s  Total Coins:%s \r\n  Diff Money:%s   Diff Money Percent:%s",
                 tradeCount, minTradeVolume, beforeMoney, afterMoney, (coin1 + coin2), diffMoney, (diffMoney / beforeMoney) * 100));
         System.out.println("***************************************************************");
