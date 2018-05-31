@@ -56,14 +56,12 @@ public class ElasticSearchClient {
         IndexResponse response = client.prepareIndex(Constant.INDEX_NAME, "data")
                 .setSource(json, XContentType.JSON)
                 .get();
-        System.out.println(response);
     }
 
     public static void index(String json, String name) {
         IndexResponse response = client.prepareIndex(name, "data")
                 .setSource(json, XContentType.JSON)
                 .get();
-        System.out.println(response);
     }
 
 

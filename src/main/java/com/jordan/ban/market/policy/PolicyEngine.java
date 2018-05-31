@@ -14,34 +14,12 @@ public class PolicyEngine {
 
     private static final double DIFF_RELAY = 0.005;// 0.5%
 
-    private Account huobiAccount;
-    private Account dragonexAccount;
 
     private Huobi huobi;
     private Dragonex dragonex;
 
-    public void initAccount() {
-        // init huobi
-        huobiAccount = new Account();
-        huobiAccount.setId(1);
-        // USDT
-        huobiAccount.setMoney(530);
-        huobiAccount.setVirtualCurrency(10);
-        huobiAccount.setPlatform(Huobi.PLATFORM_NAME);
-        huobiAccount.setName("huobi");
-
-        // init dragonex
-        dragonexAccount = new Account();
-        dragonexAccount.setId(2);
-        // USDT
-        dragonexAccount.setMoney(530);
-        dragonexAccount.setVirtualCurrency(10);
-        dragonexAccount.setPlatform(Dragonex.PLATFORM_NAME);
-        dragonexAccount.setName("dragonex");
-    }
 
     public PolicyEngine() {
-        this.initAccount();
         this.huobi = new Huobi();
         this.dragonex = new Dragonex();
     }
