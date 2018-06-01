@@ -1,5 +1,6 @@
 package com.jordan.ban;
 
+import com.jordan.ban.domain.Depth;
 import com.jordan.ban.domain.Differ;
 import com.jordan.ban.domain.DifferAskBid;
 import com.jordan.ban.market.parser.Dragonex;
@@ -12,6 +13,8 @@ import lombok.extern.java.Log;
 import org.apache.logging.log4j.core.util.JsonUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -54,6 +57,7 @@ public class ProductApplication {
     public static void diffAskBid(String symbol) throws ExecutionException, InterruptedException {
         PolicyEngine policyEngine = new PolicyEngine();
         String realDiffTopic = symbol + "-differ-real";
+        String depthTopic = symbol + "-depth";
         // 分析买卖盘
         Huobi huobi = new Huobi();
         Dragonex dragonex = new Dragonex();
@@ -62,13 +66,23 @@ public class ProductApplication {
             @Override
             public void run() {
                 DifferAskBid realDiff = null;
+                Map<String, Depth> depthMap = new HashMap<>();
                 try {
-                    realDiff = policyEngine.analysis(symbol, huobi, dragonex);
+                    // FIXME: use asynchronous
+                    Depth depth1 = huobi.getDepth(symbol);
+                    Depth depth2 = dragonex.getDepth(symbol);
+                    realDiff = policyEngine.analysis(symbol, depth1, depth2);
+                    depthMap.put(huobi.getName(), depth1);
+                    depthMap.put(dragonex.getName(), depth2);
+                    sender.send(depthTopic, JSONUtil.toJsonString(depthMap));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
                 if (realDiff != null) {
                     log.info(realDiff.toString());
                     try {
@@ -77,7 +91,6 @@ public class ProductApplication {
                         e.printStackTrace();
                     }
                 }
-
             }
         }, 0, 2000);
 

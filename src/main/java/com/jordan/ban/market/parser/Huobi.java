@@ -4,6 +4,7 @@ import com.jordan.ban.domain.Depth;
 import com.jordan.ban.domain.Ticker;
 import com.jordan.ban.domain.Symbol;
 import com.jordan.ban.http.HttpClientFactory;
+import com.sun.net.ssl.internal.www.protocol.https.HttpsURLConnectionOldImpl;
 import lombok.extern.java.Log;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -26,6 +27,10 @@ public class Huobi extends BaseMarket implements MarketParser {
 
     private static String PRICE_URL_TEMPLATE = "https://api.huobipro.com/market/detail/merged?symbol=%s";
     private static String DEPTH_URL_TEMPLATE = "https://api.huobipro.com/market/depth?symbol=%s&type=step1";
+
+    public String getName() {
+        return PLATFORM_NAME;
+    }
 
     @Override
     public Symbol getPrice(String symbol) {

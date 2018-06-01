@@ -2,7 +2,6 @@ package com.jordan.ban;
 
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.Account;
-import com.jordan.ban.domain.Differ;
 import com.jordan.ban.domain.DifferAskBid;
 import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.market.parser.Dragonex;
@@ -65,7 +64,7 @@ public class ConsumerApplication {
         }
     }
 
-    public void receive(String topic) {
+    public void receiveMarket(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
 //            System.out.println(String.format("Get message:%s", message));
             ElasticSearchClient.index(message, Constant.INDEX_NAME);
@@ -80,7 +79,7 @@ public class ConsumerApplication {
 
     public void receiveRealDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
-//            System.out.println(String.format("Get message:%s", message));
+            // Analysis market diff and direct
             ElasticSearchClient.index(message, Constant.REAL_DIFF_INDEX);
             // Mock trade event!!
             mockTrade(JSONUtil.getEntity(message, DifferAskBid.class));
@@ -91,6 +90,19 @@ public class ConsumerApplication {
             e.printStackTrace();
         }
     }
+
+    public void receiveDepth(String topic) {
+        MessageReceiver receiver = new MessageReceiver((t, message) -> {
+            // Analysis market diff and direct
+            log.info(topic + ":" + message);
+        });
+        try {
+            receiver.onReceived(topic);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void mockTrade(DifferAskBid diff) {
         // NEOUSDT wallet mockGet message:
@@ -199,8 +211,8 @@ public class ConsumerApplication {
     }
 
     public static void receiveDiff(ConsumerApplication application, String topic) {
-        application.receive(topic + "-differ");
+        application.receiveMarket(topic + "-differ");
         application.receiveRealDiff(topic + "-differ-real");
-
+        application.receiveDepth(topic + "-depth");
     }
 }

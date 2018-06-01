@@ -25,17 +25,15 @@ public class PolicyEngine {
     }
 
 
-    public DifferAskBid analysis(String symbol, MarketParser market1, MarketParser market2) throws InterruptedException, ExecutionException {
-        DifferAskBid realDiff = null;
+    public DifferAskBid analysis(String symbol, Depth depth1, Depth depth2) throws InterruptedException, ExecutionException {
+        DifferAskBid realDiff;
         long start = System.currentTimeMillis();
-        // FIXME: use asynchronous
-        Depth depth1 = market1.getDepth(symbol);
-        Depth depth2 = market2.getDepth(symbol);
         realDiff = this.analysis(depth1, depth2);
         if (realDiff != null) {
             realDiff.setDiffCostTime(System.currentTimeMillis() - start);
             realDiff.setSymbol(symbol);
             realDiff.setDifferPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
+            realDiff.setCreateTime(new Date());
         }
         return realDiff;
     }
@@ -46,23 +44,31 @@ public class PolicyEngine {
     }
 
     private DifferAskBid analysis(Depth depth1, Depth depth2) {
-        DifferAskBid differAskBid = null;
+        DifferAskBid differAskBid1 = null;
+        DifferAskBid differAskBid2 = null;
         double d1ask = depth1.getAsks().get(0).getPrice();
         double d1bid = depth1.getBids().get(0).getPrice();
         double d2ask = depth2.getAsks().get(0).getPrice();
         double d2bid = depth2.getBids().get(0).getPrice();
-
+        float market1DiffValue = 0, market2DiffValue = 0;
         log.info(String.format("d1_ask:%s, d1_bid:%s, d2_ask:%s, d2_bid:%s",
                 d1ask, d1bid, d2ask, d2bid));
         // market1 low. market2 high then market2 sell, market1 buy
-        if (d1ask >= d2bid) {
-            return this.analysisAsksBids(depth1.getAsks(), depth2.getBids(), 1);
+        if (d1ask >= d2bid) { // can deal
+            differAskBid1 = this.analysisAsksBids(depth1.getAsks(), depth2.getBids(), 1);
+            market1DiffValue = differAskBid1.getDiffer();
         }
         // market2 low. market2 low then market 1 sell, market2 buy
-        if (d2ask >= d1bid) {
-            return this.analysisAsksBids(depth2.getAsks(), depth1.getBids(), -1);
+        if (d2ask >= d1bid) { // can deal
+            differAskBid2 = this.analysisAsksBids(depth2.getAsks(), depth1.getBids(), -1);
+            market2DiffValue = differAskBid2.getDiffer();
         }
-        return differAskBid;
+        // More diff value first
+        if (market1DiffValue > market2DiffValue) {
+            return differAskBid1;
+        } else {
+            return differAskBid2;
+        }
     }
 
 
