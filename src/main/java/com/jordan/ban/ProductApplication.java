@@ -2,15 +2,12 @@ package com.jordan.ban;
 
 import com.jordan.ban.domain.Depth;
 import com.jordan.ban.domain.Differ;
-import com.jordan.ban.domain.DifferAskBid;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.policy.MarketDiffer;
-import com.jordan.ban.market.policy.PolicyEngine;
 import com.jordan.ban.mq.MessageSender;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
-import org.apache.logging.log4j.core.util.JsonUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,10 +20,6 @@ import java.util.concurrent.ExecutionException;
 public class ProductApplication {
 
     private static final MessageSender sender = new MessageSender();
-
-    public void send(String topic, String message) throws IOException {
-        sender.send(topic, message);
-    }
 
     public static void diffMarket(String symbol, String market1, String market2, long period) {
         String diffTopic = symbol + "-differ";
@@ -54,9 +47,7 @@ public class ProductApplication {
     }
 
 
-    public static void diffAskBid(String symbol) throws ExecutionException, InterruptedException {
-        PolicyEngine policyEngine = new PolicyEngine();
-        String realDiffTopic = symbol + "-differ-real";
+    public static void getDepth(String symbol) {
         String depthTopic = symbol + "-depth";
         // 分析买卖盘
         Huobi huobi = new Huobi();
@@ -65,31 +56,20 @@ public class ProductApplication {
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
-                DifferAskBid realDiff = null;
-                Map<String, Depth> depthMap = new HashMap<>();
+                Map<String, Object> depthMap = new HashMap<>();
                 try {
                     // FIXME: use asynchronous
+                    long start = System.currentTimeMillis();
                     Depth depth1 = huobi.getDepth(symbol);
                     Depth depth2 = dragonex.getDepth(symbol);
-                    realDiff = policyEngine.analysis(symbol, depth1, depth2);
                     depthMap.put(huobi.getName(), depth1);
                     depthMap.put(dragonex.getName(), depth2);
+                    depthMap.put("costTime", (System.currentTimeMillis() - start));
+                    depthMap.put("createTime", System.currentTimeMillis());
+                    // send depth data to client
                     sender.send(depthTopic, JSONUtil.toJsonString(depthMap));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-
-                if (realDiff != null) {
-                    log.info(realDiff.toString());
-                    try {
-                        sender.send(realDiffTopic, JSONUtil.toJsonString(realDiff));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }, 0, 2000);
@@ -114,6 +94,6 @@ public class ProductApplication {
 
     private static void diffTask(String symbol, String market1, String market2, long period) throws ExecutionException, InterruptedException {
         diffMarket(symbol, market1, market2, period);
-        diffAskBid(symbol);
+        getDepth(symbol);
     }
 }

@@ -13,4 +13,6 @@ public class Constant {
     public static final String BINANCE_NAME = "binance";
 
     public static final String INDEX_NAME_SYMBOLS = "symbols";
+
+    public static final String MOCK_TRADE_INDEX = "mock_trade";
 }

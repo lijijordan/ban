@@ -54,10 +54,7 @@ public class PolicyEngine {
         log.info(String.format("d1_ask:%s, d1_bid:%s, d2_ask:%s, d2_bid:%s",
                 d1ask, d1bid, d2ask, d2bid));
         // market1 low. market2 high then market2 sell, market1 buy
-        if (d1ask >= d2bid) { // can deal
-            differAskBid1 = this.analysisAsksBids(depth1.getAsks(), depth2.getBids(), 1);
-            market1DiffValue = differAskBid1.getDiffer();
-        }
+        d1_ask:
         // market2 low. market2 low then market 1 sell, market2 buy
         if (d2ask >= d1bid) { // can deal
             differAskBid2 = this.analysisAsksBids(depth2.getAsks(), depth1.getBids(), -1);
@@ -143,10 +140,10 @@ public class PolicyEngine {
             log.info("real_diff=" + realDiffer * 100 + "%");
             // analysis volume
             diff = new DifferAskBid();
-            diff.setAsk1Price(ask1.getPrice());
-            diff.setAsk1Volume(ask1.getVolume());
-            diff.setBid1Price(bid1.getPrice());
-            diff.setBid1Volume(bid1.getVolume());
+//            diff.setAsk1Price(ask1.getPrice());
+//            diff.setAsk1Volume(ask1.getVolume());
+//            diff.setBid1Price(bid1.getPrice());
+//            diff.setBid1Volume(bid1.getVolume());
             diff.setCreateTime(new Date());
 //            diffMarket.setDiffCostTime();
             diff.setDiffer((float) realDiffer * direct);

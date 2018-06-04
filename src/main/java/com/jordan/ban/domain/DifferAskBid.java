@@ -24,14 +24,10 @@ public class DifferAskBid {
      */
     private String differPlatform;
 
+    private TradeType tradeType;
+
     /**
      * Differ cost time as long
      */
     private long diffCostTime;
-
-    private double ask1Price;
-    private double ask1Volume;
-
-    private double bid1Price;
-    private double bid1Volume;
 }

@@ -1,6 +1,7 @@
 package com.jordan.ban.mq;
 
 import com.rabbitmq.client.*;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +32,11 @@ public class MessageReceiver {
                     throws IOException {
                 String message = new String(body, "UTF-8");
 //                System.out.println(" [x] Received '" + message + "'");
-                callback.callback(topic, message);
+                try {
+                    callback.callback(topic, message);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         };
         channel.basicConsume(topic, true, consumer);

@@ -62,6 +62,8 @@ public class ElasticSearchClient {
         IndexResponse response = client.prepareIndex(name, "data")
                 .setSource(json, XContentType.JSON)
                 .get();
+        System.out.println("index :" + json);
+        System.out.println(response.toString());
     }
 
 
