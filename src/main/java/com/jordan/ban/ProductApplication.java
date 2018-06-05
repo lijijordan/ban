@@ -118,7 +118,7 @@ public class ProductApplication {
 
         String eosbtc = "EOSBTC";
         String eoseth = "EOSETH";
-        String adabtc = "ADABTC";
+        String omgeth = "OMGETH";
 
 
         // diff market
@@ -133,7 +133,7 @@ public class ProductApplication {
         diffTask(neousdt, huobi, okex, 2000);
         diffTask(eosbtc, huobi, okex, 2000);
         diffTask(eoseth, huobi, okex, 2000);
-        diffTask(adabtc, huobi, okex, 2000);
+        diffTask(omgeth, huobi, okex, 2000);
 
         /*watchMarket(neousdt, huobi, 2000);
         watchMarket(neousdt, dragonex, 2000);

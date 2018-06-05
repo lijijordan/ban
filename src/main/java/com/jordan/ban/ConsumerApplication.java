@@ -250,6 +250,9 @@ public class ConsumerApplication {
         receiveDiff(application, "NEOUSDT");
         receiveDiff(application, "EOSUSDT");
         receiveDiff(application, "BTCUSDT");
+
+        receiveDiff(application, "EOSETH");
+        receiveDiff(application, "EOSBTC");
         System.out.println("Consumer Started!");
     }
 
