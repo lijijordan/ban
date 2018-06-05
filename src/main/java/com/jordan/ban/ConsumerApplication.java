@@ -110,25 +110,13 @@ public class ConsumerApplication {
     }
 
     public void receiveDepth(String topic) {
-
-
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
 //            System.out.println(topic + ":" + message);
             // Analysis market diff and direct
             JSONObject jsonObject = new JSONObject(message);
-            Depth depth1 = JSONUtil.getEntity(jsonObject.getString("market1_depth"), Depth.class);
-            Depth depth2 = JSONUtil.getEntity(jsonObject.getString("market2_depth"), Depth.class);
-
-            long createTime = jsonObject.getLong("createTime");
-            long costTime = jsonObject.getLong("costTime");
-
-            double d1ask = depth1.getAsks().get(0).getPrice();
-            double d1bid = depth1.getBids().get(0).getPrice();
-            double d2ask = depth2.getAsks().get(0).getPrice();
-            double d2bid = depth2.getBids().get(0).getPrice();
-            MarketDepth marketDepth = new MarketDepth(d1ask, d1bid, d2ask, d2bid);
-            index(marketDepth, costTime, createTime, depth1, depth2);
-//            tradeIndex(marketDepth, costTime, createTime, depth1, depth2);
+//            System.out.println(message);
+            ElasticSearchClient.index(jsonObject.getString("a2b"), Constant.MOCK_TRADE_INDEX);
+            ElasticSearchClient.index(jsonObject.getString("b2a"), Constant.MOCK_TRADE_INDEX);
         });
         try {
             receiver.onReceived(topic);
@@ -136,37 +124,6 @@ public class ConsumerApplication {
             e.printStackTrace();
         }
     }
-
-    private void index(MarketDepth marketDepth, long costTime, long createTime, Depth depth1, Depth depth2) {
-        MockTradeResult eatAB = TradeHelper.eatA2B(marketDepth);
-        MockTradeResult tradeAB = TradeHelper.tradeA2B(marketDepth);
-        MockTradeResultIndex indexAB = new MockTradeResultIndex();
-        indexAB.setEatDiff(eatAB.getTradeDiff());
-        indexAB.setEatPercent(eatAB.getTradePercent());
-        indexAB.setTradeDiff(tradeAB.getTradeDiff());
-        indexAB.setTradePercent(tradeAB.getTradePercent());
-        indexAB.setTradeDirect(eatAB.getTradeDirect());
-        indexAB.setCostTime(costTime);
-        indexAB.setCreateTime(new Date(createTime));
-        indexAB.setSymbol(depth1.getSymbol().toUpperCase());
-        indexAB.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
-        ElasticSearchClient.index(JSONUtil.toJsonString(indexAB), Constant.MOCK_TRADE_INDEX);
-
-        MockTradeResult eatBA = TradeHelper.eatB2A(marketDepth);
-        MockTradeResult tradeBA = TradeHelper.tradeB2A(marketDepth);
-        MockTradeResultIndex indexBA = new MockTradeResultIndex();
-        indexBA.setEatDiff(eatBA.getTradeDiff());
-        indexBA.setEatPercent(eatBA.getTradePercent());
-        indexBA.setTradeDiff(tradeBA.getTradeDiff());
-        indexBA.setTradePercent(tradeBA.getTradePercent());
-        indexBA.setTradeDirect(tradeBA.getTradeDirect());
-        indexBA.setCostTime(costTime);
-        indexBA.setCreateTime(new Date(createTime));
-        indexBA.setSymbol(depth1.getSymbol().toUpperCase());
-        indexBA.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
-        ElasticSearchClient.index(JSONUtil.toJsonString(indexBA), Constant.MOCK_TRADE_INDEX);
-    }
-
 
     public void mockTrade(DifferAskBid diff) {
         /*// NEOUSDT wallet mockGet message:
@@ -297,7 +254,7 @@ public class ConsumerApplication {
     }
 
     public static void receiveDiff(ConsumerApplication application, String topic) {
-        application.receiveMarket(topic + "-differ");
+//        application.receiveMarket(topic + "-differ");
         application.receiveDepth(topic + "-depth");
     }
 }

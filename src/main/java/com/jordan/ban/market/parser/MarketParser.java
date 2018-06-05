@@ -17,4 +17,6 @@ public interface MarketParser {
     Symbol getPrice(String symbol);
 
     Depth getDepth(String symbol);
+
+
 }

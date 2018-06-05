@@ -1,18 +1,15 @@
 package com.jordan.ban;
 
-import com.jordan.ban.domain.Depth;
-import com.jordan.ban.domain.Differ;
+import com.jordan.ban.domain.*;
 import com.jordan.ban.market.parser.*;
 import com.jordan.ban.market.policy.MarketDiffer;
+import com.jordan.ban.market.trade.TradeHelper;
 import com.jordan.ban.mq.MessageSender;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Log
@@ -55,24 +52,59 @@ public class ProductApplication {
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
-                Map<String, Object> depthMap = new HashMap<>();
+                Map<String, Object> mockTrade = new HashMap<>();
                 try {
                     // FIXME: use asynchronous
                     long start = System.currentTimeMillis();
                     Depth depth1 = m1.getDepth(symbol);
                     Depth depth2 = m2.getDepth(symbol);
-                    depthMap.put("market1_depth", depth1);
-                    depthMap.put("market2_depth", depth2);
-                    depthMap.put("costTime", (System.currentTimeMillis() - start));
-                    depthMap.put("createTime", System.currentTimeMillis());
-                    sender.send(depthTopic, JSONUtil.toJsonString(depthMap));
+                    double d1ask = depth1.getAsks().get(0).getPrice();
+                    double d1bid = depth1.getBids().get(0).getPrice();
+                    double d2ask = depth2.getAsks().get(0).getPrice();
+                    double d2bid = depth2.getBids().get(0).getPrice();
+                    MarketDepth marketDepth = new MarketDepth(d1ask, d1bid, d2ask, d2bid);
+
+                    mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                    mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                    sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }, 0, 2000);
+    }
 
+    private static MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
+        MockTradeResult eatAB = TradeHelper.eatA2B(marketDepth);
+        MockTradeResult tradeAB = TradeHelper.tradeA2B(marketDepth);
+        MockTradeResultIndex indexAB = new MockTradeResultIndex();
+        indexAB.setEatDiff(eatAB.getTradeDiff());
+        indexAB.setEatPercent(eatAB.getTradePercent());
+        indexAB.setTradeDiff(tradeAB.getTradeDiff());
+        indexAB.setTradePercent(tradeAB.getTradePercent());
+        indexAB.setTradeDirect(eatAB.getTradeDirect());
+        indexAB.setCostTime(costTime);
+        indexAB.setCreateTime(new Date(createTime));
+        indexAB.setSymbol(depth1.getSymbol().toUpperCase());
+        indexAB.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
+        return indexAB;
+    }
 
+    private static MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
+
+        MockTradeResult eatBA = TradeHelper.eatB2A(marketDepth);
+        MockTradeResult tradeBA = TradeHelper.tradeB2A(marketDepth);
+        MockTradeResultIndex indexBA = new MockTradeResultIndex();
+        indexBA.setEatDiff(eatBA.getTradeDiff());
+        indexBA.setEatPercent(eatBA.getTradePercent());
+        indexBA.setTradeDiff(tradeBA.getTradeDiff());
+        indexBA.setTradePercent(tradeBA.getTradePercent());
+        indexBA.setTradeDirect(tradeBA.getTradeDirect());
+        indexBA.setCostTime(costTime);
+        indexBA.setCreateTime(new Date(createTime));
+        indexBA.setSymbol(depth1.getSymbol().toUpperCase());
+        indexBA.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
+        return indexBA;
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
@@ -84,18 +116,68 @@ public class ProductApplication {
         String eosusdt = "EOSUSDT";
         String btcusdt = "BTCUSDT";
 
+        String eosbtc = "EOSBTC";
+        String eoseth = "EOSETH";
+        String adabtc = "ADABTC";
+
+
         // diff market
         diffTask(neousdt, huobi, dragonex, 2000);
         diffTask(eosusdt, huobi, dragonex, 2000);
         diffTask(btcusdt, huobi, dragonex, 2000);
+        diffTask(eoseth, huobi, dragonex, 2000);
+
 
         diffTask(btcusdt, huobi, okex, 2000);
         diffTask(eosusdt, huobi, okex, 2000);
         diffTask(neousdt, huobi, okex, 2000);
+        diffTask(eosbtc, huobi, okex, 2000);
+        diffTask(eoseth, huobi, okex, 2000);
+        diffTask(adabtc, huobi, okex, 2000);
+
+        /*watchMarket(neousdt, huobi, 2000);
+        watchMarket(neousdt, dragonex, 2000);
+        watchMarket(neousdt, okex, 2000);
+
+        watchMarket(eosusdt, huobi, 2000);
+        watchMarket(eosusdt, dragonex, 2000);
+        watchMarket(eosusdt, okex, 2000);
+
+        watchMarket(btcusdt, huobi, 2000);
+        watchMarket(btcusdt, dragonex, 2000);
+        watchMarket(btcusdt, okex, 2000);*/
+    }
+
+
+    /**
+     * Watch a market
+     *
+     * @param symbolName
+     * @param marketName
+     * @param period
+     */
+    private static void watchMarket(String symbolName, String marketName, long period) {
+        Timer timer1 = new Timer();
+        MarketParser market = MarketFactory.getMarket(marketName);
+        timer1.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Differ differ;
+                try {
+                    Symbol symbol = market.getPrice(symbolName);
+                    if (symbol != null) {
+                        sender.send(symbolName, JSONUtil.toJsonString(symbol));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, 0, period);
     }
 
     private static void diffTask(String symbol, String market1, String market2, long period) throws ExecutionException, InterruptedException {
-        diffMarket(symbol, market1, market2, period);
+//        diffMarket(symbol, market1, market2, period);
         getDepth(symbol, market1, market2);
     }
 }
