@@ -2,8 +2,7 @@ package com.jordan.ban;
 
 import com.jordan.ban.domain.Depth;
 import com.jordan.ban.domain.Differ;
-import com.jordan.ban.market.parser.Dragonex;
-import com.jordan.ban.market.parser.Huobi;
+import com.jordan.ban.market.parser.*;
 import com.jordan.ban.market.policy.MarketDiffer;
 import com.jordan.ban.mq.MessageSender;
 import com.jordan.ban.utils.JSONUtil;
@@ -28,7 +27,7 @@ public class ProductApplication {
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
-                Differ differ = null;
+                Differ differ;
                 try {
                     differ = marketDiffer.differ(symbol, market1, market2);
                     if (differ != null) {
@@ -47,11 +46,11 @@ public class ProductApplication {
     }
 
 
-    public static void getDepth(String symbol) {
+    public static void getDepth(String symbol, String marketName1, String marketName2) {
         String depthTopic = symbol + "-depth";
         // 分析买卖盘
-        Huobi huobi = new Huobi();
-        Dragonex dragonex = new Dragonex();
+        MarketParser m1 = MarketFactory.getMarket(marketName1);
+        MarketParser m2 = MarketFactory.getMarket(marketName2);
         Timer timer1 = new Timer();
         timer1.schedule(new TimerTask() {
             @Override
@@ -60,13 +59,12 @@ public class ProductApplication {
                 try {
                     // FIXME: use asynchronous
                     long start = System.currentTimeMillis();
-                    Depth depth1 = huobi.getDepth(symbol);
-                    Depth depth2 = dragonex.getDepth(symbol);
-                    depthMap.put(huobi.getName(), depth1);
-                    depthMap.put(dragonex.getName(), depth2);
+                    Depth depth1 = m1.getDepth(symbol);
+                    Depth depth2 = m2.getDepth(symbol);
+                    depthMap.put(m1.getName(), depth1);
+                    depthMap.put(m2.getName(), depth2);
                     depthMap.put("costTime", (System.currentTimeMillis() - start));
                     depthMap.put("createTime", System.currentTimeMillis());
-                    // send depth data to client
                     sender.send(depthTopic, JSONUtil.toJsonString(depthMap));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -78,22 +76,26 @@ public class ProductApplication {
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
-        String market1 = "Huobi";
-        String market2 = "Dragonex";
+        String huobi = "Huobi";
+        String dragonex = "Dragonex";
+        String okex = "Okex";
 
-        String symbol1 = "NEOUSDT";
-        String symbol2 = "EOSUSDT";
-        String symbol3 = "BTCUSDT";
+        String neousdt = "NEOUSDT";
+        String eosusdt = "EOSUSDT";
+        String btcusdt = "BTCUSDT";
 
         // diff market
-        diffTask(symbol1, market1, market2, 2000);
-        diffTask(symbol2, market1, market2, 2000);
-        diffTask(symbol3, market1, market2, 2000);
+        diffTask(neousdt, huobi, dragonex, 2000);
+        diffTask(eosusdt, huobi, dragonex, 2000);
+        diffTask(btcusdt, huobi, dragonex, 2000);
 
+        diffTask(btcusdt, huobi, okex, 2000);
+        diffTask(eosusdt, huobi, okex, 2000);
+        diffTask(neousdt, huobi, okex, 2000);
     }
 
     private static void diffTask(String symbol, String market1, String market2, long period) throws ExecutionException, InterruptedException {
         diffMarket(symbol, market1, market2, period);
-        getDepth(symbol);
+        getDepth(symbol, market1, market2);
     }
 }

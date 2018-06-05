@@ -28,6 +28,7 @@ public class Huobi extends BaseMarket implements MarketParser {
     private static String PRICE_URL_TEMPLATE = "https://api.huobipro.com/market/detail/merged?symbol=%s";
     private static String DEPTH_URL_TEMPLATE = "https://api.huobipro.com/market/depth?symbol=%s&type=step1";
 
+    @Override
     public String getName() {
         return PLATFORM_NAME;
     }

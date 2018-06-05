@@ -12,6 +12,8 @@ import java.io.IOException;
  */
 public interface MarketParser {
 
+    String getName();
+
     Symbol getPrice(String symbol);
 
     Depth getDepth(String symbol);

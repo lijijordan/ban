@@ -10,12 +10,16 @@ public class MockTradeResultIndex {
     /**
      * 价差
      */
-    private double tradeDiff;
+    private double eatDiff;
     /**
      * 最小收益率：(A-B/A+B)
      */
-    private double tradePercent;
+    private double eatPercent;
 
+    private double tradeDiff;
+
+    private double tradePercent;
+    
     private TradeDirect tradeDirect;
 
     private Date createTime;

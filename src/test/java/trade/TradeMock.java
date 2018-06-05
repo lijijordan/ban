@@ -54,10 +54,10 @@ public class TradeMock {
     @Test
     public void tradeAB() {
         MarketDepth marketDepth = new MarketDepth();
-        marketDepth.setD1ask(57.82);
-        marketDepth.setD1bid(57.72);
-        marketDepth.setD2ask(57.92);
-        marketDepth.setD2bid(57.82);
+        marketDepth.setD1ask(57.08);
+        marketDepth.setD1bid(55.96);
+        marketDepth.setD2ask(57.5981);
+        marketDepth.setD2bid(55.8976);
         this.tradeA2B(marketDepth);
         this.tradeB2A(marketDepth);
     }

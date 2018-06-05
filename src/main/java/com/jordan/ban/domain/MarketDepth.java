@@ -26,4 +26,14 @@ public class MarketDepth {
     private double d2askVolume;
     private double d2bid;
     private double d2bidVolume;
+
+    @Override
+    public String toString() {
+        return "MarketDepth{" +
+                "d1ask=" + d1ask +
+                ", d1bid=" + d1bid +
+                ", d2ask=" + d2ask +
+                ", d2bid=" + d2bid +
+                '}';
+    }
 }

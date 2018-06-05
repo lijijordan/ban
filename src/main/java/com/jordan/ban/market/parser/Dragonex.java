@@ -30,6 +30,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     public static final String PLATFORM_NAME = "Dragonex";
 
+    @Override
     public String getName() {
         return PLATFORM_NAME;
     }

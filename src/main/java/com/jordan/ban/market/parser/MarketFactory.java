@@ -10,6 +10,9 @@ public class MarketFactory {
         if (market.equals(Dragonex.class.getSimpleName())) {
             return new Dragonex();
         }
-        return marketParser;
+        if (market.equals(Okex.class.getSimpleName())) {
+            return new Okex();
+        }
+        return null;
     }
 }
