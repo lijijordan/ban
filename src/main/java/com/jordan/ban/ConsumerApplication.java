@@ -253,6 +253,7 @@ public class ConsumerApplication {
 
         receiveDiff(application, "EOSETH");
         receiveDiff(application, "EOSBTC");
+        receiveDiff(application, "OMGETH");
         System.out.println("Consumer Started!");
     }
 

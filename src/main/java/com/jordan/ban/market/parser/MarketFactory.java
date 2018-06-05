@@ -13,6 +13,9 @@ public class MarketFactory {
         if (market.equals(Okex.class.getSimpleName())) {
             return new Okex();
         }
+        if (market.equals(Gateio.class.getSimpleName())) {
+            return new Gateio();
+        }
         return null;
     }
 }

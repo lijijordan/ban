@@ -111,6 +111,7 @@ public class ProductApplication {
         String huobi = "Huobi";
         String dragonex = "Dragonex";
         String okex = "Okex";
+        String gateio = "Gateio";
 
         String neousdt = "NEOUSDT";
         String eosusdt = "EOSUSDT";
@@ -121,19 +122,25 @@ public class ProductApplication {
         String omgeth = "OMGETH";
 
 
-        // diff market
+        // huobi vs dragonex
         diffTask(neousdt, huobi, dragonex, 2000);
         diffTask(eosusdt, huobi, dragonex, 2000);
         diffTask(btcusdt, huobi, dragonex, 2000);
         diffTask(eoseth, huobi, dragonex, 2000);
 
-
+        // huobi vs okex
         diffTask(btcusdt, huobi, okex, 2000);
         diffTask(eosusdt, huobi, okex, 2000);
         diffTask(neousdt, huobi, okex, 2000);
         diffTask(eosbtc, huobi, okex, 2000);
         diffTask(eoseth, huobi, okex, 2000);
         diffTask(omgeth, huobi, okex, 2000);
+
+        // huobi vs gateio
+        diffTask(eosbtc, gateio, huobi, 2000);
+        diffTask(eoseth, gateio, huobi, 2000);
+        diffTask(eosusdt, gateio, huobi, 2000);
+
 
         /*watchMarket(neousdt, huobi, 2000);
         watchMarket(neousdt, dragonex, 2000);
