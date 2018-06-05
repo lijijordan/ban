@@ -116,8 +116,8 @@ public class ConsumerApplication {
 //            System.out.println(topic + ":" + message);
             // Analysis market diff and direct
             JSONObject jsonObject = new JSONObject(message);
-            Depth depth1 = JSONUtil.getEntity(jsonObject.getString(Huobi.PLATFORM_NAME), Depth.class);
-            Depth depth2 = JSONUtil.getEntity(jsonObject.getString(Dragonex.PLATFORM_NAME), Depth.class);
+            Depth depth1 = JSONUtil.getEntity(jsonObject.getString("market1_depth"), Depth.class);
+            Depth depth2 = JSONUtil.getEntity(jsonObject.getString("market2_depth"), Depth.class);
 
             long createTime = jsonObject.getLong("createTime");
             long costTime = jsonObject.getLong("costTime");

@@ -61,8 +61,8 @@ public class ProductApplication {
                     long start = System.currentTimeMillis();
                     Depth depth1 = m1.getDepth(symbol);
                     Depth depth2 = m2.getDepth(symbol);
-                    depthMap.put(m1.getName(), depth1);
-                    depthMap.put(m2.getName(), depth2);
+                    depthMap.put("market1_depth", depth1);
+                    depthMap.put("market2_depth", depth2);
                     depthMap.put("costTime", (System.currentTimeMillis() - start));
                     depthMap.put("createTime", System.currentTimeMillis());
                     sender.send(depthTopic, JSONUtil.toJsonString(depthMap));
