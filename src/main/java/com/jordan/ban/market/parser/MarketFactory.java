@@ -16,6 +16,9 @@ public class MarketFactory {
         if (market.equals(Gateio.class.getSimpleName())) {
             return new Gateio();
         }
+        if (market.equals(BitZ.class.getSimpleName())) {
+            return new BitZ();
+        }
         return null;
     }
 }

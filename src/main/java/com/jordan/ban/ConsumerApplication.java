@@ -254,11 +254,14 @@ public class ConsumerApplication {
         receiveDiff(application, "EOSETH");
         receiveDiff(application, "EOSBTC");
         receiveDiff(application, "OMGETH");
+        receiveDiff(application, "GXSETH");
+        receiveDiff(application, "LTCBTC");
         System.out.println("Consumer Started!");
     }
 
     public static void receiveDiff(ConsumerApplication application, String topic) {
 //        application.receiveMarket(topic + "-differ");
+        System.out.println("Topic:" + topic + "-depth");
         application.receiveDepth(topic + "-depth");
     }
 }

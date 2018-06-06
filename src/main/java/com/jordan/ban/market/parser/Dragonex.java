@@ -144,6 +144,9 @@ public class Dragonex extends BaseMarket implements MarketParser {
             case "eoseth":
                 symbolId = 1130103;
                 break;
+            case "gxseth":
+                symbolId = 1400103;
+                break;
         }
         return symbolId;
     }

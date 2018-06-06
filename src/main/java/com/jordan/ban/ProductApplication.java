@@ -112,6 +112,7 @@ public class ProductApplication {
         String dragonex = "Dragonex";
         String okex = "Okex";
         String gateio = "Gateio";
+        String bitz = "BitZ";
 
         String neousdt = "NEOUSDT";
         String eosusdt = "EOSUSDT";
@@ -120,6 +121,9 @@ public class ProductApplication {
         String eosbtc = "EOSBTC";
         String eoseth = "EOSETH";
         String omgeth = "OMGETH";
+        // 高风险：公信宝
+        String gxseth = "GXSETH";
+        String ltcbtc = "LTCBTC";
 
 
         // huobi vs dragonex
@@ -140,6 +144,12 @@ public class ProductApplication {
         diffTask(eosbtc, gateio, huobi, 2000);
         diffTask(eoseth, gateio, huobi, 2000);
         diffTask(eosusdt, gateio, huobi, 2000);
+        // bit-z vs gateio
+//        diffTask(eosbtc, gateio, bitz, 2000);
+        diffTask(ltcbtc, gateio, bitz, 2000);
+
+        // bit-z vs dragonex
+        diffTask(gxseth, dragonex, bitz, 2000);
 
 
         /*watchMarket(neousdt, huobi, 2000);
