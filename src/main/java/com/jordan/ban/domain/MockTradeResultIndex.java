@@ -33,4 +33,6 @@ public class MockTradeResultIndex {
     //交易数量
     private double eatTradeVolume;
     private double tradeVolume;
+
+
 }
