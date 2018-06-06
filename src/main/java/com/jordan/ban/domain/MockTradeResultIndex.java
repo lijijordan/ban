@@ -19,7 +19,7 @@ public class MockTradeResultIndex {
     private double tradeDiff;
 
     private double tradePercent;
-    
+
     private TradeDirect tradeDirect;
 
     private Date createTime;
@@ -29,4 +29,8 @@ public class MockTradeResultIndex {
     private String symbol;
 
     private String diffPlatform;
+
+    //交易数量
+    private double eatTradeVolume;
+    private double tradeVolume;
 }

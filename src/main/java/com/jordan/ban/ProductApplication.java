@@ -59,11 +59,14 @@ public class ProductApplication {
                     Depth depth1 = m1.getDepth(symbol);
                     Depth depth2 = m2.getDepth(symbol);
                     double d1ask = depth1.getAsks().get(0).getPrice();
+                    double d1askVolume = depth1.getAsks().get(0).getVolume();
                     double d1bid = depth1.getBids().get(0).getPrice();
+                    double d1bidVolume = depth1.getBids().get(0).getVolume();
                     double d2ask = depth2.getAsks().get(0).getPrice();
+                    double d2askVolume = depth2.getAsks().get(0).getVolume();
                     double d2bid = depth2.getBids().get(0).getPrice();
-                    MarketDepth marketDepth = new MarketDepth(d1ask, d1bid, d2ask, d2bid);
-
+                    double d2bidVolume = depth2.getBids().get(0).getVolume();
+                    MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
                     mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
                     mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
                     sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
@@ -87,11 +90,12 @@ public class ProductApplication {
         indexAB.setCreateTime(new Date(createTime));
         indexAB.setSymbol(depth1.getSymbol().toUpperCase());
         indexAB.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
+        indexAB.setTradeVolume(tradeAB.getMinTradeVolume());
+        indexAB.setEatTradeVolume(eatAB.getMinTradeVolume());
         return indexAB;
     }
 
     private static MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
-
         MockTradeResult eatBA = TradeHelper.eatB2A(marketDepth);
         MockTradeResult tradeBA = TradeHelper.tradeB2A(marketDepth);
         MockTradeResultIndex indexBA = new MockTradeResultIndex();
@@ -104,6 +108,8 @@ public class ProductApplication {
         indexBA.setCreateTime(new Date(createTime));
         indexBA.setSymbol(depth1.getSymbol().toUpperCase());
         indexBA.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
+        indexBA.setTradeVolume(tradeBA.getMinTradeVolume());
+        indexBA.setEatTradeVolume(eatBA.getMinTradeVolume());
         return indexBA;
     }
 
@@ -145,7 +151,7 @@ public class ProductApplication {
         diffTask(eoseth, gateio, huobi, 2000);
         diffTask(eosusdt, gateio, huobi, 2000);
         // bit-z vs gateio
-//        diffTask(eosbtc, gateio, bitz, 2000);
+        diffTask(eosbtc, gateio, bitz, 2000);
         diffTask(ltcbtc, gateio, bitz, 2000);
 
         // bit-z vs dragonex
