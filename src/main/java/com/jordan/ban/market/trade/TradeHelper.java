@@ -13,7 +13,7 @@ public class TradeHelper {
         double tradeBuy = Math.max(marketDepth.getD1ask(), marketDepth.getD1bid());
         double tradeSell = Math.min(marketDepth.getD2ask(), marketDepth.getD2bid());
         double minVolume = Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell));
-        double tradeDiff = ((tradeSell - tradeBuy) - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2)) * minVolume;
+        double tradeDiff = ((tradeSell - tradeBuy) - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2));
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell), TradeDirect.A2B, minVolume);
     }
 
@@ -21,7 +21,7 @@ public class TradeHelper {
         double tradeBuy = Math.max(marketDepth.getD2ask(), marketDepth.getD2bid());
         double tradeSell = Math.min(marketDepth.getD1ask(), marketDepth.getD1bid());
         double minVolume = Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell));
-        double tradeDiff = ((tradeSell - tradeBuy) - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2)) * minVolume;
+        double tradeDiff = ((tradeSell - tradeBuy) - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2));
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell), TradeDirect.B2A, minVolume);
     }
 
