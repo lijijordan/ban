@@ -134,8 +134,10 @@ public class ProductApplication {
         String ltcbtc = "LTCBTC";
         String bchusdt = "BCHUSDT";
 
+        diffTask(bchusdt, dragonex, exmo, 2000);
 
-        // huobi vs dragonex
+
+        /*// huobi vs dragonex
         diffTask(neousdt, huobi, dragonex, 2000);
         diffTask(eosusdt, huobi, dragonex, 2000);
         diffTask(btcusdt, huobi, dragonex, 2000);
@@ -163,19 +165,8 @@ public class ProductApplication {
         // exmo vs drgonex
         diffTask(bchusdt, dragonex, exmo, 2000);
         diffTask(eosusdt, dragonex, exmo, 2000);
+*/
 
-
-        /*watchMarket(neousdt, huobi, 2000);
-        watchMarket(neousdt, dragonex, 2000);
-        watchMarket(neousdt, okex, 2000);
-
-        watchMarket(eosusdt, huobi, 2000);
-        watchMarket(eosusdt, dragonex, 2000);
-        watchMarket(eosusdt, okex, 2000);
-
-        watchMarket(btcusdt, huobi, 2000);
-        watchMarket(btcusdt, dragonex, 2000);
-        watchMarket(btcusdt, okex, 2000);*/
     }
 
 
