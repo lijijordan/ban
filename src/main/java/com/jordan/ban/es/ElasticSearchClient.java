@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,6 +33,8 @@ public class ElasticSearchClient {
     private static final CloseableHttpClient closeableHttpClient = HttpClients.custom()
             .build();
     private static TransportClient client;
+
+    private static ExecutorService executor = Executors.newFixedThreadPool(5);
 
     /**
      * Gets client.
@@ -64,6 +68,10 @@ public class ElasticSearchClient {
                 .get();
 //        System.out.println("index :" + json);
 //        System.out.println(response.toString());
+    }
+
+    public static void indexAsynchronous(String json, String name) {
+        executor.execute(() -> index(json, name));
     }
 
 

@@ -115,8 +115,8 @@ public class ConsumerApplication {
             // Analysis market diff and direct
             JSONObject jsonObject = new JSONObject(message);
 //            System.out.println(message);
-            ElasticSearchClient.index(jsonObject.getString("a2b"), Constant.MOCK_TRADE_INDEX);
-            ElasticSearchClient.index(jsonObject.getString("b2a"), Constant.MOCK_TRADE_INDEX);
+            ElasticSearchClient.indexAsynchronous(jsonObject.getString("a2b"), Constant.MOCK_TRADE_INDEX);
+            ElasticSearchClient.indexAsynchronous(jsonObject.getString("b2a"), Constant.MOCK_TRADE_INDEX);
         });
         try {
             receiver.onReceived(topic);

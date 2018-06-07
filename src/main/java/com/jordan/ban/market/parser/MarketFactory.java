@@ -19,6 +19,9 @@ public class MarketFactory {
         if (market.equals(BitZ.class.getSimpleName())) {
             return new BitZ();
         }
+        if (market.equals(Exmo.class.getSimpleName())) {
+            return new Exmo();
+        }
         return null;
     }
 }
