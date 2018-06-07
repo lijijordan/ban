@@ -256,6 +256,7 @@ public class ConsumerApplication {
         receiveDiff(application, "OMGETH");
         receiveDiff(application, "GXSETH");
         receiveDiff(application, "LTCBTC");
+        receiveDiff(application, "BCHUSDT");
         System.out.println("Consumer Started!");
     }
 
