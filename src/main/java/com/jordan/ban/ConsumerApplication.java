@@ -48,8 +48,9 @@ public class ConsumerApplication {
             ElasticSearchClient.indexAsynchronous(jsonObject.getString("b2a"), Constant.MOCK_TRADE_INDEX);
 
             // TODO: mock trade.
-            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"),MockTradeResultIndex.class));
-            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"),MockTradeResultIndex.class));
+            log.info(message);
+            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
+            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"), MockTradeResultIndex.class));
 
         });
         try {

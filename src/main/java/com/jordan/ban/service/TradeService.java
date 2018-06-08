@@ -6,14 +6,17 @@ import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.entity.TradeRecord;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class TradeService {
 
-    private static double GATEIO_HUOBI_EOS_USDT_METRICS_MAX = 0.01613;
+    private static double GATEIO_HUOBI_EOS_USDT_METRICS_MAX = 0.01; // 0.4%
 
     @Autowired
     private AccountRepository accountRepository;
@@ -26,54 +29,19 @@ public class TradeService {
 
     public synchronized void trade(MockTradeResultIndex tradeResult) {
         if (lastTradeVolume == tradeResult.getEatTradeVolume()) {
-            System.out.println(String.format("Last trade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));
+            log.info(String.format("Last trade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));
             return;
         }
         Account accountA = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformA());
         Account accountB = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformB());
-
-        if (tradeResult.getEatDiff() <= 0) {
-            double avgEatDiffPer = 0;
-            try {
-                avgEatDiffPer = this.tradeRecordRepository.avgEatDiffPercent(accountA.getID(), accountB.getID(), tradeResult.getSymbol());
-            } catch (AopInvocationException e) {
-            }
-            if (accountA.getVirtualCurrency() > accountB.getVirtualCurrency()) { // A 有币、B、没币
-                if (tradeResult.getTradeDirect() == TradeDirect.A2B) { //币 B->A
-                    // 退出
-                    System.out.println(String.format("币:B->A,Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
-                    return;
-                } else {//币 A->B （Right way）
-                    // 损失大于平均收益
-                    if (Math.abs(tradeResult.getEatPercent()) > avgEatDiffPer) {
-                        System.out.println(String.format("币:A->B,Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
-                        return;
-                    }
-                }
-            } else {  // A 没币、B、有币
-                if (tradeResult.getTradeDirect() == TradeDirect.B2A) { //币 A->B
-                    // 退出
-                    System.out.println(String.format("币:A->B,Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
-                    return;
-                } else {//币 B->A （Right way）
-                    // 损失大于平均收益
-                    if (Math.abs(tradeResult.getEatPercent()) > avgEatDiffPer) {
-                        System.out.println(String.format("币:B->A,Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
-                        return;
-                    }
-                }
-            }
-        } else if (tradeResult.getEatDiff() < GATEIO_HUOBI_EOS_USDT_METRICS_MAX / 2) {
-            System.out.println("Not reached GATEIO_HUOBI_EOS_USDT_METRICS_MAX value!!");
-            return;
-        }
-
-        TradeRecord record = new TradeRecord();
-        System.out.println(tradeResult.toString());
         if (accountA == null || accountB == null) {
-            System.out.println("Not found account!");
+            log.info("Not found account!");
             return;
         }
+        double coinDiffBefore = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
+        double moneyBefore = accountA.getMoney() + accountB.getMoney();
+        TradeRecord record = new TradeRecord();
+        log.info(tradeResult.toString());
         record.setAccountA(accountA.getID());
         record.setAccountB(accountB.getID());
         record.setDirect(tradeResult.getTradeDirect());
@@ -94,20 +62,46 @@ public class TradeService {
             accountA.setVirtualCurrency(accountA.getVirtualCurrency() + tradeResult.getEatTradeVolume());
             accountA.setMoney(accountA.getMoney() + tradeResult.getSellCost());
         }
+        double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
+        double moneyAfter = accountA.getMoney() + accountB.getMoney();
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-            System.out.println("Not enough money!");
+            log.info("Not enough money!");
             return;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-            System.out.println("Not enough coin!");
+            log.info("Not enough coin!");
             return;
         }
-        record.setTotalMoney(accountA.getMoney() + accountB.getMoney());
-        record.setProfit(((record.getTotalMoney() - AccountService.USD_MONEY) / AccountService.USD_MONEY) * 100);
+        double totalMoney = accountA.getMoney() + accountB.getMoney();
+        double profit = ((moneyAfter - moneyBefore) / moneyBefore) * 100;
+        log.info("Profit:{}", profit);
+        if (profit < 0) {
+            if (coinDiffAfter < coinDiffBefore) {
+                if (Math.abs(profit) <= GATEIO_HUOBI_EOS_USDT_METRICS_MAX * 0.5) {
+                    //往回搬;
+                    log.info("Move back!");
+                } else {
+                    log.info("Right way. but not enough profit. Not deal!");
+                    return;
+                }
+            } else {
+                log.info("Not coin balance! Not Deal!");
+                return;
+            }
+        } else {
+            // 有利润，但是不够
+            if (profit < GATEIO_HUOBI_EOS_USDT_METRICS_MAX) {
+                log.info("Profit:{}, Not deal!", profit);
+                return;
+            }
+        }
+        record.setProfit(profit);
+        record.setTotalProfit(((totalMoney - AccountService.USD_MONEY) / AccountService.USD_MONEY) * 100);
+        record.setTotalMoney(totalMoney);
         this.accountRepository.save(accountA);
         this.accountRepository.save(accountB);
         this.tradeRecordRepository.save(record);
         lastTradeVolume = tradeResult.getEatTradeVolume();
-        System.out.println("Traded !!!!!!!!!!!");
+        log.info("Traded !!!!!!!!!!!");
     }
 }

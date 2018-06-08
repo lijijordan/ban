@@ -158,6 +158,8 @@ public class ProductApplication {
         String ltcbtc = "LTCBTC";
         String bchusdt = "BCHUSDT";
 
+//        diffTask(eosusdt, gateio, huobi, 2000);
+
         // huobi vs dragonex
         diffTask(neousdt, huobi, dragonex, 2000);
         diffTask(eosusdt, huobi, dragonex, 2000);

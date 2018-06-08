@@ -8,6 +8,7 @@ import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.TradeService;
 import com.jordan.ban.utils.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -21,6 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = BanApplication.class)
+@Slf4j
 public class TradeServiceTest {
 
     @Autowired
@@ -37,6 +39,8 @@ public class TradeServiceTest {
 
     @Before
     public void createAccount() {
+        log.info("Clear Account data!");
+        this.accountService.emptyAccount();
         this.accountService.initAccount(ProductApplication.huobi, ProductApplication.gateio,
                 "EOS_USDT", 14.5632);
 
@@ -51,7 +55,7 @@ public class TradeServiceTest {
     @Test
     public void testTrade1() throws JSONException {
         Assert.assertNotNull(tradeService);
-        String message = "{\"a2b\":{\"eatDiff\":0.09144399999999914,\"eatPercent\":0.006355132392799996,\"tradeDiff\":0.1130000000000003,\"tradePercent\":0.007847222222222243,\"tradeDirect\":\"A2B\",\"createTime\":1528426966875,\"costTime\":1359,\"symbol\":\"EOS_USDT\",\"diffPlatform\":\"Gateio-Huobi\",\"eatTradeVolume\":35.103001,\"sellCost\":504.08688722622196,\"buyCost\":498.86700077152,\"tradeVolume\":97.58976127,\"platformA\":\"Gateio\",\"platformB\":\"Huobi\"},\"b2a\":{\"eatDiff\":-0.22820000000000032,\"eatPercent\":-0.015847222222222245,\"tradeDiff\":-0.20655599999999913,\"tradePercent\":-0.014355132392799995,\"tradeDirect\":\"B2A\",\"createTime\":1528426966875,\"costTime\":1359,\"symbol\":\"EOS_USDT\",\"diffPlatform\":\"Gateio-Huobi\",\"eatTradeVolume\":97.58976127,\"sellCost\":1385.8664615173072,\"buyCost\":1402.481977163424,\"tradeVolume\":35.103001,\"platformA\":\"Gateio\",\"platformB\":\"Huobi\"}}";
+        String message = "{\"a2b\":{\"eatDiff\":-0.024919199999999704,\"eatPercent\":-0.0018282880159649962,\"tradeDiff\":-0.0139627999999987,\"tradePercent\":-0.0010236131576824284,\"tradeDirect\":\"A2B\",\"createTime\":1528454220732,\"costTime\":994,\"symbol\":\"EOS_USDT\",\"diffPlatform\":\"Gateio-Huobi\",\"eatTradeVolume\":347.3841,\"sellCost\":4725.306254567639,\"buyCost\":4733.9422232936395,\"tradeVolume\":213.82,\"platformA\":\"Gateio\",\"platformB\":\"Huobi\"},\"b2a\":{\"eatDiff\":-0.0951628000000013,\"eatPercent\":-0.006976386842317571,\"tradeDiff\":-0.08411920000000028,\"tradePercent\":-0.0061717119840350035,\"tradeDirect\":\"B2A\",\"createTime\":1528454220732,\"costTime\":994,\"symbol\":\"EOS_USDT\",\"diffPlatform\":\"Gateio-Huobi\",\"eatTradeVolume\":213.82,\"sellCost\":2902.157435236,\"buyCost\":2910.8211650519997,\"tradeVolume\":347.3841,\"platformA\":\"Gateio\",\"platformB\":\"Huobi\"}}";
         JSONObject jsonObject = new JSONObject(message);
 //            System.out.println(message);
         // TODO: mock trade.

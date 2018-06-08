@@ -30,6 +30,9 @@ public class TradeRecord extends BaseEntity {
 
     private double totalMoney;
 
-    // 盈利百分比
+    // 本次盈利百分比
     private double profit;
+
+    private double totalProfit;
+
 }

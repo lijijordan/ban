@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountService {
 
-    public static double USD_MONEY = 10000;
+    public static double USD_MONEY = 20000;
 
     @Autowired
     private AccountRepository accountRepository;

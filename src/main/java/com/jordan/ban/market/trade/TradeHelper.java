@@ -15,7 +15,7 @@ public class TradeHelper {
         double tradeDiff = ((sellPrice - buyPrice) - Math.abs(Math.max(buyPrice, sellPrice) * TRADE_FEES * 2));
         double tradeVolume = Math.min(marketDepth.getVolume(buyPrice), marketDepth.getVolume(sellPrice));
         double sellCost = (sellPrice * tradeVolume) - (sellPrice * tradeVolume * TRADE_FEES);
-        double buyCost = (buyPrice * tradeVolume) - (buyPrice * tradeVolume * TRADE_FEES);
+        double buyCost = (buyPrice * tradeVolume) + (buyPrice * tradeVolume * TRADE_FEES);
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(buyPrice, sellPrice),
                 TradeDirect.A2B, tradeVolume, sellCost, buyCost);
     }
