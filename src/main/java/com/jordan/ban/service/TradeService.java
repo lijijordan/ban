@@ -6,11 +6,14 @@ import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.entity.TradeRecord;
+import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TradeService {
+
+    private static double GATEIO_HUOBI_EOS_USDT_METRICS_MAX = 0.01613;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -30,33 +33,41 @@ public class TradeService {
         Account accountB = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformB());
 
         if (tradeResult.getEatDiff() <= 0) {
-            double avgEatDiffPer = tradeRecordRepository.avgEatDiffPercent(accountA.getID(), accountB.getID(), tradeResult.getSymbol());
+            double avgEatDiffPer = 0;
+            try {
+                avgEatDiffPer = this.tradeRecordRepository.avgEatDiffPercent(accountA.getID(), accountB.getID(), tradeResult.getSymbol());
+            } catch (AopInvocationException e) {
+            }
             if (accountA.getVirtualCurrency() > accountB.getVirtualCurrency()) { // A 有币、B、没币
                 if (tradeResult.getTradeDirect() == TradeDirect.A2B) { //币 B->A
                     // 退出
-                    System.out.println(String.format("Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
+                    System.out.println(String.format("币:B->A,Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
                     return;
                 } else {//币 A->B （Right way）
                     // 损失大于平均收益
                     if (Math.abs(tradeResult.getEatPercent()) > avgEatDiffPer) {
-                        System.out.println(String.format("Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
+                        System.out.println(String.format("币:A->B,Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
                         return;
                     }
                 }
             } else {  // A 没币、B、有币
                 if (tradeResult.getTradeDirect() == TradeDirect.B2A) { //币 A->B
                     // 退出
-                    System.out.println(String.format("Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
+                    System.out.println(String.format("币:A->B,Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
                     return;
                 } else {//币 B->A （Right way）
                     // 损失大于平均收益
                     if (Math.abs(tradeResult.getEatPercent()) > avgEatDiffPer) {
-                        System.out.println(String.format("Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
+                        System.out.println(String.format("币:B->A,Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
                         return;
                     }
                 }
             }
+        } else if (tradeResult.getEatDiff() < GATEIO_HUOBI_EOS_USDT_METRICS_MAX / 2) {
+            System.out.println("Not reached GATEIO_HUOBI_EOS_USDT_METRICS_MAX value!!");
+            return;
         }
+
         TradeRecord record = new TradeRecord();
         System.out.println(tradeResult.toString());
         if (accountA == null || accountB == null) {
