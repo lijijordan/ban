@@ -15,6 +15,26 @@ import java.util.concurrent.ExecutionException;
 @Log
 public class ProductApplication {
 
+    public static String huobi = "Huobi";
+    public static String dragonex = "Dragonex";
+    public static String okex = "Okex";
+    public static String gateio = "Gateio";
+    public static String bitz = "BitZ";
+    public static String exmo = "Exmo";
+
+
+    public static String neousdt = "NEOUSDT";
+    public static String eosusdt = "EOSUSDT";
+    public static String btcusdt = "BTCUSDT";
+
+    public static String eosbtc = "EOSBTC";
+    public static String eoseth = "EOSETH";
+    public static String omgeth = "OMGETH";
+    // 高风险：公信宝
+    public static String gxseth = "GXSETH";
+    public static String ltcbtc = "LTCBTC";
+    public static String bchusdt = "BCHUSDT";
+
     private static final MessageSender sender = new MessageSender();
 
     public static void diffMarket(String symbol, String market1, String market2, long period) {
@@ -92,6 +112,8 @@ public class ProductApplication {
         indexAB.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
         indexAB.setTradeVolume(tradeAB.getMinTradeVolume());
         indexAB.setEatTradeVolume(eatAB.getMinTradeVolume());
+        indexAB.setSellCost(eatAB.getSellCost());
+        indexAB.setBuyCost(eatAB.getBuyCost());
         return indexAB;
     }
 
@@ -110,6 +132,8 @@ public class ProductApplication {
         indexBA.setDiffPlatform(depth1.getPlatform() + "-" + depth2.getPlatform());
         indexBA.setTradeVolume(tradeBA.getMinTradeVolume());
         indexBA.setEatTradeVolume(eatBA.getMinTradeVolume());
+        indexBA.setSellCost(eatBA.getSellCost());
+        indexBA.setBuyCost(eatBA.getBuyCost());
         return indexBA;
     }
 

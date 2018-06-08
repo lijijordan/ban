@@ -3,9 +3,7 @@ package com.jordan.ban.domain;
 import lombok.Data;
 
 @Data
-public class Account {
-
-    private long id;
+public class AccountDto {
 
     private String platform;
 
@@ -19,7 +17,6 @@ public class Account {
      */
     private double virtualCurrency;
 
-    private String name;
+    private String symbol;
 
-    
 }

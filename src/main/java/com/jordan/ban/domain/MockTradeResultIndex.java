@@ -1,6 +1,7 @@
 package com.jordan.ban.domain;
 
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
@@ -32,7 +33,26 @@ public class MockTradeResultIndex {
 
     //交易数量
     private double eatTradeVolume;
+
+    // 交易费用
+    private double sellCost;
+    private double buyCost;
     private double tradeVolume;
+
+
+    public String getPlatformA() {
+        if (StringUtils.isEmpty(this.diffPlatform)) {
+            return null;
+        }
+        return diffPlatform.split("-")[0];
+    }
+
+    public String getPlatformB() {
+        if (StringUtils.isEmpty(this.diffPlatform)) {
+            return null;
+        }
+        return diffPlatform.split("-")[1];
+    }
 
 
 }

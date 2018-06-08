@@ -2,60 +2,43 @@
 ### This fils is in Yaml format but you can also do this using the traditional
 ### Java properties file.
 
+spring.jmx:
+   enabled: false
+
 spring.datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/lianjia?autoReconnect=true&useSSL=false
+    url: jdbc:mysql://localhost:3306/ban?autoReconnect=true&useSSL=false
     username: root
     password: root
+
+
 server:
-  port: 8080
-tomcat:
-  version: 8.5.5
-
-
-
+  port: 8090
 #management endpoints on a separate port
 management:
-  port: 10092
+  port: 8091
   security:
     enabled: false # management port is internal only. no need to secure it.
 
-endpoints:
-  metrics:
-    path: "metrics1"
-
 #default project info followed by actual injected pom-specified values.
 project:
-  name: lianjia-crawler
+  name: hifishapp
   version: 0.1
-  description: lianjia crawler for fun
+  description: hi fish app server
 info:
   build:
     artifact: ${project.artifactId}
     name: ${project.name}
     description: ${project.description}
     version: ${project.version}
+
+hotel.service:
+  name: 'default profile:'
 spring:
   jpa:
     hibernate:
       ddl-auto: update
-      generate_statistics: true
-      cache:
-        use_second_level_cache: true
-        use_query_cache: true
-        region:
-            factory_class: SingletonEhCacheRegionFactory
-    show-sql: false
+    show-sql: true
   datasource:
     test-on-borrow: true
     validation-query: select 1
-
-  profiles:
-    active: default
-  jackson:
-    time-zone: ${user.timezone:GMT+08:00}
-    date-format: yyyy-MM-dd HH:mm:ss
-logging:
-  level:
-    root: error
-

@@ -6,16 +6,12 @@ import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.policy.PolicyEngine;
-import com.jordan.ban.market.trade.TradeHelper;
 import com.jordan.ban.mq.MessageReceiver;
-import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
 import org.json.JSONObject;
-import org.springframework.beans.BeanUtils;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +31,8 @@ public class ConsumerApplication {
     // 平均搬砖利润
     private double avgTradeDiff = 0;
 
-    private Account huobiAccount;
-    private Account dragonexAccount;
+    private AccountDto huobiAccount;
+    private AccountDto dragonexAccount;
 
     private Map<String, DifferAskBid> tradeHistory;
 
@@ -45,22 +41,18 @@ public class ConsumerApplication {
 
     public void initAccount() {
         // init huobi
-        huobiAccount = new Account();
-        huobiAccount.setId(1);
+        huobiAccount = new AccountDto();
         // USDT
         huobiAccount.setMoney(5000);
         huobiAccount.setVirtualCurrency(100);
         huobiAccount.setPlatform(Huobi.PLATFORM_NAME);
-        huobiAccount.setName("huobi");
 
         // init dragonex
-        dragonexAccount = new Account();
-        dragonexAccount.setId(2);
+        dragonexAccount = new AccountDto();
         // USDT
         dragonexAccount.setMoney(5000);
         dragonexAccount.setVirtualCurrency(100);
         dragonexAccount.setPlatform(Dragonex.PLATFORM_NAME);
-        dragonexAccount.setName("dragonex");
         tradeHistory = new HashMap<>();
     }
 
@@ -75,46 +67,14 @@ public class ConsumerApplication {
         }
     }
 
-    public void receiveMarket(String topic) {
-        MessageReceiver receiver = new MessageReceiver((t, message) -> {
-//            System.out.println(String.format("Get message:%s", message));
-            ElasticSearchClient.index(message, Constant.INDEX_NAME);
-        });
-        try {
-            receiver.onReceived(topic);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public void receiveRealDiff(String topic) {
-        MessageReceiver receiver = new MessageReceiver((t, message) -> {
-            // Analysis market diff and direct
-            ElasticSearchClient.index(message, Constant.REAL_DIFF_INDEX);
-            // Mock trade event!!
-            mockTrade(JSONUtil.getEntity(message, DifferAskBid.class));
-            // TODO：  Valid Trading 模拟买卖
-            // 输入：两个A、B市场的买卖盘
-            // 策略1：币的流动 ：A->B
-            // 策略2：币的流动 ：B->A
-//            钱   -> 输出：交易后钱的总量（增加、减少）；
-//            币   -> 输出：交易后币量的分布情况（增加、减少），
-//            如果 (钱<0 && 币的流向正确)  分析亏损的钱是否符合预期——小于利润的60%
-        });
-        try {
-            receiver.onReceived(topic);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void receiveDepth(String topic) {
+    public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
 //            System.out.println(topic + ":" + message);
             // Analysis market diff and direct
             JSONObject jsonObject = new JSONObject(message);
 //            System.out.println(message);
+            // TODO: mock trade.
+
             ElasticSearchClient.indexAsynchronous(jsonObject.getString("a2b"), Constant.MOCK_TRADE_INDEX);
             ElasticSearchClient.indexAsynchronous(jsonObject.getString("b2a"), Constant.MOCK_TRADE_INDEX);
         });
@@ -263,6 +223,6 @@ public class ConsumerApplication {
     public static void receiveDiff(ConsumerApplication application, String topic) {
 //        application.receiveMarket(topic + "-differ");
         System.out.println("Topic:" + topic + "-depth");
-        application.receiveDepth(topic + "-depth");
+        application.receiveDepthDiff(topic + "-depth");
     }
 }

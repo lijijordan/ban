@@ -7,7 +7,7 @@ public class Order {
 
     private long id;
     private String platform;
-    private Account account;
+    private AccountDto account;
 
     private double price;
     private long timestamp;

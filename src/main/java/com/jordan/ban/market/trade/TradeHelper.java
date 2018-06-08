@@ -10,19 +10,25 @@ public class TradeHelper {
     private static final double TRADE_FEES = 0.002;
 
     public static MockTradeResult eatA2B(MarketDepth marketDepth) {
-        double tradeBuy = Math.max(marketDepth.getD1ask(), marketDepth.getD1bid());
-        double tradeSell = Math.min(marketDepth.getD2ask(), marketDepth.getD2bid());
-        double minVolume = Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell));
-        double tradeDiff = ((tradeSell - tradeBuy) - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2));
-        return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell), TradeDirect.A2B, minVolume);
+        double buyPrice = Math.max(marketDepth.getD1ask(), marketDepth.getD1bid());
+        double sellPrice = Math.min(marketDepth.getD2ask(), marketDepth.getD2bid());
+        double tradeDiff = ((sellPrice - buyPrice) - Math.abs(Math.max(buyPrice, sellPrice) * TRADE_FEES * 2));
+        double tradeVolume = Math.min(marketDepth.getVolume(buyPrice), marketDepth.getVolume(sellPrice));
+        double sellCost = (sellPrice * tradeVolume) - (sellPrice * tradeVolume * TRADE_FEES);
+        double buyCost = (buyPrice * tradeVolume) - (buyPrice * tradeVolume * TRADE_FEES);
+        return new MockTradeResult(tradeDiff, tradeDiff / Math.max(buyPrice, sellPrice),
+                TradeDirect.A2B, tradeVolume, sellCost, buyCost);
     }
 
     public static MockTradeResult eatB2A(MarketDepth marketDepth) {
-        double tradeBuy = Math.max(marketDepth.getD2ask(), marketDepth.getD2bid());
-        double tradeSell = Math.min(marketDepth.getD1ask(), marketDepth.getD1bid());
-        double minVolume = Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell));
-        double tradeDiff = ((tradeSell - tradeBuy) - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2));
-        return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell), TradeDirect.B2A, minVolume);
+        double buyPrice = Math.max(marketDepth.getD2ask(), marketDepth.getD2bid());
+        double sellPrice = Math.min(marketDepth.getD1ask(), marketDepth.getD1bid());
+        double tradeDiff = ((sellPrice - buyPrice) - Math.abs(Math.max(buyPrice, sellPrice) * TRADE_FEES * 2));
+        double tradeVolume = Math.min(marketDepth.getVolume(buyPrice), marketDepth.getVolume(sellPrice));
+        double sellCost = (sellPrice * tradeVolume) - (sellPrice * tradeVolume * TRADE_FEES);
+        double buyCost = (buyPrice * tradeVolume) - (buyPrice * tradeVolume * TRADE_FEES);
+        return new MockTradeResult(tradeDiff, tradeDiff / Math.max(buyPrice, sellPrice),
+                TradeDirect.A2B, tradeVolume, sellCost, buyCost);
     }
 
 
@@ -43,8 +49,11 @@ public class TradeHelper {
 //        System.out.println("Market 1 buy , Market 2 sell. diff=" + (float) tradeDiff);
         // TODO:减去手续费
         tradeDiff = tradeDiff - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2);
+        double tradeVolume = Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell));
+        double sellCost = (tradeSell * tradeVolume) - (tradeSell * tradeVolume * TRADE_FEES);
+        double buyCost = (tradeBuy * tradeVolume) - (tradeBuy * tradeVolume * TRADE_FEES);
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell),
-                TradeDirect.A2B, Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell)));
+                TradeDirect.A2B, tradeVolume, sellCost, buyCost);
     }
 
     public static MockTradeResult tradeB2A(MarketDepth marketDepth) {
@@ -57,8 +66,11 @@ public class TradeHelper {
 //        System.out.println("Market 1 sell , Market 2 buy. diff=" + (float) tradeDiff);
         // TODO:减去手续费
         tradeDiff = tradeDiff - Math.abs(Math.max(tradeBuy, tradeSell) * TRADE_FEES * 2);
+        double tradeVolume = Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell));
+        double sellCost = (tradeSell * tradeVolume) - (tradeSell * tradeVolume * TRADE_FEES);
+        double buyCost = (tradeBuy * tradeVolume) - (tradeBuy * tradeVolume * TRADE_FEES);
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell),
-                TradeDirect.B2A, Math.min(marketDepth.getVolume(tradeBuy), marketDepth.getVolume(tradeSell)));
+                TradeDirect.A2B, tradeVolume, sellCost, buyCost);
     }
 
 

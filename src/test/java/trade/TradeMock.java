@@ -1,12 +1,8 @@
 package trade;
 
 import com.jordan.ban.ConsumerApplication;
-import com.jordan.ban.domain.Account;
 import com.jordan.ban.domain.DifferAskBid;
 import com.jordan.ban.domain.MarketDepth;
-import com.jordan.ban.market.parser.Dragonex;
-import com.jordan.ban.market.parser.Huobi;
-import org.junit.Before;
 import org.junit.Test;
 
 /**

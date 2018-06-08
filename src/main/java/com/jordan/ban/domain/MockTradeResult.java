@@ -11,6 +11,15 @@ public class MockTradeResult {
         this.minTradeVolume = minTradeVolume;
     }
 
+    public MockTradeResult(double tradeDiff, double tradePercent, TradeDirect tradeDirect, double minTradeVolume, double sellCost, double buyCost) {
+        this.tradeDiff = tradeDiff;
+        this.tradePercent = tradePercent;
+        this.tradeDirect = tradeDirect;
+        this.minTradeVolume = minTradeVolume;
+        this.sellCost = sellCost;
+        this.buyCost = buyCost;
+    }
+
     /**
      * 价差
      */
@@ -26,4 +35,10 @@ public class MockTradeResult {
      * 最小交易量
      */
     private double minTradeVolume;
+
+    private double sellCost;
+
+    private double buyCost;
+
+
 }
