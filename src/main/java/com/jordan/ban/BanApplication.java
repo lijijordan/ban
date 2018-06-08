@@ -18,9 +18,11 @@ public class BanApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(BanApplication.class, args);
         AccountService accountService = context.getBean(AccountService.class);
-//        accountService.initAccount();
+        accountService.emptyAccount();
+        accountService.initAccount();
 
-        ConsumerApplication application = new ConsumerApplication();
+        ConsumerApplication application = context.getBean(ConsumerApplication.class);
+
         receiveDiff(application, "NEOUSDT");
         receiveDiff(application, "EOSUSDT");
         receiveDiff(application, "BTCUSDT");

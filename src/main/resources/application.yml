@@ -38,7 +38,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
   datasource:
     test-on-borrow: true
     validation-query: select 1

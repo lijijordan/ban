@@ -9,8 +9,6 @@ import com.jordan.ban.entity.TradeRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 @Service
 public class TradeService {
 
@@ -20,16 +18,50 @@ public class TradeService {
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
 
-    @Transactional
-    public void trade(MockTradeResultIndex tradeResult) {
-        if (tradeResult.getEatDiff() <= 0) {
+    private volatile double lastTradeVolume = 0;
+
+
+    public synchronized void trade(MockTradeResultIndex tradeResult) {
+        if (lastTradeVolume == tradeResult.getEatTradeVolume()) {
+            System.out.println(String.format("Last trade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));
             return;
         }
-        TradeRecord record = new TradeRecord();
         Account accountA = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformA());
         Account accountB = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformB());
+
+        if (tradeResult.getEatDiff() <= 0) {
+            double avgEatDiffPer = tradeRecordRepository.avgEatDiffPercent(accountA.getID(), accountB.getID(), tradeResult.getSymbol());
+            if (accountA.getVirtualCurrency() > accountB.getVirtualCurrency()) { // A 有币、B、没币
+                if (tradeResult.getTradeDirect() == TradeDirect.A2B) { //币 B->A
+                    // 退出
+                    System.out.println(String.format("Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
+                    return;
+                } else {//币 A->B （Right way）
+                    // 损失大于平均收益
+                    if (Math.abs(tradeResult.getEatPercent()) > avgEatDiffPer) {
+                        System.out.println(String.format("Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
+                        return;
+                    }
+                }
+            } else {  // A 没币、B、有币
+                if (tradeResult.getTradeDirect() == TradeDirect.B2A) { //币 A->B
+                    // 退出
+                    System.out.println(String.format("Diff=%s, wrong way .do nothing!", tradeResult.getEatPercent()));
+                    return;
+                } else {//币 B->A （Right way）
+                    // 损失大于平均收益
+                    if (Math.abs(tradeResult.getEatPercent()) > avgEatDiffPer) {
+                        System.out.println(String.format("Diff=%s, AvgDiff=%s .do nothing!", tradeResult.getEatPercent(), avgEatDiffPer));
+                        return;
+                    }
+                }
+            }
+        }
+        TradeRecord record = new TradeRecord();
+        System.out.println(tradeResult.toString());
         if (accountA == null || accountB == null) {
-            throw new RuntimeException("Not found account!");
+            System.out.println("Not found account!");
+            return;
         }
         record.setAccountA(accountA.getID());
         record.setAccountB(accountB.getID());
@@ -51,8 +83,20 @@ public class TradeService {
             accountA.setVirtualCurrency(accountA.getVirtualCurrency() + tradeResult.getEatTradeVolume());
             accountA.setMoney(accountA.getMoney() + tradeResult.getSellCost());
         }
+        if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
+            System.out.println("Not enough money!");
+            return;
+        }
+        if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
+            System.out.println("Not enough coin!");
+            return;
+        }
+        record.setTotalMoney(accountA.getMoney() + accountB.getMoney());
+        record.setProfit(((record.getTotalMoney() - AccountService.USD_MONEY) / AccountService.USD_MONEY) * 100);
         this.accountRepository.save(accountA);
         this.accountRepository.save(accountB);
         this.tradeRecordRepository.save(record);
+        lastTradeVolume = tradeResult.getEatTradeVolume();
+        System.out.println("Traded !!!!!!!!!!!");
     }
 }

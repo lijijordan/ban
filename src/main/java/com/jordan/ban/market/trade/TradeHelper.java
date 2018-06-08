@@ -28,7 +28,7 @@ public class TradeHelper {
         double sellCost = (sellPrice * tradeVolume) - (sellPrice * tradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * tradeVolume) - (buyPrice * tradeVolume * TRADE_FEES);
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(buyPrice, sellPrice),
-                TradeDirect.A2B, tradeVolume, sellCost, buyCost);
+                TradeDirect.B2A, tradeVolume, sellCost, buyCost);
     }
 
 
@@ -70,7 +70,7 @@ public class TradeHelper {
         double sellCost = (tradeSell * tradeVolume) - (tradeSell * tradeVolume * TRADE_FEES);
         double buyCost = (tradeBuy * tradeVolume) - (tradeBuy * tradeVolume * TRADE_FEES);
         return new MockTradeResult(tradeDiff, tradeDiff / Math.max(tradeBuy, tradeSell),
-                TradeDirect.A2B, tradeVolume, sellCost, buyCost);
+                TradeDirect.B2A, tradeVolume, sellCost, buyCost);
     }
 
 

@@ -2,21 +2,22 @@ package com.jordan.ban.service;
 
 import com.jordan.ban.ProductApplication;
 import com.jordan.ban.dao.AccountRepository;
+import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.entity.Account;
+import com.jordan.ban.entity.TradeRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.xml.ws.ServiceMode;
-import java.security.AccessControlContext;
-import java.util.HashMap;
 
 @Service
 public class AccountService {
 
-    private double RMB_MONEY = 10000;
+    public static double USD_MONEY = 10000;
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private TradeRecordRepository tradeRecordRepository;
 
     /**
      * // huobi vs dragonex
@@ -49,17 +50,27 @@ public class AccountService {
      * diffTask(eosusdt, dragonex, exmo, 2000);
      */
     public void initAccount() {
-        initAccount(ProductApplication.huobi, ProductApplication.gateio, ProductApplication.eosusdt, 89.12);
+        initAccount(ProductApplication.huobi, ProductApplication.gateio, "EOS_USDT", 14.5632);
     }
 
-    private void initAccount(String market1, String market2, String symbol, double price) {
+
+    public void emptyAccount() {
+        this.tradeRecordRepository.deleteAll();
+        this.accountRepository.deleteAll();
+    }
+
+    public void initAccount(String market1, String market2, String symbol, double price) {
         this.create(market1, symbol, price);
         this.create(market2, symbol, price);
     }
 
     private void create(String platform, String symbol, double price) {
-        double coin = RMB_MONEY / price / 2;
-        double money = RMB_MONEY - (coin * price);
+        if (accountRepository.findBySymbolAndPlatform(symbol, platform) != null) {
+            System.out.println(String.format("%s, %s has already created!", symbol, platform));
+            return;
+        }
+        double coin = USD_MONEY / price / 2;
+        double money = USD_MONEY - (coin * price);
         Account account = Account.builder().platform(platform).symbol(symbol).money(money).virtualCurrency(coin).build();
         this.accountRepository.save(account);
     }
