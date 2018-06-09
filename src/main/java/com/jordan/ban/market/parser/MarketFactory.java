@@ -22,6 +22,9 @@ public class MarketFactory {
         if (market.equals(Exmo.class.getSimpleName())) {
             return new Exmo();
         }
+        if (market.equals(Fcoin.class.getSimpleName())) {
+            return new Fcoin();
+        }
         return null;
     }
 }

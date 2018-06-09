@@ -144,6 +144,7 @@ public class ProductApplication {
         String gateio = "Gateio";
         String bitz = "BitZ";
         String exmo = "Exmo";
+        String fcoin = "Fcoin";
 
 
         String neousdt = "NEOUSDT";
@@ -158,6 +159,9 @@ public class ProductApplication {
         String ltcbtc = "LTCBTC";
         String bchusdt = "BCHUSDT";
 
+        String ethusdt = "ETHUSDT";
+        String ltcusdt = "LTCUSDT";
+
 //        diffTask(eosusdt, gateio, huobi, 2000);
 
         // huobi vs dragonex
@@ -166,13 +170,13 @@ public class ProductApplication {
         diffTask(btcusdt, huobi, dragonex, 2000);
         diffTask(eoseth, huobi, dragonex, 2000);
 
-        // huobi vs okex
+        /*// huobi vs okex
         diffTask(btcusdt, huobi, okex, 2000);
         diffTask(eosusdt, huobi, okex, 2000);
         diffTask(neousdt, huobi, okex, 2000);
         diffTask(eosbtc, huobi, okex, 2000);
         diffTask(eoseth, huobi, okex, 2000);
-        diffTask(omgeth, huobi, okex, 2000);
+        diffTask(omgeth, huobi, okex, 2000);*/
 
         // huobi vs gateio
         diffTask(eosbtc, gateio, huobi, 2000);
@@ -188,6 +192,12 @@ public class ProductApplication {
         // exmo vs drgonex
         diffTask(bchusdt, dragonex, exmo, 2000);
         diffTask(eosusdt, dragonex, exmo, 2000);
+
+        // fcoin vs huobi
+        diffTask(btcusdt, huobi, fcoin, 2000);
+        diffTask(bchusdt, huobi, fcoin, 2000);
+        diffTask(ltcusdt, huobi, fcoin, 2000);
+        diffTask(ethusdt, huobi, fcoin, 2000);
 
     }
 

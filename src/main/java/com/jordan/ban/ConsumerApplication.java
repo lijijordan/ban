@@ -10,6 +10,7 @@ import com.jordan.ban.mq.MessageReceiver;
 import com.jordan.ban.service.TradeService;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.core.util.JsonUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@Log
+@Slf4j
 @Service
 public class ConsumerApplication {
 
@@ -40,17 +41,17 @@ public class ConsumerApplication {
 
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
-//            System.out.println(topic + ":" + message);
+//            log.info(topic + ":" + message);
             // Analysis market diff and direct
             JSONObject jsonObject = new JSONObject(message);
-//            System.out.println(message);
+//            log.info(message);
             ElasticSearchClient.indexAsynchronous(jsonObject.getString("a2b"), Constant.MOCK_TRADE_INDEX);
             ElasticSearchClient.indexAsynchronous(jsonObject.getString("b2a"), Constant.MOCK_TRADE_INDEX);
 
             // TODO: mock trade.
-            log.info(message);
-            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
-            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"), MockTradeResultIndex.class));
+//            log.info(message);
+//            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
+//            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"), MockTradeResultIndex.class));
 
         });
         try {
@@ -72,12 +73,16 @@ public class ConsumerApplication {
         receiveDiff(application, "GXSETH");
         receiveDiff(application, "LTCBTC");
         receiveDiff(application, "BCHUSDT");
-        System.out.println("Consumer Started!");
+
+        receiveDiff(application, "ETHUSDT");
+        receiveDiff(application, "LTCUSDT");
+
+        log.info("Consumer Started!");
     }
 
     public static void receiveDiff(ConsumerApplication application, String topic) {
 //        application.receiveMarket(topic + "-differ");
-        System.out.println("Topic:" + topic + "-depth");
+        log.info("Topic:" + topic + "-depth");
         application.receiveDepthDiff(topic + "-depth");
     }
 }
