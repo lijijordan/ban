@@ -115,6 +115,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
 
 
     </dependencies>
@@ -138,7 +143,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.jordan.ban.ProductApplication</mainClass>
+                    <mainClass>com.jordan.ban.BanProductApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

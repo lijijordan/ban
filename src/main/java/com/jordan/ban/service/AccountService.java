@@ -5,6 +5,10 @@ import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.entity.TradeRecord;
+import com.jordan.ban.market.parser.Dragonex;
+import com.jordan.ban.market.parser.Fcoin;
+import com.jordan.ban.market.parser.Gateio;
+import com.jordan.ban.market.parser.Huobi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +54,16 @@ public class AccountService {
      * diffTask(eosusdt, dragonex, exmo, 2000);
      */
     public void initAccount() {
-        initAccount(ProductApplication.huobi, ProductApplication.gateio, "EOS_USDT", 14.5632);
+        initAccount(Huobi.PLATFORM_NAME, Gateio.PLATFORM_NAME, "EOS_USDT", 14.5632);
+
+
+        initAccount(Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, "LTCUSDT", 112.610000000);
+        initAccount(Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, "BCHUSDT", 1032.690000000);
+        initAccount(Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, "ETHUSDT", 572.300000000);
+
+        initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "EOSUSDT", 13.1469);
+        initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "NEOUSDT", 48.4760);
+        initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "ETHUSDT", 572.1195);
     }
 
 

@@ -42,3 +42,9 @@ spring:
   datasource:
     test-on-borrow: true
     validation-query: select 1
+  rabbitmq:
+    host: 204.48.17.119
+    username: btc
+    password: btc@123
+#    virtual-host: /
+    port: 5672

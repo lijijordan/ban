@@ -204,63 +204,6 @@ public class CompareApplication {
 
 
     /**
-     * The entry point of application.
-     *
-     * @param args the input arguments
-     * @throws IOException   the io exception
-     * @throws JSONException the json exception
-     */
-    public static void main(String[] args) throws IOException, JSONException {
-        ElasticSearchClient.initClient();
-//        System.out.println(parseOtcBtcTickers());
-//        System.out.println(parseBinanceTickers());
-//
-//        runCompare(parseBinanceTickers(), parseOtcBtcTickers());
-//        runCompare(parseLBankTickers(), parseBittrexTickers());
-//        runCompare(parseBittrexTickers(), parseOtcBtcTickers());
-
-
-        new Thread(() -> {
-            long max = 0, min = 10000, avg, current, sum = 0;
-            int i = 0;
-            while (true) {
-                i++;
-                try {
-                    long start = System.currentTimeMillis();
-                    comparePrice(parseOtcBtcTickers(), parseBittrexTickers());
-                    long end = System.currentTimeMillis();
-                    current = end - start;
-                    if (max < current) {
-                        max = current;
-                    }
-                    if (min > current) {
-                        min = current;
-                    }
-                    sum = sum + current;
-                    avg = sum / i;
-                    System.out.println(String.format("Compare method cost createTime:【%s】ms, " +
-                            "avg:【%s】ms, max:【%s】ms, min:【%s】ms , createTime: %s", current, avg, max, min, new Date()));
-                } catch (Exception e) {
-                    try {
-                        client.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-
-        while (true) {
-            try {
-                Thread.sleep(1000l);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.println("========================= tick ===========================");
-        }
-    }
-
-    /**
      * Compare price.
      *
      * @param m1 the m 1

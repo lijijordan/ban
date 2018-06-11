@@ -1,13 +1,18 @@
 package com.jordan.ban;
 
 import com.jordan.ban.entity.Account;
+import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.service.AccountService;
+import com.jordan.ban.service.TradeService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.util.Assert;
+
+import java.net.UnknownHostException;
 
 @EnableScheduling
 @ComponentScan("com.jordan.ban")
@@ -16,22 +21,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class BanApplication {
 
     public static void main(String[] args) {
+
+        try {
+            ElasticSearchClient.initClient();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
         ConfigurableApplicationContext context = SpringApplication.run(BanApplication.class, args);
         AccountService accountService = context.getBean(AccountService.class);
-        accountService.emptyAccount();
-        accountService.initAccount();
-
+//        accountService.emptyAccount();
+//        accountService.initAccount();
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
-
-        receiveDiff(application, "NEOUSDT");
-        receiveDiff(application, "EOSUSDT");
-        receiveDiff(application, "BTCUSDT");
-        receiveDiff(application, "EOSETH");
-        receiveDiff(application, "EOSBTC");
-        receiveDiff(application, "OMGETH");
-        receiveDiff(application, "GXSETH");
-        receiveDiff(application, "LTCBTC");
-        receiveDiff(application, "BCHUSDT");
+        application.consumer();
         System.out.println("Consumer Started!");
     }
 

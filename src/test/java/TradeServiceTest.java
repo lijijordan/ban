@@ -3,11 +3,18 @@ import com.jordan.ban.ProductApplication;
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
+import com.jordan.ban.domain.Depth;
+import com.jordan.ban.domain.MarketDepth;
 import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.es.ElasticSearchClient;
+import com.jordan.ban.market.parser.Gateio;
+import com.jordan.ban.market.parser.Huobi;
+import com.jordan.ban.market.parser.MarketFactory;
+import com.jordan.ban.market.parser.MarketParser;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.TradeService;
 import com.jordan.ban.utils.JSONUtil;
+import javafx.print.PageOrientation;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = BanApplication.class)
@@ -39,9 +52,16 @@ public class TradeServiceTest {
 
     @Before
     public void createAccount() {
+//        System.setProperty("http.proxyHost", "localhost");
+//        System.setProperty("http.proxyPort", "8001");
+//        System.setProperty("https.proxyHost", "localhost");
+//        System.setProperty("https.proxyPort", "8001");
+//
+//        System.setProperty("socksProxyHost", "127.0.0.1");
+//        System.setProperty("socksProxyPort", "1080");
         log.info("Clear Account data!");
         this.accountService.emptyAccount();
-        this.accountService.initAccount(ProductApplication.huobi, ProductApplication.gateio,
+        this.accountService.initAccount(Huobi.PLATFORM_NAME, Gateio.PLATFORM_NAME,
                 "EOS_USDT", 14.5632);
 
     }
@@ -61,6 +81,28 @@ public class TradeServiceTest {
         // TODO: mock trade.
         tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
 //        tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"),MockTradeResultIndex.class));
+
+    }
+
+    @Test
+    public void testTrade2() {
+        MarketParser m1 = MarketFactory.getMarket(Huobi.PLATFORM_NAME);
+        MarketParser m2 = MarketFactory.getMarket(Gateio.PLATFORM_NAME);
+        String symbol = "EOS_USDT";
+        long start = System.currentTimeMillis();
+        Depth depth1 = m1.getDepth("eosusdt");
+        Depth depth2 = m2.getDepth(symbol);
+        double d1ask = depth1.getAsks().get(0).getPrice();
+        double d1askVolume = depth1.getAsks().get(0).getVolume();
+        double d1bid = depth1.getBids().get(0).getPrice();
+        double d1bidVolume = depth1.getBids().get(0).getVolume();
+        double d2ask = depth2.getAsks().get(0).getPrice();
+        double d2askVolume = depth2.getAsks().get(0).getVolume();
+        double d2bid = depth2.getBids().get(0).getPrice();
+        double d2bidVolume = depth2.getBids().get(0).getVolume();
+        MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
+//        tradeService.trade(ProductApplication.a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+//        tradeService.trade(ProductApplication.b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
 
     }
 

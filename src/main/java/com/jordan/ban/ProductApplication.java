@@ -5,65 +5,26 @@ import com.jordan.ban.market.parser.*;
 import com.jordan.ban.market.policy.MarketDiffer;
 import com.jordan.ban.market.trade.TradeHelper;
 import com.jordan.ban.mq.MessageSender;
+import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-@Log
+@Slf4j
+@Service
 public class ProductApplication {
 
-    public static String huobi = "Huobi";
-    public static String dragonex = "Dragonex";
-    public static String okex = "Okex";
-    public static String gateio = "Gateio";
-    public static String bitz = "BitZ";
-    public static String exmo = "Exmo";
 
+    @Autowired
+    private Sender sender;
 
-    public static String neousdt = "NEOUSDT";
-    public static String eosusdt = "EOSUSDT";
-    public static String btcusdt = "BTCUSDT";
-
-    public static String eosbtc = "EOSBTC";
-    public static String eoseth = "EOSETH";
-    public static String omgeth = "OMGETH";
-    // 高风险：公信宝
-    public static String gxseth = "GXSETH";
-    public static String ltcbtc = "LTCBTC";
-    public static String bchusdt = "BCHUSDT";
-
-    private static final MessageSender sender = new MessageSender();
-
-    public static void diffMarket(String symbol, String market1, String market2, long period) {
-        String diffTopic = symbol + "-differ";
-        MarketDiffer marketDiffer = new MarketDiffer();
-        Timer timer1 = new Timer();
-        timer1.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Differ differ;
-                try {
-                    differ = marketDiffer.differ(symbol, market1, market2);
-                    if (differ != null) {
-                        sender.send(diffTopic, JSONUtil.toJsonString(differ));
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, 0, period);
-    }
-
-
-    public static void getDepth(String symbol, String marketName1, String marketName2) {
+    private void getDepth(String symbol, String marketName1, String marketName2, long period) {
         String depthTopic = symbol + "-depth";
         // 分析买卖盘
         MarketParser m1 = MarketFactory.getMarket(marketName1);
@@ -73,31 +34,28 @@ public class ProductApplication {
             @Override
             public void run() {
                 Map<String, Object> mockTrade = new HashMap<>();
-                try {
-                    // FIXME: use asynchronous
-                    long start = System.currentTimeMillis();
-                    Depth depth1 = m1.getDepth(symbol);
-                    Depth depth2 = m2.getDepth(symbol);
-                    double d1ask = depth1.getAsks().get(0).getPrice();
-                    double d1askVolume = depth1.getAsks().get(0).getVolume();
-                    double d1bid = depth1.getBids().get(0).getPrice();
-                    double d1bidVolume = depth1.getBids().get(0).getVolume();
-                    double d2ask = depth2.getAsks().get(0).getPrice();
-                    double d2askVolume = depth2.getAsks().get(0).getVolume();
-                    double d2bid = depth2.getBids().get(0).getPrice();
-                    double d2bidVolume = depth2.getBids().get(0).getVolume();
-                    MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
-                    mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                    mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                    sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                // FIXME: use asynchronous
+                long start = System.currentTimeMillis();
+                Depth depth1 = m1.getDepth(symbol);
+                Depth depth2 = m2.getDepth(symbol);
+                double d1ask = depth1.getAsks().get(0).getPrice();
+                double d1askVolume = depth1.getAsks().get(0).getVolume();
+                double d1bid = depth1.getBids().get(0).getPrice();
+                double d1bidVolume = depth1.getBids().get(0).getVolume();
+                double d2ask = depth2.getAsks().get(0).getPrice();
+                double d2askVolume = depth2.getAsks().get(0).getVolume();
+                double d2bid = depth2.getBids().get(0).getPrice();
+                double d2bidVolume = depth2.getBids().get(0).getVolume();
+                MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
+                mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
+
             }
-        }, 0, 2000);
+        }, 0, period);
     }
 
-    private static MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
+    private MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
         MockTradeResult eatAB = TradeHelper.eatA2B(marketDepth);
         MockTradeResult tradeAB = TradeHelper.tradeA2B(marketDepth);
         MockTradeResultIndex indexAB = new MockTradeResultIndex();
@@ -117,7 +75,7 @@ public class ProductApplication {
         return indexAB;
     }
 
-    private static MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
+    private MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
         MockTradeResult eatBA = TradeHelper.eatB2A(marketDepth);
         MockTradeResult tradeBA = TradeHelper.tradeB2A(marketDepth);
         MockTradeResultIndex indexBA = new MockTradeResultIndex();
@@ -137,100 +95,8 @@ public class ProductApplication {
         return indexBA;
     }
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
-        String huobi = "Huobi";
-        String dragonex = "Dragonex";
-        String okex = "Okex";
-        String gateio = "Gateio";
-        String bitz = "BitZ";
-        String exmo = "Exmo";
-        String fcoin = "Fcoin";
-
-
-        String neousdt = "NEOUSDT";
-        String eosusdt = "EOSUSDT";
-        String btcusdt = "BTCUSDT";
-
-        String eosbtc = "EOSBTC";
-        String eoseth = "EOSETH";
-        String omgeth = "OMGETH";
-        // 高风险：公信宝
-        String gxseth = "GXSETH";
-        String ltcbtc = "LTCBTC";
-        String bchusdt = "BCHUSDT";
-
-        String ethusdt = "ETHUSDT";
-        String ltcusdt = "LTCUSDT";
-
-//        diffTask(eosusdt, gateio, huobi, 2000);
-
-        // huobi vs dragonex
-        diffTask(neousdt, huobi, dragonex, 2000);
-        diffTask(eosusdt, huobi, dragonex, 2000);
-        diffTask(btcusdt, huobi, dragonex, 2000);
-        diffTask(eoseth, huobi, dragonex, 2000);
-
-        /*// huobi vs okex
-        diffTask(btcusdt, huobi, okex, 2000);
-        diffTask(eosusdt, huobi, okex, 2000);
-        diffTask(neousdt, huobi, okex, 2000);
-        diffTask(eosbtc, huobi, okex, 2000);
-        diffTask(eoseth, huobi, okex, 2000);
-        diffTask(omgeth, huobi, okex, 2000);*/
-
-        // huobi vs gateio
-        diffTask(eosbtc, gateio, huobi, 2000);
-        diffTask(eoseth, gateio, huobi, 2000);
-        diffTask(eosusdt, gateio, huobi, 2000);
-        // bit-z vs gateio
-        diffTask(eosbtc, gateio, bitz, 2000);
-//        diffTask(ltcbtc, gateio, bitz, 2000);
-
-        // bit-z vs dragonex
-//        diffTask(gxseth, dragonex, bitz, 2000);
-
-        // exmo vs drgonex
-        diffTask(bchusdt, dragonex, exmo, 2000);
-        diffTask(eosusdt, dragonex, exmo, 2000);
-
-        // fcoin vs huobi
-        diffTask(btcusdt, huobi, fcoin, 2000);
-        diffTask(bchusdt, huobi, fcoin, 2000);
-        diffTask(ltcusdt, huobi, fcoin, 2000);
-        diffTask(ethusdt, huobi, fcoin, 2000);
-
-    }
-
-
-    /**
-     * Watch a market
-     *
-     * @param symbolName
-     * @param marketName
-     * @param period
-     */
-    private static void watchMarket(String symbolName, String marketName, long period) {
-        Timer timer1 = new Timer();
-        MarketParser market = MarketFactory.getMarket(marketName);
-        timer1.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Differ differ;
-                try {
-                    Symbol symbol = market.getPrice(symbolName);
-                    if (symbol != null) {
-                        sender.send(symbolName, JSONUtil.toJsonString(symbol));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, 0, period);
-    }
-
-    private static void diffTask(String symbol, String market1, String market2, long period) throws ExecutionException, InterruptedException {
+    public void diffTask(String symbol, String market1, String market2, long period) throws ExecutionException, InterruptedException {
 //        diffMarket(symbol, market1, market2, period);
-        getDepth(symbol, market1, market2);
+        getDepth(symbol, market1, market2, period);
     }
 }

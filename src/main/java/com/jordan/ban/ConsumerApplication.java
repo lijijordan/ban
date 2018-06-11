@@ -21,23 +21,13 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @Slf4j
 @Service
 public class ConsumerApplication {
 
+
     @Autowired
     private TradeService tradeService;
-
-
-    public ConsumerApplication() {
-        // Mock account
-        try {
-            ElasticSearchClient.initClient();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
@@ -50,8 +40,8 @@ public class ConsumerApplication {
 
             // TODO: mock trade.
 //            log.info(message);
-//            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
-//            tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"), MockTradeResultIndex.class));
+            this.tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
+            this.tradeService.trade(JSONUtil.getEntity(jsonObject.getString("b2a"), MockTradeResultIndex.class));
 
         });
         try {
@@ -61,28 +51,28 @@ public class ConsumerApplication {
         }
     }
 
-    public static void main(String[] args) {
-        ConsumerApplication application = new ConsumerApplication();
-        receiveDiff(application, "NEOUSDT");
-        receiveDiff(application, "EOSUSDT");
-        receiveDiff(application, "BTCUSDT");
+    public void consumer() {
+        receiveDiff("EOSUSDT");
+        receiveDiff("BTCUSDT");
 
-        receiveDiff(application, "EOSETH");
-        receiveDiff(application, "EOSBTC");
-        receiveDiff(application, "OMGETH");
-        receiveDiff(application, "GXSETH");
-        receiveDiff(application, "LTCBTC");
-        receiveDiff(application, "BCHUSDT");
+        receiveDiff("EOSETH");
+        receiveDiff("EOSBTC");
+        receiveDiff("OMGETH");
+        receiveDiff("GXSETH");
+        receiveDiff("LTCBTC");
+        receiveDiff("BCHUSDT");
 
-        receiveDiff(application, "ETHUSDT");
-        receiveDiff(application, "LTCUSDT");
+        receiveDiff("ETHUSDT");
+        receiveDiff("LTCUSDT");
+        receiveDiff("NEOUSDT");
 
         log.info("Consumer Started!");
     }
 
-    public static void receiveDiff(ConsumerApplication application, String topic) {
+    public void receiveDiff(String topic) {
 //        application.receiveMarket(topic + "-differ");
         log.info("Topic:" + topic + "-depth");
-        application.receiveDepthDiff(topic + "-depth");
+        this.receiveDepthDiff(topic + "-depth");
     }
 }
+
