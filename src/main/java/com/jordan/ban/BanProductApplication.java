@@ -36,7 +36,8 @@ public class BanProductApplication {
         // huobi vs gateio
         productApplication.diffTask(Constant.EOS_BTC, Gateio.PLATFORM_NAME, Huobi.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.EOS_ETH, Gateio.PLATFORM_NAME, Huobi.PLATFORM_NAME, 2000);
-        productApplication.diffTask(Constant.EOS_BTC, Gateio.PLATFORM_NAME, BitZ.PLATFORM_NAME, 2000);
+        productApplication.diffTask(Constant.EOS_USDT, Gateio.PLATFORM_NAME, Huobi.PLATFORM_NAME, 2000);
+
 
         // exmo vs drgonex
         productApplication.diffTask(Constant.BCH_USDT, Dragonex.PLATFORM_NAME, Exmo.PLATFORM_NAME, 2000);
