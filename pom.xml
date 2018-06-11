@@ -121,11 +121,25 @@
         </dependency>
 
 
-
     </dependencies>
 
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.jordan.ban.BanProductApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -140,11 +154,12 @@
                         <goals>
                             <goal>java</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>com.jordan.ban.BanProductApplication</mainClass>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>com.jordan.ban.BanProductApplication</mainClass>
-                </configuration>
+
             </plugin>
         </plugins>
     </build>
