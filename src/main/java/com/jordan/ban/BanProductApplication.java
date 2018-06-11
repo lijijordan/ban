@@ -6,6 +6,7 @@ import com.jordan.ban.market.parser.*;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.TradeService;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -18,10 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 
-@EnableScheduling
-@ComponentScan("com.jordan.ban")
-@EnableJpaRepositories("com.jordan.ban.dao")
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+@SpringBootApplication
 public class BanProductApplication {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
