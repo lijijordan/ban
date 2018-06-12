@@ -66,7 +66,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
             double price = jsonArray.getDouble(i);
             double size = jsonArray.getDouble(i + 1);
             Ticker order1 = new Ticker();
-            order1.setPrice(price);
+            order1.setPrice(pSenderrice);
             order1.setVolume(size);
             tickers.add(order1);
         }

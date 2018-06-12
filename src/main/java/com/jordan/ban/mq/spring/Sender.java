@@ -12,7 +12,7 @@ public class Sender {
     private AmqpTemplate amqpTemplate;
 
     public void send(String topic, String message) {
-        log.info(message);
+//        log.info(message);
         this.amqpTemplate.convertAndSend(topic, message);
     }
 }
