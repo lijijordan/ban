@@ -287,8 +287,12 @@ public class Fcoin extends BaseMarket implements MarketParser {
     }
 
 
+    public Fcoin() {
+    }
+
     public static void main(String[] args) {
         Fcoin fcoin = (Fcoin) MarketFactory.getMarket("Fcoin");
+
 //        FcoinBalance[] balances = fcoin.getBalances();
 //        System.out.println(fcoin.getServerTime());
 //        fcoin.matchresults("12");

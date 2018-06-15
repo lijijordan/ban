@@ -385,6 +385,9 @@ public class Huobi extends BaseMarket implements MarketParser {
     }
 
 
+    public Huobi() {
+    }
+
     public static void main(String[] args) {
         Huobi huobi = (Huobi) MarketFactory.getMarket("Huobi");
 
