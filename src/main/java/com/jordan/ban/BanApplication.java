@@ -1,16 +1,13 @@
 package com.jordan.ban;
 
-import com.jordan.ban.entity.Account;
 import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.service.AccountService;
-import com.jordan.ban.service.TradeService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.util.Assert;
 
 import java.net.UnknownHostException;
 

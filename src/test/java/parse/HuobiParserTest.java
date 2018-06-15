@@ -14,7 +14,7 @@ public class HuobiParserTest {
 
     @Before
     public void init() {
-        huobiParser = new Huobi();
+        huobiParser = new Huobi("","");
     }
 
     @Test

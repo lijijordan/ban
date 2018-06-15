@@ -72,6 +72,8 @@ public class ProductApplication {
         indexAB.setEatTradeVolume(eatAB.getMinTradeVolume());
         indexAB.setSellCost(eatAB.getSellCost());
         indexAB.setBuyCost(eatAB.getBuyCost());
+        indexAB.setBuyPrice(eatAB.getBuyPrice());
+        indexAB.setSellPrice(eatAB.getSellPrice());
         return indexAB;
     }
 
@@ -92,6 +94,8 @@ public class ProductApplication {
         indexBA.setEatTradeVolume(eatBA.getMinTradeVolume());
         indexBA.setSellCost(eatBA.getSellCost());
         indexBA.setBuyCost(eatBA.getBuyCost());
+        indexBA.setBuyPrice(eatBA.getBuyPrice());
+        indexBA.setSellPrice(eatBA.getSellPrice());
         return indexBA;
     }
 

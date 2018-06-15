@@ -1,8 +1,6 @@
 package com.jordan.ban.market.parser;
 
-import com.jordan.ban.domain.Depth;
-import com.jordan.ban.domain.Symbol;
-import com.jordan.ban.domain.Ticker;
+import com.jordan.ban.domain.*;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
 import org.json.JSONArray;
@@ -61,6 +59,22 @@ public class Exmo extends BaseMarket implements MarketParser {
         }
         return depth;
     }
+
+    @Override
+    public BalanceDto getBalance(String symbol) {
+        return null;
+    }
+
+    @Override
+    public Long placeOrder(OrderRequest request) {
+        return null;
+    }
+
+    @Override
+    public OrderResponse getFilledOrder(long orderId) {
+        return null;
+    }
+
 
     private void parseOrder(List<Ticker> tickers, JSONArray jsonArray) throws JSONException {
         for (int i = 0; i < jsonArray.length(); i++) {

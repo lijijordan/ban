@@ -1,9 +1,12 @@
 package com.jordan.ban.market.parser;
 
+import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.domain.Depth;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -12,9 +15,28 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
-public class BaseMarket {
+public abstract class BaseMarket {
+
+    static final int CONN_TIMEOUT = 5;
+    static final int READ_TIMEOUT = 5;
+    static final int WRITE_TIMEOUT = 5;
+
+    static final MediaType JSON = MediaType.parse("application/json");
+    static final OkHttpClient client = createOkHttpClient();
+
+    // create OkHttpClient:
+    static OkHttpClient createOkHttpClient() {
+        return new OkHttpClient.Builder().connectTimeout(CONN_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS).writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+    }
+
 
     protected JSONObject parseJSONByURL(String url) {
 //        log.info("load url:" + url);
@@ -23,6 +45,7 @@ public class BaseMarket {
         CloseableHttpResponse response = null;
         try {
             response = (CloseableHttpResponse) HttpClientFactory.getHttpClient().execute(httpGet);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -38,5 +61,12 @@ public class BaseMarket {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    // Encode as "a=1&b=%20&c=&d=AAA"
+    String toQueryString(Map<String, String> params) {
+        return String.join("&", params.entrySet().stream().map((entry) -> {
+            return entry.getKey() + "=" + ApiSignature.urlEncode(entry.getValue());
+        }).collect(Collectors.toList()));
     }
 }

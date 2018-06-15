@@ -3,7 +3,7 @@ package com.jordan.ban.market.policy;
 public interface TradeRule {
 
     /**
-     * weather trade it
+     * weather mockTrade it
      * @return
      */
     boolean canDeal();

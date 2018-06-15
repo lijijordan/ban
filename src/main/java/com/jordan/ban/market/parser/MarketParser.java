@@ -1,9 +1,10 @@
 package com.jordan.ban.market.parser;
 
-import com.jordan.ban.domain.Depth;
-import com.jordan.ban.domain.Symbol;
+import com.carrotsearch.hppc.ByteArrayList;
+import com.jordan.ban.domain.*;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * User: liji
@@ -18,5 +19,10 @@ public interface MarketParser {
 
     Depth getDepth(String symbol);
 
+    BalanceDto getBalance(String symbol);
+
+    Long placeOrder(OrderRequest request);
+
+    OrderResponse getFilledOrder(long orderId);
 
 }

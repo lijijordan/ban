@@ -20,6 +20,17 @@ public class MockTradeResult {
         this.buyCost = buyCost;
     }
 
+    public MockTradeResult(double tradeDiff, double tradePercent, TradeDirect tradeDirect, double minTradeVolume, double sellCost, double buyCost, double sellPrice, double buyPrice) {
+        this.tradeDiff = tradeDiff;
+        this.tradePercent = tradePercent;
+        this.tradeDirect = tradeDirect;
+        this.minTradeVolume = minTradeVolume;
+        this.sellCost = sellCost;
+        this.buyCost = buyCost;
+        this.sellPrice = sellPrice;
+        this.buyPrice = buyPrice;
+    }
+
     /**
      * 价差
      */
@@ -40,5 +51,7 @@ public class MockTradeResult {
 
     private double buyCost;
 
+    private double sellPrice;
 
+    private double buyPrice;
 }

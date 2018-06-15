@@ -1,22 +1,12 @@
 package com.jordan.ban;
 
 import com.jordan.ban.common.Constant;
-import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.market.parser.*;
-import com.jordan.ban.service.AccountService;
-import com.jordan.ban.service.TradeService;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
@@ -28,7 +18,7 @@ public class BanProductApplication {
         ProductApplication productApplication = context.getBean(ProductApplication.class);
 
         // huobi vs dragonex
-        productApplication.diffTask(Constant.NEO_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
+        /*productApplication.diffTask(Constant.NEO_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.EOS_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BTC_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.EOS_ETH, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
@@ -46,8 +36,8 @@ public class BanProductApplication {
         // fcoin vs huobi
         productApplication.diffTask(Constant.BTC_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BCH_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
+        productApplication.diffTask(Constant.ETH_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);*/
         productApplication.diffTask(Constant.LTC_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
-        productApplication.diffTask(Constant.ETH_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         System.out.println("Product application Started!");
     }
 }

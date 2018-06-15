@@ -1,8 +1,6 @@
 package com.jordan.ban.market.parser;
 
-import com.jordan.ban.domain.Depth;
-import com.jordan.ban.domain.Ticker;
-import com.jordan.ban.domain.Symbol;
+import com.jordan.ban.domain.*;
 import com.jordan.ban.http.HttpClientFactory;
 import com.jordan.ban.utils.JSONUtil;
 import com.sun.net.ssl.internal.www.protocol.https.HttpsURLConnectionOldImpl;
@@ -72,6 +70,21 @@ public class Gateio extends BaseMarket implements MarketParser {
             e.printStackTrace();
         }
         return depth;
+    }
+
+    @Override
+    public BalanceDto getBalance(String symbol) {
+        return null;
+    }
+
+    @Override
+    public Long placeOrder(OrderRequest request) {
+        return null;
+    }
+
+    @Override
+    public OrderResponse getFilledOrder(long orderId) {
+        return null;
     }
 
     private void parseOrder(List<Ticker> tickers, JSONArray jsonArray) throws JSONException {

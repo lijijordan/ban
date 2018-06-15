@@ -39,6 +39,8 @@ public class MockTradeResultIndex {
     private double buyCost;
     private double tradeVolume;
 
+    private double sellPrice;
+    private double buyPrice;
 
     public String getPlatformA() {
         if (StringUtils.isEmpty(this.diffPlatform)) {
@@ -52,6 +54,15 @@ public class MockTradeResultIndex {
             return null;
         }
         return diffPlatform.split("-")[1];
+    }
+
+    public String getMoney() {
+
+        return this.symbol.replace("_", "").substring(3, symbol.replace("_", "").length());
+    }
+
+    public String getCurrency() {
+        return this.symbol.replace("_", "").substring(0, 3);
     }
 
 

@@ -33,4 +33,6 @@ public class Constant {
 
     public static final String ETH_USDT = "ETHUSDT";
     public static final String LTC_USDT = "LTCUSDT";
+
+    public static final String USDT = "USDT";
 }

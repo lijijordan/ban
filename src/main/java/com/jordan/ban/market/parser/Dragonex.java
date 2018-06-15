@@ -1,8 +1,6 @@
 package com.jordan.ban.market.parser;
 
-import com.jordan.ban.domain.Depth;
-import com.jordan.ban.domain.Ticker;
-import com.jordan.ban.domain.Symbol;
+import com.jordan.ban.domain.*;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.java.Log;
 import org.apache.http.HttpEntity;
@@ -101,6 +99,22 @@ public class Dragonex extends BaseMarket implements MarketParser {
         }
         return depth;
     }
+
+    @Override
+    public BalanceDto getBalance(String symbol) {
+        return null;
+    }
+
+    @Override
+    public Long placeOrder(OrderRequest request) {
+        return null;
+    }
+
+    @Override
+    public OrderResponse getFilledOrder(long orderId) {
+        return null;
+    }
+
 
     private List<Ticker> getBids(String symbol) throws JSONException {
         return getOrders(symbol, BIDS_DEPTH_URL_TEMPLATE);
