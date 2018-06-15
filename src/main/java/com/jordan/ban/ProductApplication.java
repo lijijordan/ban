@@ -33,23 +33,28 @@ public class ProductApplication {
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
-                Map<String, Object> mockTrade = new HashMap<>();
-                // FIXME: use asynchronous
-                long start = System.currentTimeMillis();
-                Depth depth1 = m1.getDepth(symbol);
-                Depth depth2 = m2.getDepth(symbol);
-                double d1ask = depth1.getAsks().get(0).getPrice();
-                double d1askVolume = depth1.getAsks().get(0).getVolume();
-                double d1bid = depth1.getBids().get(0).getPrice();
-                double d1bidVolume = depth1.getBids().get(0).getVolume();
-                double d2ask = depth2.getAsks().get(0).getPrice();
-                double d2askVolume = depth2.getAsks().get(0).getVolume();
-                double d2bid = depth2.getBids().get(0).getPrice();
-                double d2bidVolume = depth2.getBids().get(0).getVolume();
-                MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
-                mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
+                try {
+                    Map<String, Object> mockTrade = new HashMap<>();
+                    // FIXME: use asynchronous
+                    long start = System.currentTimeMillis();
+                    Depth depth1 = m1.getDepth(symbol);
+                    Depth depth2 = m2.getDepth(symbol);
+                    double d1ask = depth1.getAsks().get(0).getPrice();
+                    double d1askVolume = depth1.getAsks().get(0).getVolume();
+                    double d1bid = depth1.getBids().get(0).getPrice();
+                    double d1bidVolume = depth1.getBids().get(0).getVolume();
+                    double d2ask = depth2.getAsks().get(0).getPrice();
+                    double d2askVolume = depth2.getAsks().get(0).getVolume();
+                    double d2bid = depth2.getBids().get(0).getPrice();
+                    double d2bidVolume = depth2.getBids().get(0).getVolume();
+                    MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
+                    mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                    mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                    sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
 
             }
         }, 0, period);

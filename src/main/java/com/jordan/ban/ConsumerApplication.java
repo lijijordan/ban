@@ -55,7 +55,7 @@ public class ConsumerApplication {
 
     public void consumer() {
         receiveDiff("EOSUSDT");
-        receiveDiff("BTCUSDT");
+        receiveDiff("BTCUSDTFcoin.java");
 
         receiveDiff("EOSETH");
         receiveDiff("EOSBTC");
