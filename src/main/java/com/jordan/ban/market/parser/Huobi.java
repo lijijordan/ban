@@ -40,69 +40,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-
-/**
- * 签名运算
- * API 请求在通过 Internet 发送的过程中极有可能被篡改。为了确保请求未被更改，我们会要求用户在每个请求中带上签名（行情 API 除外），来校验参数或参数值在传输途中是否发生了更改。
- * <p>
- * 计算签名所需的步骤：
- * <p>
- * 规范要计算签名的请求
- * 因为使用 HMAC 进行签名计算时，使用不同内容计算得到的结果会完全不同。所以在进行签名计算前，请先对请求进行规范化处理。下面以查询某订单详情请求为例进行说明
- * <p>
- * https://api.huobi.pro/v1/order/orders?
- * AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx
- * &SignatureMethod=HmacSHA256
- * &SignatureVersion=2
- * &Timestamp=2017-05-11T15:19:30
- * &order-id=1234567890
- * 请求方法（GET 或 POST），后面添加换行符\n。
- * GET\n
- * 添加小写的访问地址，后面添加换行符\n。
- * api.huobi.pro\n
- * 访问方法的路径，后面添加换行符\n。
- * /v1/order/orders\n
- * 按照ASCII码的顺序对参数名进行排序(使用 UTF-8 编码，且进行了 URI 编码，十六进制字符必须大写，如‘:’会被编码为'%3A'，空格被编码为'%20')。
- * 例如，下面是请求参数的原始顺序，进行过编码后。
- * <p>
- * AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx
- * order-id=1234567890
- * SignatureMethod=HmacSHA256
- * SignatureVersion=2
- * Timestamp=2017-05-11T15%3A19%3A30
- * 这些参数会被排序为：
- * <p>
- * AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx
- * SignatureMethod=HmacSHA256
- * SignatureVersion=2
- * Timestamp=2017-05-11T15%3A19%3A30
- * order-id=1234567890
- * 按照以上顺序，将各参数使用字符’&’连接。
- * <p>
- * AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890
- * 组成最终的要进行签名计算的字符串如下：
- * <p>
- * GET\n
- * api.huobi.pro\n
- * /v1/order/orders\n
- * AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890
- * 计算签名，将以下两个参数传入加密哈希函数：
- * 要进行签名计算的字符串
- * GET\n
- * api.huobi.pro\n
- * /v1/order/orders\n
- * AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&order-id=1234567890
- * 进行签名的密钥（SecretKey）
- * b0xxxxxx-c6xxxxxx-94xxxxxx-dxxxx
- * 得到签名计算结果并进行 Base64编码
- * <p>
- * 4F65x5A2bLyMWVQj3Aqp+B4w+ivaA7n5Oi2SuYtCJ9o=
- * 将上述值作为参数Signature的取值添加到 API 请求中。 将此参数添加到请求时，必须将该值进行 URI 编码。
- * <p>
- * 最终，发送到服务器的 API 请求应该为：
- * <p>
- * https://api.huobi.pro/v1/order/orders?AccessKeyId=e2xxxxxx-99xxxxxx-84xxxxxx-7xxxx&order-id=1234567890&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2017-05-11T15%3A19%3A30&Signature=4F65x5A2bLyMWVQj3Aqp%2BB4w%2BivaA7n5Oi2SuYtCJ9o%3D
- */
 @Slf4j
 public class Huobi extends BaseMarket implements MarketParser {
 
@@ -219,7 +156,7 @@ public class Huobi extends BaseMarket implements MarketParser {
     }
 
     @Override
-    public Long placeOrder(OrderRequest request) {
+    public String placeOrder(OrderRequest request) {
         log.info("【Huobi】place order:" + request.toString());
         CreateOrderRequest createOrderReq = new CreateOrderRequest();
         createOrderReq.accountId = String.valueOf(this.getAccountID());
@@ -311,9 +248,9 @@ public class Huobi extends BaseMarket implements MarketParser {
      * @param request CreateOrderRequest object.
      * @return Order id.
      */
-    public Long placeOrder(CreateOrderRequest request) {
-        ApiResponse<Long> resp =
-                post("/v1/order/orders/place", request, new TypeReference<ApiResponse<Long>>() {
+    public String placeOrder(CreateOrderRequest request) {
+        ApiResponse<String> resp =
+                post("/v1/order/orders/place", request, new TypeReference<ApiResponse<String>>() {
                 });
         return resp.checkAndReturn();
     }
@@ -332,7 +269,7 @@ public class Huobi extends BaseMarket implements MarketParser {
 
 
     @Override
-    public OrderResponse getFilledOrder(long orderId) {
+    public OrderResponse getFilledOrder(String orderId) {
         OrderDetail response = this.getOrdersDetail(String.valueOf(orderId));
         if (response != null) {
             OrderType orderType;
@@ -342,6 +279,7 @@ public class Huobi extends BaseMarket implements MarketParser {
                 orderType = OrderType.SELL_LIMIT;
             }
             return OrderResponse.builder().createTime(response.getCreatedAt())
+                    .price(response.getPrice())
                     .filledAmount(response.getFieldAmount()).orderState(response.getState())
                     .fillFees(response.getField_fees()).type(orderType).build();
         }
@@ -384,6 +322,11 @@ public class Huobi extends BaseMarket implements MarketParser {
         return resp;
     }
 
+    @Override
+    public boolean cancelOrder(String orderId) {
+        SubmitcancelResponse response = this.submitcancel(String.valueOf(orderId));
+        return response.getStatus().equals("ok");
+    }
 
     public Huobi() {
     }
@@ -391,9 +334,12 @@ public class Huobi extends BaseMarket implements MarketParser {
     public static void main(String[] args) {
         Huobi huobi = (Huobi) MarketFactory.getMarket("Huobi");
 
-        OrderDetail orderDetail = huobi.getOrdersDetail("5898349577");
+        /*OrderDetail orderDetail = huobi.getOrdersDetail("5898349577");
         System.out.println(orderDetail.getType());
-        System.out.println(orderDetail.getState());
+        System.out.println(orderDetail.getState());*/
+        huobi.cancelOrder("5898349577");
+
+
         /*System.out.println(huobi.getAccounts());
 
         List<Accounts> list = (List<Accounts>) huobi.getAccounts().getData();
@@ -415,11 +361,11 @@ public class Huobi extends BaseMarket implements MarketParser {
             createOrderReq.source = "api";
 
             //------------------------------------------------------ 创建订单  -------------------------------------------------------
-            orderId = huobi.placeOrder(createOrderReq);
+            orderId = huobi.createOrder(createOrderReq);
             System.out.println("order id:" + orderId);
             // place order:
             //------------------------------------------------------ 执行订单  -------------------------------------------------------
-//            String r = huobi.placeOrder(orderId);
+//            String r = huobi.createOrder(orderId);
         }*/
     }
 

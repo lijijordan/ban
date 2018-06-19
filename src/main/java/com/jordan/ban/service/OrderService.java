@@ -7,6 +7,7 @@ import com.jordan.ban.domain.OrderState;
 import com.jordan.ban.entity.Order;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -17,24 +18,28 @@ import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Service
 public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
 
-    @Transactional
+    @Autowired
+    private AccountService accountService;
+
+    /**
+     * 获取为完成交易的订单
+     *
+     * @return
+     */
     public List<Order> getUnfilledOrders() {
-        List<Order> orders = this.orderRepository.findAllUnfilledOrders();
-        orders.forEach(order -> {
-            Hibernate.initialize(order.getPlatform());
-        });
-        return orders;
+        return this.orderRepository.findAllUnfilledOrders();
     }
 
 
     //    @Transactional(Pro=Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
-    @Async
+//    @Async
     public void refreshOrderState(Order order) {
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
@@ -43,10 +48,23 @@ public class OrderService {
             order.setFillFees(orderResponse.getFillFees());
             order.setFilledAmount(orderResponse.getFilledAmount());
             order.setUpdateTime(new Date());
+            order.setPrice(orderResponse.getPrice());
             order.setFillFees(orderResponse.getFillFees());
             this.orderRepository.save(order);
         }
     }
+
+
+    @Async
+    public void cancelOrder(Order order) {
+        MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
+        if (marketParser.cancelOrder(order.getOrderId())) {
+            order.setState(OrderState.canceled);
+            order.setUpdateTime(new Date());
+            this.orderRepository.save(order);
+        }
+    }
+
 
     /**
      * 创建订单
@@ -56,11 +74,13 @@ public class OrderService {
      * @param pair
      * @return
      */
-    public Order placeOrder(OrderRequest orderRequest, MarketParser market, String pair) {
-        Long orderAid = market.placeOrder(orderRequest);
+    public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair) {
+        String orderAid = market.placeOrder(orderRequest);
         if (orderAid == null) {
             throw new RuntimeException("创建订单失败！");
         }
+        // update account;
+        accountService.updateBalancesCache(market.getName());
         return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair)
                 .platform(market.getName())

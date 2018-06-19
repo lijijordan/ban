@@ -106,13 +106,18 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
     @Override
-    public Long placeOrder(OrderRequest request) {
+    public String placeOrder(OrderRequest request) {
         return null;
     }
 
     @Override
-    public OrderResponse getFilledOrder(long orderId) {
+    public OrderResponse getFilledOrder(String orderId) {
         return null;
+    }
+
+    @Override
+    public boolean cancelOrder(String orderId) {
+        return false;
     }
 
 

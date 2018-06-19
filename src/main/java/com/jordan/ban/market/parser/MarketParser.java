@@ -21,8 +21,10 @@ public interface MarketParser {
 
     BalanceDto getBalance(String symbol);
 
-    Long placeOrder(OrderRequest request);
+    String placeOrder(OrderRequest request);
 
-    OrderResponse getFilledOrder(long orderId);
+    OrderResponse getFilledOrder(String orderId);
+
+    boolean cancelOrder(String orderId);
 
 }

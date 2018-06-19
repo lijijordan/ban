@@ -2,19 +2,27 @@ package com.jordan.ban.service;
 
 import com.jordan.ban.ProductApplication;
 import com.jordan.ban.dao.AccountRepository;
+import com.jordan.ban.dao.BalanceRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
+import com.jordan.ban.domain.AccountDto;
+import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.entity.Account;
+import com.jordan.ban.entity.Balance;
+import com.jordan.ban.entity.Platform;
 import com.jordan.ban.entity.TradeRecord;
-import com.jordan.ban.market.parser.Dragonex;
-import com.jordan.ban.market.parser.Fcoin;
-import com.jordan.ban.market.parser.Gateio;
-import com.jordan.ban.market.parser.Huobi;
+import com.jordan.ban.market.parser.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AccountService {
 
+    private Map<String, Map<String, BalanceDto>> balanceCache = new ConcurrentHashMap<>();
     public static double USD_MONEY = 20000;
 
     @Autowired
@@ -22,6 +30,9 @@ public class AccountService {
 
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
+
+    @Autowired
+    private BalanceRepository balanceRepository;
 
     /**
      * // huobi vs dragonex
@@ -53,7 +64,7 @@ public class AccountService {
      * diffTask(bchusdt, dragonex, exmo, 2000);
      * diffTask(eosusdt, dragonex, exmo, 2000);
      */
-    public void initAccount() {
+    public void mockAccountTestData() {
         initAccount(Huobi.PLATFORM_NAME, Gateio.PLATFORM_NAME, "EOS_USDT", 14.5632);
 
 
@@ -86,6 +97,41 @@ public class AccountService {
         double money = USD_MONEY - (coin * price);
         Account account = Account.builder().platform(platform).symbol(symbol).money(money).virtualCurrency(coin).build();
         this.accountRepository.save(account);
+    }
+
+    /**
+     * Find all currency balances.
+     *
+     * @param platformName
+     * @return
+     */
+    // TODO:use cache
+    public Map<String, BalanceDto> updateBalancesCache(String platformName) {
+        Map<String, BalanceDto> map = new HashMap<>();
+        MarketParser market = MarketFactory.getMarket(platformName);
+        if (market instanceof Huobi) {
+            Huobi huobi = (Huobi) market;
+            long accountId = huobi.getAccountID();
+            huobi.getBalances(accountId).forEach(balanceDto -> {
+                map.put(balanceDto.getCurrency(), balanceDto);
+            });
+        } else if (market instanceof Fcoin) {
+            ((Fcoin) market).getBalances().forEach(balanceDto -> {
+                map.put(balanceDto.getCurrency(), balanceDto);
+            });
+        }
+        if (!map.isEmpty()) {
+            balanceCache.put(platformName, map);
+        }
+        return map;
+    }
+
+    public Map<String, BalanceDto> findBalancesCache(String platformName) {
+        if (this.balanceCache.get(platformName) == null) {
+            return this.updateBalancesCache(platformName);
+        } else {
+            return this.balanceCache.get(platformName);
+        }
     }
 
 

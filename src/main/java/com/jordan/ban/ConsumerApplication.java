@@ -44,18 +44,20 @@ public class ConsumerApplication {
     private void doDepthDiff(String json) {
         ElasticSearchClient.indexAsynchronous(json, Constant.MOCK_TRADE_INDEX);
         MockTradeResultIndex mockTradeResultIndex = JSONUtil.getEntity(json, MockTradeResultIndex.class);
-        this.mockTradeService.mockTrade(mockTradeResultIndex);
-        if (mockTradeResultIndex.getDiffPlatform().equals("Huobi-Fcoin")) {
+//        this.mockTradeService.mockTrade(mockTradeResultIndex);
+        if (mockTradeResultIndex.getDiffPlatform().equals("Huobi-Fcoin") && mockTradeResultIndex.getSymbol().equals("LTCUSDT")) {
             log.info("source json:" + json);
             System.out.println("-------------------------------start trade ---------------------------");
+            long start = System.currentTimeMillis();
             this.tradeService.trade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
-            System.out.println("---------------------------------- end -------------------------------");
+            System.out.println("---------------------------------- end ------------------------------- " +
+                    (System.currentTimeMillis() - start) + "ms");
         }
     }
 
     public void consumer() {
         receiveDiff("EOSUSDT");
-        receiveDiff("BTCUSDTFcoin.java");
+        receiveDiff("BTCUSDT");
 
         receiveDiff("EOSETH");
         receiveDiff("EOSBTC");

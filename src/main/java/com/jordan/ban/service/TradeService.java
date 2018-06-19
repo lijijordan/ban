@@ -4,7 +4,8 @@ import com.jordan.ban.common.Context;
 import com.jordan.ban.dao.OrderRepository;
 import com.jordan.ban.dao.PlatformRepository;
 import com.jordan.ban.domain.*;
-import com.jordan.ban.entity.Order;
+import com.jordan.ban.entity.Account;
+import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
@@ -22,48 +24,73 @@ import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 public class TradeService {
 
     private static double DEFAULT_METRICS_MAX = 0.003; // 0.8%
+    private static double METRICS_BACK_PERCENT = 0.7;
 
     private static double DEFAULT_MIN_TRADE_VOLUME = 1;
 
     @Autowired
-    private PlatformRepository platformRepository;
+    private OrderService orderService;
 
     @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    OrderService orderService;
+    private AccountService accountService;
 
     public synchronized void trade(MockTradeResultIndex tradeResult) {
-        log.info("marketA:{}", tradeResult.getPlatformA());
+        log.info("Data:" + tradeResult.toString());
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
-        // Market A
-        /*AccountDto accountA = AccountDto.builder().money(marketA.getBalance(tradeResult.getMoney()).getBalance()).platform(tradeResult.getPlatformA())
-                .symbol(tradeResult.getSymbol()).virtualCurrency(marketA.getBalance(tradeResult.getCurrency()).getBalance()).build();
 
-        AccountDto accountB = AccountDto.builder().money(marketB.getBalance(tradeResult.getMoney()).getBalance()).platform(tradeResult.getPlatformB())
-                .symbol(tradeResult.getSymbol()).virtualCurrency(marketB.getBalance(tradeResult.getCurrency()).getBalance()).build();*/
+        Map<String, BalanceDto> huobiBalance = accountService.findBalancesCache(Huobi.PLATFORM_NAME);
+        AccountDto accountA = AccountDto.builder().money(huobiBalance.get("usdt").getBalance()).platform(Huobi.PLATFORM_NAME).symbol(tradeResult.getSymbol())
+                .virtualCurrency(huobiBalance.get("ltc").getBalance()).build();
+        Map<String, BalanceDto> fcoinBalance = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
+        AccountDto accountB = AccountDto.builder().money(fcoinBalance.get("usdt").getBalance()).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol())
+                .virtualCurrency(fcoinBalance.get("ltc").getBalance()).build();
 
+        log.info("账户A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
+        log.info("账户B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
         //FIXME: Mock and test
-        log.info("Mock account!");
+//        log.info("Mock account!");
+//        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
+        /*
         AccountDto accountA = AccountDto.builder().money(96.88 * 10).platform(Huobi.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
-        AccountDto accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
+        */
 
         if (accountA == null || accountB == null) {
-            log.info("Not found account!");
-            return;
+            throw new TradeException("加载账户异常！");
         }
         double coinDiffBefore = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyBefore = accountA.getMoney() + accountB.getMoney();
-        log.info(tradeResult.toString());
+
         // 最小交易量
-        double minTradeVolume = DEFAULT_MIN_TRADE_VOLUME;
-        double minBuyCost = tradeResult.getBuyCost();
+        double minTradeVolume = tradeResult.getEatTradeVolume();
         double buyPrice = tradeResult.getBuyPrice();
         double sellPrice = tradeResult.getSellPrice();
         String symbol = tradeResult.getSymbol().toLowerCase();
+        double canBuyCoin;
+        //计算最小量
+        if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
+            // B市场卖出币量
+            if (accountB.getVirtualCurrency() < minTradeVolume) {
+                minTradeVolume = accountB.getVirtualCurrency();
+            }
+            // 市场A可买入币量
+            canBuyCoin = accountA.getMoney() / buyPrice * (1 + 0.002);
 
+
+        } else {  // 市场B买. 市场A卖
+            if (accountA.getVirtualCurrency() < minTradeVolume) {
+                minTradeVolume = accountA.getVirtualCurrency();
+            }
+            // 市场B可买入币量
+            canBuyCoin = accountB.getMoney() / buyPrice * (1 + 0.002);
+        }
+        if (canBuyCoin < minTradeVolume) {
+            minTradeVolume = canBuyCoin;
+        }
+        if (minTradeVolume <= 0) {
+            throw new TradeException("交易量为0!");
+        }
+        log.info("吃单量：{}", minTradeVolume);
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
 
@@ -94,7 +121,7 @@ public class TradeService {
         double diffPercent = tradeResult.getEatPercent();
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) {
-                if (Math.abs(diffPercent) <= avgEatDiffPercent * 0.7) {
+                if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
                     //往回搬;
                     log.info("Move back!");
                 } else {
@@ -119,12 +146,11 @@ public class TradeService {
         }
         double profit = ((moneyAfter - moneyBefore) / moneyBefore) * 100;
         log.info("Profit:{}", profit);
-        log.info("Ready to traded !!!!!!!!!!!");
         if (Context.getUnFilledOrderNum() > 0) {
-            log.info("订单待处理！");
+            log.info("Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
             return;
         }
-        log.info("============================ ORDER ============================");
+        log.info("============================ PLACE ORDER ============================");
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
         OrderRequest sellOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -132,12 +158,11 @@ public class TradeService {
         log.info("Place order, buy:" + buyOrder + "sell:" + sellOrder);
         String pair = UUID.randomUUID().toString();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
-            orderService.placeOrder(buyOrder, marketA, pair);
-            orderService.placeOrder(buyOrder, marketB, pair);
-
+            orderService.createOrder(buyOrder, marketA, pair);
+            orderService.createOrder(sellOrder, marketB, pair);
         } else {  // 市场B买. 市场A卖
-            orderService.placeOrder(sellOrder, marketA, pair);
-            orderService.placeOrder(buyOrder, marketB, pair);
+            orderService.createOrder(sellOrder, marketA, pair);
+            orderService.createOrder(buyOrder, marketB, pair);
         }
         log.info("Done!");
         // 跟踪买卖订单，准备下次买卖；

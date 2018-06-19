@@ -2,7 +2,6 @@ package com.jordan.ban.service;
 
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
-import com.jordan.ban.domain.MockResult;
 import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.entity.Account;
@@ -36,7 +35,7 @@ public class MockTradeService {
      */
     public synchronized void mockTrade(MockTradeResultIndex tradeResult) {
         if (this.lastTradeMap.get(tradeResult.getSymbol()) != null && this.lastTradeMap.get(tradeResult.getSymbol()) == tradeResult.getEatTradeVolume()) {
-            log.info(String.format("Last mockTrade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));
+            log.info(String.format("Last trade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));
             return;
         }
         lastTradeMap.put(tradeResult.getSymbol(), tradeResult.getEatTradeVolume());
@@ -89,7 +88,7 @@ public class MockTradeService {
         double totalMoney = accountA.getMoney() + accountB.getMoney();
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) {
-                if (Math.abs(diffPercent) <= avgEatDiffPercent * 0.7) {
+                if (Math.abs(diffPercent) <= avgEatDiffPercent * 0.8) {
                     //往回搬;
                     log.info("Move back!");
                 } else {

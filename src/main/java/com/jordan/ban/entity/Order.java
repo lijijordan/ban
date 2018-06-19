@@ -67,7 +67,7 @@ public class Order extends BaseEntity {
     /**
      * 平台生成的ID
      */
-    private Long orderId;
+    private String orderId;
 
     // 关联的订单
     private String orderPairKey;

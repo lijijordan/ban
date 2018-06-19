@@ -98,7 +98,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
     }
 
     @Override
-    public Long placeOrder(OrderRequest orderRequest) {
+    public String placeOrder(OrderRequest orderRequest) {
         log.info("【Fcoin】place order:" + orderRequest.toString());
         FcoinOrderRequest request = new FcoinOrderRequest();
         request.setAmount(orderRequest.getAmount());
@@ -115,8 +115,8 @@ public class Fcoin extends BaseMarket implements MarketParser {
     }
 
     @Override
-    public OrderResponse getFilledOrder(long orderId) {
-        FcoinMatchresultsOrdersDetailResponse response = this.matchresults(String.valueOf(orderId));
+    public OrderResponse getFilledOrder(String orderId) {
+        /*FcoinMatchresultsOrdersDetailResponse response = this.matchresults(String.valueOf(orderId));
         if (response != null) {
             OrderType orderType;
             if (response.getSide().equals("buy")) {
@@ -127,7 +127,25 @@ public class Fcoin extends BaseMarket implements MarketParser {
             return OrderResponse.builder().createTime(new Date(response.getCreated_at()))
                     .filledAmount(response.getFilled_amount()).fillFees(response.getFill_fees()).type(orderType).build();
         }
+        return null;*/
+
+        FcoinOrdersDetailResponse response = this.getOrdersDetail(String.valueOf(orderId));
+        if (response != null) {
+            OrderType orderType;
+            if (response.getSide().equals("buy")) {
+                orderType = OrderType.BUY_LIMIT;
+            } else {
+                orderType = OrderType.SELL_LIMIT;
+            }
+            return OrderResponse.builder().createTime(response.getCreated_at()).orderState(response.getState())
+                    .filledAmount(response.getFilled_amount()).fillFees(response.getFill_fees()).type(orderType).build();
+        }
         return null;
+    }
+
+    @Override
+    public boolean cancelOrder(String orderId) {
+        return false;
     }
 
 
@@ -163,10 +181,10 @@ public class Fcoin extends BaseMarket implements MarketParser {
      * @return
      */
     public FcoinOrdersDetailResponse getOrdersDetail(String orderId) {
-        FcoinOrdersDetailResponse resp = get(API_HOST + "orders/" + orderId,
-                null, new TypeReference<FcoinOrdersDetailResponse>() {
+        FcoinApiResponse<FcoinOrdersDetailResponse> resp = get(API_HOST + "orders/" + orderId,
+                null, new TypeReference<FcoinApiResponse<FcoinOrdersDetailResponse>>() {
                 });
-        return resp;
+        return resp.getData();
     }
 
     /**
@@ -182,15 +200,16 @@ public class Fcoin extends BaseMarket implements MarketParser {
         return resp.checkAndReturn();
     }
 
+
     /**
      * 创建订单
      *
      * @param request CreateOrderRequest object.
      * @return Order id.
      */
-    public Long placeOrder(FcoinOrderRequest request) {
-        FcoinApiResponse<Long> resp =
-                post(API_HOST + "orders", request, new TypeReference<FcoinApiResponse<Long>>() {
+    public String placeOrder(FcoinOrderRequest request) {
+        FcoinApiResponse<String> resp =
+                post(API_HOST + "orders", request, new TypeReference<FcoinApiResponse<String>>() {
                 });
         return resp.checkAndReturn();
     }
@@ -293,19 +312,31 @@ public class Fcoin extends BaseMarket implements MarketParser {
     public static void main(String[] args) {
         Fcoin fcoin = (Fcoin) MarketFactory.getMarket("Fcoin");
 
-//        FcoinBalance[] balances = fcoin.getBalances();
-//        System.out.println(fcoin.getServerTime());
+        /*List<BalanceDto> list = fcoin.getBalances();
+        System.out.println(list.toString());*/
+
 //        fcoin.matchresults("12");
-        fcoin.getOrdersDetail("1");
+
+//        fcoin.getOrdersDetail("1");
 
 
-       /* FcoinOrderRequest request = new FcoinOrderRequest();
+        /*FcoinOrderRequest request = new FcoinOrderRequest();
         request.setAmount(0.1);
         request.setPrice(0.01);
         request.setSide("buy");
         request.setSymbol("ltcusdt");
         request.setType("limit");
         fcoin.placeOrder(request);*/
+
+        /*OrderRequest request = new OrderRequest();
+        request.setAmount(0.01);
+        request.setPrice(94.55);
+        request.setType(OrderType.BUY_LIMIT);
+        request.setSymbol("ltcusdt");
+        fcoin.placeOrder(request);*/
+
+        FcoinOrdersDetailResponse response = fcoin.getOrdersDetail("zM_cP9WUmovRYP20wZdewkUWDooaSaBztE7dm0jkbc8=");
+        response.getAmount();
     }
 }
 
@@ -382,6 +413,9 @@ class FcoinMatchresultsOrdersDetailResponse {
 }
 
 /**
+ * {
+ * "status": 0,
+ * "data": {
  * "id": "9d17a03b852e48c0b3920c7412867623",
  * "symbol": "string",
  * "type": "limit",
@@ -394,6 +428,8 @@ class FcoinMatchresultsOrdersDetailResponse {
  * "filled_amount": "string",
  * "created_at": 0,
  * "source": "web"
+ * }
+ * }
  */
 @Data
 class FcoinOrdersDetailResponse {
@@ -401,12 +437,20 @@ class FcoinOrdersDetailResponse {
     String symbol;
     String type;
     String side;
-    String price;
-    String amount;
-    String state;
+    double price;
+    double amount;
+    /**
+     * submitted	已提交
+     * partial_filled	部分成交
+     * partial_canceled	部分成交已撤销
+     * filled	完全成交
+     * canceled	已撤销
+     * pending_cancel	撤销已提交
+     */
+    OrderState state;
     String executed_value;
-    String fill_fees;
-    String filled_amount;
-    String created_at;
+    double fill_fees;
+    double filled_amount;
+    Date created_at;
     String source;
 }

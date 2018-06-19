@@ -39,4 +39,5 @@ public class OrderResponse {
     private double fillFees;
     private Date createTime;
     private OrderState orderState;
+    private double price;
 }

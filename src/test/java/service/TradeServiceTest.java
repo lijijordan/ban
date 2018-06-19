@@ -36,8 +36,7 @@ public class TradeServiceTest {
     @Test
     public void createOrder() {
         Order order = Order.builder().state(OrderState.submitted).amount(2).price(1.2).type(OrderType.SELL_LIMIT).platform("Huobi")
-                .orderId(2l).build();
-
+                .orderId("").build();
         orderService.refreshOrderState(order);
     }
 }
