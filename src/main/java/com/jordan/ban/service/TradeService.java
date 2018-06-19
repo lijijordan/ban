@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.UUID;
 
@@ -74,7 +75,7 @@ public class TradeService {
                 minTradeVolume = accountB.getVirtualCurrency();
             }
             // 市场A可买入币量
-            canBuyCoin = accountA.getMoney() / buyPrice * (1 + 0.002);
+            canBuyCoin = accountA.getMoney() / (buyPrice * (1 + 0.002));
 
 
         } else {  // 市场B买. 市场A卖
@@ -82,7 +83,7 @@ public class TradeService {
                 minTradeVolume = accountA.getVirtualCurrency();
             }
             // 市场B可买入币量
-            canBuyCoin = accountB.getMoney() / buyPrice * (1 + 0.002);
+            canBuyCoin = accountB.getMoney() / (buyPrice * (1 + 0.002));
         }
         if (canBuyCoin < minTradeVolume) {
             minTradeVolume = canBuyCoin;
@@ -90,6 +91,8 @@ public class TradeService {
         if (minTradeVolume <= 0) {
             throw new TradeException("交易量为0!");
         }
+
+
         log.info("吃单量：{}", minTradeVolume);
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
@@ -108,11 +111,11 @@ public class TradeService {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-            log.info("Not enough money!");
+            log.info("钱不足！!");
             return;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-            log.info("Not enough coin!");
+            log.info("币不足！!");
             return;
         }
         Double avgEatDiffPercent = DEFAULT_METRICS_MAX;
@@ -123,13 +126,13 @@ public class TradeService {
             if (coinDiffAfter < coinDiffBefore) {
                 if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
                     //往回搬;
-                    log.info("Move back!");
+                    log.info("逆差：{},往回搬！", diffPercent);
                 } else {
-                    log.info("Right way. but not enough profit. Not deal!");
+                    log.info("逆差：{},逆差过大，不搬！", diffPercent);
                     return;
                 }
             } else {
-                log.info("Coin won't balance! Not Deal!");
+                log.info("亏损、方向错误!");
                 return;
             }
         } else {
@@ -137,9 +140,9 @@ public class TradeService {
             if (diffPercent < avgEatDiffPercent) {
                 if (coinDiffAfter < coinDiffBefore) { // 方向正确
                     //往回搬;
-                    log.info("Move back! Earn a little.");
+                    log.info("顺差：{},往回搬！", diffPercent);
                 } else { // 方向错误
-                    log.info("Coin won't balance! Not Deal!");
+                    log.info("顺差：{},利润太小，不搬！", diffPercent);
                     return;
                 }
             }
@@ -147,10 +150,13 @@ public class TradeService {
         double profit = ((moneyAfter - moneyBefore) / moneyBefore) * 100;
         log.info("Profit:{}", profit);
         if (Context.getUnFilledOrderNum() > 0) {
-            log.info("Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
-            return;
+            log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
+            throw new TradeException("有[" + Context.getUnFilledOrderNum() + "]个交易未完成！");
         }
-        log.info("============================ PLACE ORDER ============================");
+        log.info("============================ 准备下订单 ============================");
+        // 统一精度4
+        minTradeVolume = round(minTradeVolume);
+
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
         OrderRequest sellOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -168,4 +174,13 @@ public class TradeService {
         // 跟踪买卖订单，准备下次买卖；
     }
 
+    private static double round(double d) {
+        DecimalFormat df = new DecimalFormat("#.####");
+        return Double.parseDouble(df.format(d));
+    }
+
+    public static void main(String[] args) {
+        double d = 0.1938439892950703;
+        System.out.println(round(d));
+    }
 }

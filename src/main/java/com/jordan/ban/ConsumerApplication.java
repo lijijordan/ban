@@ -4,7 +4,9 @@ import com.jordan.ban.common.Constant;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.TradeRecord;
 import com.jordan.ban.es.ElasticSearchClient;
+import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.mq.MessageReceiver;
+import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
 import com.jordan.ban.service.TradeService;
 import com.jordan.ban.utils.JSONUtil;
@@ -22,6 +24,9 @@ public class ConsumerApplication {
 
     @Autowired
     private MockTradeService mockTradeService;
+
+    @Autowired
+    private Sender sender;
 
     @Autowired
     private TradeService tradeService;
@@ -45,11 +50,20 @@ public class ConsumerApplication {
         ElasticSearchClient.indexAsynchronous(json, Constant.MOCK_TRADE_INDEX);
         MockTradeResultIndex mockTradeResultIndex = JSONUtil.getEntity(json, MockTradeResultIndex.class);
 //        this.mockTradeService.mockTrade(mockTradeResultIndex);
+        long costTime = System.currentTimeMillis() - mockTradeResultIndex.getCreateTime().getTime();
+        if (costTime > 2000) {
+            log.info("【{}】秒之前的事件,略过！", costTime / 1000);
+            return;
+        }
         if (mockTradeResultIndex.getDiffPlatform().equals("Huobi-Fcoin") && mockTradeResultIndex.getSymbol().equals("LTCUSDT")) {
             log.info("source json:" + json);
             System.out.println("-------------------------------start trade ---------------------------");
             long start = System.currentTimeMillis();
-            this.tradeService.trade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+            try {
+                this.tradeService.trade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+            } catch (TradeException e) {
+                e.printStackTrace();
+            }
             System.out.println("---------------------------------- end ------------------------------- " +
                     (System.currentTimeMillis() - start) + "ms");
         }
@@ -77,6 +91,10 @@ public class ConsumerApplication {
 //        application.receiveMarket(topic + "-differ");
         log.info("Topic:" + topic + "-depth");
         this.receiveDepthDiff(topic + "-depth");
+    }
+
+    public void sendToES(String topic, String message) {
+        sender.send(topic + "-elk", message);
     }
 }
 

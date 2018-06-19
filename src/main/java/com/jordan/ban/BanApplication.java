@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.net.UnknownHostException;
-
+@EnableScheduling
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
 @SpringBootApplication

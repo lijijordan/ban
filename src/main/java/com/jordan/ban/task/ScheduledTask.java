@@ -22,14 +22,14 @@ public class ScheduledTask {
     @Autowired
     private OrderService orderService;
 
-    private static final long CHECK_ORDER_RATE = 5000;//5 second
+    private static final long CHECK_ORDER_RATE = 2000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
     public void watchUnfilledOrder() {
         List<Order> list = orderService.getUnfilledOrders();
         if (list != null && list.size() > 0) {
-            log.info("未处理订单：" + list.toString());
+            log.info("未处理订单：{}个" + list.size());
             Context.setUnFilledOrderNum(list.size());
         }
         list.forEach(order -> {
