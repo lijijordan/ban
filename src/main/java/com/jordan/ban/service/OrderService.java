@@ -84,7 +84,7 @@ public class OrderService {
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair) {
         String orderAid = market.placeOrder(orderRequest);
         if (StringUtils.isEmpty(orderAid)) {
-            throw new TradeException("创建订单失败！");
+            throw new TradeException("Create Order failed！");
         }
         try {
             slackService.sendMessage("Order", "Place order:" + orderRequest.toString());

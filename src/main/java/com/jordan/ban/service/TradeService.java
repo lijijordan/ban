@@ -52,8 +52,8 @@ public class TradeService {
         accountB.setVirtualCurrency(accountB.getVirtualCurrency() - 0.8618877362214452);
 
 
-        log.info("账户A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
-        log.info("账户B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
+        log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
+        log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
 //        log.info("Mock account!");
 //        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
         /*
@@ -61,7 +61,7 @@ public class TradeService {
         */
 
         if (accountA == null || accountB == null) {
-            throw new TradeException("加载账户异常！");
+            throw new TradeException("Load account error！");
         }
         double coinDiffBefore = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyBefore = accountA.getMoney() + accountB.getMoney();
@@ -92,14 +92,12 @@ public class TradeService {
         if (canBuyCoin < minTradeVolume) {
             minTradeVolume = canBuyCoin;
         }
+        log.info("trade volume={}", minTradeVolume);
         if (minTradeVolume <= 0) {
-            throw new TradeException("交易量为0!");
+            throw new TradeException("trade volume is 0!");
         }
-
-
-        log.info("吃单量：{}", minTradeVolume);
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
-            log.info("成交额：{}小于最小数量限制，不搬！", minTradeVolume);
+            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
             return;
         }
 
@@ -121,11 +119,11 @@ public class TradeService {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-            log.info("钱不足！!");
+            log.info("Money is not enough！!");
             return;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-            log.info("币不足！!");
+            log.info("Coin is not enough！!");
             return;
         }
         Double avgEatDiffPercent = DEFAULT_METRICS_MAX;
@@ -136,13 +134,13 @@ public class TradeService {
             if (coinDiffAfter < coinDiffBefore) {
                 if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
                     //往回搬;
-                    log.info("逆差：{},往回搬！", diffPercent);
+                    log.info("+++++：{},move back！", diffPercent);
                 } else {
-                    log.info("逆差：{},逆差过大，不搬！", diffPercent);
+                    log.info("-----：{},not deal！", diffPercent);
                     return;
                 }
             } else {
-                log.info("亏损、方向错误!");
+                log.info("-----------, not deal!");
                 return;
             }
         } else {
@@ -150,9 +148,9 @@ public class TradeService {
             if (diffPercent < avgEatDiffPercent) {
                 if (coinDiffAfter < coinDiffBefore) { // 方向正确
                     //往回搬;
-                    log.info("顺差：{},往回搬！", diffPercent);
+                    log.info("++++++++++++++:{},move back!", diffPercent);
                 } else { // 方向错误
-                    log.info("顺差：{},利润太小，不搬！", diffPercent);
+                    log.info("+++++:{},too little，not deal！", diffPercent);
                     return;
                 }
             }
@@ -161,9 +159,9 @@ public class TradeService {
         log.info("Profit:{}", profit);
         if (Context.getUnFilledOrderNum() > 0) {
             log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
-            throw new TradeException("有[" + Context.getUnFilledOrderNum() + "]个交易未完成！");
+            throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!!!");
         }
-        log.info("============================ 准备下订单 ============================");
+        log.info("============================ PLACE ORDER ============================");
         // 统一精度4
         minTradeVolume = round(minTradeVolume);
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -188,22 +186,4 @@ public class TradeService {
         return Double.parseDouble(df.format(d));
     }
 
-    public static void main(String[] args) {
-        int a = 10, b = 1;
-        double coinDiffBefore = Math.abs(a - b);
-        a = a - 1;
-        b = b + 1;
-        double coinDiffAfter = Math.abs(a - b);
-
-        System.out.println(coinDiffBefore);
-        System.out.println(coinDiffAfter);
-
-        if (coinDiffAfter < coinDiffBefore) { // 方向正确
-            //往回搬;
-            log.info("顺差：{},往回搬！");
-        } else { // 方向错误
-            log.info("顺差：{},利润太小，不搬！");
-            return;
-        }
-    }
 }

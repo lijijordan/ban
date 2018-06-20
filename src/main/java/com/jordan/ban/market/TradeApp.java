@@ -50,10 +50,9 @@ public class TradeApp {
         MockTradeResultIndex mockTradeResultIndex = JSONUtil.getEntity(json, MockTradeResultIndex.class);
 //        this.mockTradeService.mockTrade(mockTradeResultIndex);
         if (mockTradeResultIndex.getDiffPlatform().equals("Huobi-Fcoin") && mockTradeResultIndex.getSymbol().equals("LTCUSDT")) {
-            log.info("source json:" + json);
             long costTime = System.currentTimeMillis() - mockTradeResultIndex.getCreateTime().getTime();
             if (costTime > 2000) {
-                log.info("【{}】秒之前的事件,略过！", costTime / 1000);
+                log.info("【{}】second ago,pass it!", costTime / 1000);
                 return;
             }
             System.out.println("-------------------------------start trade ---------------------------");
