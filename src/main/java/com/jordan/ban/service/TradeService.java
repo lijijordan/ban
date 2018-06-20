@@ -157,10 +157,10 @@ public class TradeService {
         }
         double profit = ((moneyAfter - moneyBefore) / moneyBefore) * 100;
         log.info("Profit:{}", profit);
-        if (Context.getUnFilledOrderNum() > 0) {
+        /*if (Context.getUnFilledOrderNum() > 0) {
             log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
             throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!");
-        }
+        }*/
         log.info("============================ PLACE ORDER ============================");
         // 统一精度4
         minTradeVolume = round(minTradeVolume);
