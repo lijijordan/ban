@@ -134,13 +134,13 @@ public class TradeService {
             if (coinDiffAfter < coinDiffBefore) {
                 if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
                     //往回搬;
-                    log.info("+++++：{},move back！", diffPercent);
+                    log.info("+++++++:{},move back!", diffPercent);
                 } else {
-                    log.info("-----：{},not deal！", diffPercent);
+                    log.info("-------:{},not deal!", diffPercent);
                     return;
                 }
             } else {
-                log.info("-----------, not deal!");
+                log.info("--------[{}]------not deal!", diffPercent);
                 return;
             }
         } else {
@@ -159,7 +159,7 @@ public class TradeService {
         log.info("Profit:{}", profit);
         if (Context.getUnFilledOrderNum() > 0) {
             log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
-            throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!!!");
+            throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!");
         }
         log.info("============================ PLACE ORDER ============================");
         // 统一精度4
