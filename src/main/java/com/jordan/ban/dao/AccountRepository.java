@@ -8,6 +8,6 @@ import org.springframework.data.repository.Repository;
 
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
-    @Query(value = "SELECT * FROM ACCOUNT WHERE PLATFORM = ?2 AND SYMBOL = ?1", nativeQuery = true)
+    @Query(value = "select * from account where platform = ?2 and symbol = ?1", nativeQuery = true)
     Account findBySymbolAndPlatform(String symbol, String diffPlatform);
 }
