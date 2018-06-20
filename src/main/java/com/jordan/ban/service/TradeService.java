@@ -49,7 +49,7 @@ public class TradeService {
                 .virtualCurrency(fcoinBalance.get("ltc").getBalance()).build();
 
         //FIXME：平衡币量AccountDto(ID=null, platform=Huobi, money=0.04120900000000009, virtualCurrency=0.3994360659917748, symbol=ltcusdt)
-        accountB.setVirtualCurrency(accountB.getVirtualCurrency() - 0.8618877362214452);
+        accountB.setVirtualCurrency(accountB.getVirtualCurrency() - 0.8);
 
 
         log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
