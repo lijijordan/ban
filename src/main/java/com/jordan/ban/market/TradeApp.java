@@ -52,7 +52,7 @@ public class TradeApp {
         if (mockTradeResultIndex.getDiffPlatform().equals("Huobi-Fcoin") && mockTradeResultIndex.getSymbol().equals("LTCUSDT")) {
             long costTime = System.currentTimeMillis() - mockTradeResultIndex.getCreateTime().getTime();
             if (costTime > 2000) {
-                log.info("【{}】second ago,pass it!", costTime / 1000);
+                log.info("[{}]second ago,pass it!", costTime / 1000);
                 return;
             }
             System.out.println("-------------------------------start trade ---------------------------");

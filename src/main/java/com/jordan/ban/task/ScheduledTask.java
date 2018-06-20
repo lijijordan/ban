@@ -29,7 +29,7 @@ public class ScheduledTask {
     public void watchUnfilledOrder() {
         List<Order> list = orderService.getUnfilledOrders();
         if (list != null && list.size() > 0) {
-            log.info("未处理订单：{}个" + list.size());
+            log.info("Waiting for fix order:[{}]" + list.size());
             Context.setUnFilledOrderNum(list.size());
         }
         list.forEach(order -> {

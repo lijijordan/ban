@@ -32,7 +32,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void mockAccount() {
+    public void queryAccount() {
         Map<String, BalanceDto> huobiBalance = accountService.findBalancesCache(Huobi.PLATFORM_NAME);
         AccountDto accountA = AccountDto.builder().money(huobiBalance.get("usdt").getBalance()).platform(Huobi.PLATFORM_NAME).symbol("ltcusdt")
                 .virtualCurrency(huobiBalance.get("ltc").getBalance()).build();
