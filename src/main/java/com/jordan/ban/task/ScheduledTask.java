@@ -66,7 +66,8 @@ public class ScheduledTask {
         Map<String, BalanceDto> fcoinBalance = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
         AccountDto accountB = AccountDto.builder().money(fcoinBalance.get("usdt").getBalance()).platform(Fcoin.PLATFORM_NAME).symbol(symbol)
                 .virtualCurrency(fcoinBalance.get("ltc").getBalance()).build();
-
+        System.out.println("acount A:"+accountA.toString());
+        System.out.println("acount B:"+accountB.toString());
         ProfitStatistics before = profitStatisticsRepository.findTopBySymbolAndAndPlatformAAndAndPlatformBOrderByCreateTimeDesc(symbol, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME);
         double moneyBefore, coinBefore, increase, increasePercent, moneyAfter, coinAfter;
         moneyAfter = accountA.getMoney() + accountB.getMoney();

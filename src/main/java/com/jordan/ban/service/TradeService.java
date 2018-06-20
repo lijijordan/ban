@@ -26,7 +26,7 @@ public class TradeService {
 
     private static double DEFAULT_METRICS_MAX = 0.003; // 0.8%
     private static double METRICS_BACK_PERCENT = 0.7;
-    private static final double MIN_TRADE_AMOUNT = 0.001;
+    private static final double MIN_TRADE_AMOUNT = 0.01;
 
     private static double DEFAULT_MIN_TRADE_VOLUME = 1;
 
