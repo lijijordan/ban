@@ -50,6 +50,18 @@ public class OrderService {
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
         if (orderResponse != null) {
+            // 判断订单是否变化，如果变化发送通知
+            if (isChanged(order, orderResponse)) {
+                try {
+                    Date date = order.getUpdateTime() != null ? order.getUpdateTime() : order.getCreateTime();
+                    long costTime = System.currentTimeMillis() - date.getTime();
+                    this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
+                            orderResponse.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    log.info("Send slack failed!");
+                }
+            }
             order.setState(orderResponse.getOrderState());
             order.setFillFees(orderResponse.getFillFees());
             order.setFilledAmount(orderResponse.getFilledAmount());
@@ -59,6 +71,15 @@ public class OrderService {
             order.setFillFees(orderResponse.getFillFees());
             this.orderRepository.save(order);
         }
+    }
+
+    private boolean isChanged(Order order, OrderResponse orderResponse) {
+        boolean r = false;
+        if (order.getState() != orderResponse.getOrderState() || order.getFilledAmount() != orderResponse.getFilledAmount()
+                || order.getFillFees() != orderResponse.getFillFees()) {
+            r = true;
+        }
+        return r;
     }
 
 

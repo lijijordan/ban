@@ -25,8 +25,8 @@ public class TacticsApplication {
         }
         ConfigurableApplicationContext context = SpringApplication.run(TacticsApplication.class, args);
         AccountService accountService = context.getBean(AccountService.class);
-//        accountService.emptyAccount();
-//        accountService.initAccount();
+        accountService.emptyAccount();
+        accountService.mockAccountTestData();
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
         application.receiveDiff("EOSUSDT");
         application.receiveDiff("BTCUSDT");
@@ -42,8 +42,4 @@ public class TacticsApplication {
         System.out.println("Consumer Started!");
     }
 
-    public static void receiveDiff(ConsumerApplication application, String topic) {
-        System.out.println("Topic:" + topic + "-depth");
-        application.receiveDepthDiff(topic + "-depth");
-    }
 }

@@ -48,6 +48,6 @@ public class SlackService {
 
     public static void main(String[] args) throws IOException {
         SlackService slackService = new SlackService();
-        slackService.sendMessage("Ban", "Data:MockTradeResultIndex(eatDiff=-0.1299999999999949, eatPercent=-0.001333333333333281, tradeDiff=-0.05028000000001076, tradePercent=-5.15322332684337E-4, tradeDirect=B2A, createTime=Tue Jun 19 12:15:46 CST 2018, costTime=1193, symbol=LTCUSDT, diffPlatform=Huobi-Fcoin, eatTradeVolume=0.3734, sellCost=36.333687000000005, buyCost=36.236797167999995, tradeVolume=30.5553, sellPrice=97.5, buyPrice=97.24)");
+        slackService.sendMessage("Ban", "test");
     }
 }

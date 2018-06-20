@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 public class MockTradeService {
 
-    private static double DEFAULT_METRICS_MAX = 0.008; // 0.4%
+    private static double DEFAULT_METRICS_MAX = 0.003; // 0.4%
 
     @Autowired
     private AccountRepository accountRepository;
