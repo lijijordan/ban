@@ -17,7 +17,7 @@ public class BanProductApplication {
         ConfigurableApplicationContext context = SpringApplication.run(BanProductApplication.class, args);
         ProductApplication productApplication = context.getBean(ProductApplication.class);
 
-        /*// huobi vs dragonex
+        // huobi vs dragonex
         productApplication.diffTask(Constant.NEO_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.EOS_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BTC_USDT, Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 2000);
@@ -36,7 +36,7 @@ public class BanProductApplication {
         // fcoin vs huobi
         productApplication.diffTask(Constant.BTC_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BCH_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
-        productApplication.diffTask(Constant.ETH_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);*/
+        productApplication.diffTask(Constant.ETH_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.LTC_USDT, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
 
         System.out.println("Product application Started!");
