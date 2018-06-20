@@ -45,7 +45,7 @@ public class OrderService {
 
 
     //    @Transactional(Pro=Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
-//    @Async
+    @Async
     public void refreshOrderState(Order order) {
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
