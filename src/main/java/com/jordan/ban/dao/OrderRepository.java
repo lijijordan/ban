@@ -10,4 +10,7 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
 
     @Query(value = "SELECT * FROM TRADE_ORDER WHERE state <> 3", nativeQuery = true)
     List<Order> findAllUnfilledOrders();
+
+
+    Order findByOrderId(String orderId);
 }

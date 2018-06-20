@@ -1,6 +1,5 @@
 package queue;
 
-import com.jordan.ban.ProductApplication;
 import com.jordan.ban.mq.MessageReceiveCallback;
 import com.jordan.ban.mq.MessageReceiver;
 

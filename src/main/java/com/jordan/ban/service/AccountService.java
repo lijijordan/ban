@@ -1,21 +1,15 @@
 package com.jordan.ban.service;
 
-import com.jordan.ban.ProductApplication;
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.BalanceRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
-import com.jordan.ban.domain.AccountDto;
 import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.entity.Account;
-import com.jordan.ban.entity.Balance;
-import com.jordan.ban.entity.Platform;
-import com.jordan.ban.entity.TradeRecord;
 import com.jordan.ban.market.parser.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -1,7 +1,7 @@
 package service;
 
 
-import com.jordan.ban.BanApplication;
+import com.jordan.ban.TacticsApplication;
 import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.domain.OrderState;
 import com.jordan.ban.domain.OrderType;
@@ -19,7 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BanApplication.class)
+@SpringBootTest(classes = TacticsApplication.class)
 @Slf4j
 public class TradeServiceTest {
 

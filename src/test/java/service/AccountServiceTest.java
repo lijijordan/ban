@@ -1,18 +1,12 @@
 package service;
 
 
-import com.jordan.ban.BanApplication;
+import com.jordan.ban.TacticsApplication;
 import com.jordan.ban.domain.AccountDto;
 import com.jordan.ban.domain.BalanceDto;
-import com.jordan.ban.domain.OrderState;
-import com.jordan.ban.domain.OrderType;
-import com.jordan.ban.entity.Order;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
-import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.service.AccountService;
-import com.jordan.ban.service.OrderService;
-import com.jordan.ban.service.TradeService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BanApplication.class)
+@SpringBootTest(classes = TacticsApplication.class)
 @Slf4j
 public class AccountServiceTest {
 
@@ -48,5 +42,10 @@ public class AccountServiceTest {
 
         System.out.println(accountA);
         System.out.println(accountB);
+
+        System.out.println(accountA.getVirtualCurrency()-accountB.getVirtualCurrency());
+
+        System.out.println("total money:" + (accountA.getMoney() + accountB.getMoney()));
+        System.out.println("total coin:" + (accountA.getVirtualCurrency() + accountB.getVirtualCurrency()));
     }
 }

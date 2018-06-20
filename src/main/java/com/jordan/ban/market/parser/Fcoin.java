@@ -137,7 +137,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
             } else {
                 orderType = OrderType.SELL_LIMIT;
             }
-            return OrderResponse.builder().createTime(response.getCreated_at()).orderState(response.getState())
+            return OrderResponse.builder().createTime(response.getCreated_at()).orderState(response.getState()).price(response.getPrice()).symbol(response.getSymbol())
                     .filledAmount(response.getFilled_amount()).fillFees(response.getFill_fees()).type(orderType).build();
         }
         return null;

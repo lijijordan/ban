@@ -1,7 +1,7 @@
 package service;
 
 
-import com.jordan.ban.BanApplication;
+import com.jordan.ban.TacticsApplication;
 import com.jordan.ban.domain.OrderRequest;
 import com.jordan.ban.domain.OrderType;
 import com.jordan.ban.entity.Order;
@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BanApplication.class)
+@SpringBootTest(classes = TacticsApplication.class)
 @Slf4j
 public class OrderServiceTest {
 
@@ -44,6 +44,12 @@ public class OrderServiceTest {
         });
     }
 
+
+    @Test
+    public void testRefreshOrderById(){
+        Order order = this.orderService.findByOrderId("4a17pXp7BtvogAyDtrT3OvBeVoI5N-ejJXWau3cq4Rs=");
+        this.orderService.refreshOrderState(order);
+    }
 
     @Test
     public void createOrderAndRefresh() {

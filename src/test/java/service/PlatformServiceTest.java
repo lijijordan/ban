@@ -1,7 +1,7 @@
 package service;
 
 
-import com.jordan.ban.BanApplication;
+import com.jordan.ban.TacticsApplication;
 import com.jordan.ban.entity.Platform;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.service.PlatformService;
@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BanApplication.class)
+@SpringBootTest(classes = TacticsApplication.class)
 @Slf4j
 public class PlatformServiceTest {
 

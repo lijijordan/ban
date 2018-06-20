@@ -40,4 +40,5 @@ public class OrderResponse {
     private Date createTime;
     private OrderState orderState;
     private double price;
+    private String symbol;
 }

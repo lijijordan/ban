@@ -54,6 +54,7 @@ public class OrderService {
             order.setFillFees(orderResponse.getFillFees());
             order.setFilledAmount(orderResponse.getFilledAmount());
             order.setUpdateTime(new Date());
+            order.setSymbol(orderResponse.getSymbol());
             order.setPrice(orderResponse.getPrice());
             order.setFillFees(orderResponse.getFillFees());
             this.orderRepository.save(order);
@@ -86,7 +87,7 @@ public class OrderService {
             throw new TradeException("创建订单失败！");
         }
         try {
-            slackService.sendMessage("Order", "创建订单：" + orderRequest.toString());
+            slackService.sendMessage("Order", "Place order:" + orderRequest.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,5 +98,9 @@ public class OrderService {
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair)
                 .platform(market.getName())
                 .orderId(orderAid).build());
+    }
+
+    public Order findByOrderId(String orderId) {
+        return this.orderRepository.findByOrderId(orderId);
     }
 }

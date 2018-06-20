@@ -1,12 +1,9 @@
-import com.jordan.ban.BanApplication;
-import com.jordan.ban.ProductApplication;
-import com.jordan.ban.common.Constant;
+import com.jordan.ban.TacticsApplication;
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.Depth;
 import com.jordan.ban.domain.MarketDepth;
 import com.jordan.ban.domain.MockTradeResultIndex;
-import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.market.parser.Gateio;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
@@ -14,7 +11,6 @@ import com.jordan.ban.market.parser.MarketParser;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.TradeService;
 import com.jordan.ban.utils.JSONUtil;
-import javafx.print.PageOrientation;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,18 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BanApplication.class)
+@SpringBootTest(classes = TacticsApplication.class)
 @Slf4j
 public class TradeServiceTest {
 

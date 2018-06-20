@@ -26,6 +26,7 @@ public class TradeService {
 
     private static double DEFAULT_METRICS_MAX = 0.003; // 0.8%
     private static double METRICS_BACK_PERCENT = 0.7;
+    private static final double MIN_TRADE_AMOUNT = 0.001;
 
     private static double DEFAULT_MIN_TRADE_VOLUME = 1;
 
@@ -47,9 +48,12 @@ public class TradeService {
         AccountDto accountB = AccountDto.builder().money(fcoinBalance.get("usdt").getBalance()).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol())
                 .virtualCurrency(fcoinBalance.get("ltc").getBalance()).build();
 
+        //FIXME：平衡币量AccountDto(ID=null, platform=Huobi, money=0.04120900000000009, virtualCurrency=0.3994360659917748, symbol=ltcusdt)
+        accountB.setVirtualCurrency(accountB.getVirtualCurrency() - 0.8618877362214452);
+
+
         log.info("账户A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
         log.info("账户B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
-        //FIXME: Mock and test
 //        log.info("Mock account!");
 //        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
         /*
@@ -94,6 +98,12 @@ public class TradeService {
 
 
         log.info("吃单量：{}", minTradeVolume);
+        if (minTradeVolume <= MIN_TRADE_AMOUNT) {
+            log.info("成交额：{}小于最小数量限制，不搬！", minTradeVolume);
+            return;
+        }
+
+
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
 
@@ -156,7 +166,6 @@ public class TradeService {
         log.info("============================ 准备下订单 ============================");
         // 统一精度4
         minTradeVolume = round(minTradeVolume);
-
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
         OrderRequest sellOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -180,7 +189,21 @@ public class TradeService {
     }
 
     public static void main(String[] args) {
-        double d = 0.1938439892950703;
-        System.out.println(round(d));
+        int a = 10, b = 1;
+        double coinDiffBefore = Math.abs(a - b);
+        a = a - 1;
+        b = b + 1;
+        double coinDiffAfter = Math.abs(a - b);
+
+        System.out.println(coinDiffBefore);
+        System.out.println(coinDiffAfter);
+
+        if (coinDiffAfter < coinDiffBefore) { // 方向正确
+            //往回搬;
+            log.info("顺差：{},往回搬！");
+        } else { // 方向错误
+            log.info("顺差：{},利润太小，不搬！");
+            return;
+        }
     }
 }
