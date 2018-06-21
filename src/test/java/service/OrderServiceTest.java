@@ -68,6 +68,7 @@ public class OrderServiceTest {
 
     @Test
     public void statisticTrade(){
+        orderService.statisticTrade(Order.builder().orderPairKey("43e66392-2827-4223-82a3-0b05fe48662c").build());
         orderService.statisticTrade(Order.builder().orderPairKey("811bec20-0655-4107-8dfb-6ddeaa66811c").build());
     }
 }

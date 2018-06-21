@@ -6,6 +6,7 @@ import com.jordan.ban.dao.PlatformRepository;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.exception.TradeException;
+import com.jordan.ban.market.FeeUtils;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
@@ -171,9 +172,13 @@ public class TradeService {
         log.info("Place order, buy:" + buyOrder + "sell:" + sellOrder);
         String pair = UUID.randomUUID().toString();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
+            // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
+            buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketA.getName())));
             orderService.createOrder(buyOrder, marketA, pair);
             orderService.createOrder(sellOrder, marketB, pair);
         } else {  // 市场B买. 市场A卖
+            // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
+            buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketB.getName())));
             orderService.createOrder(sellOrder, marketA, pair);
             orderService.createOrder(buyOrder, marketB, pair);
         }

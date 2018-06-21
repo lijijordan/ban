@@ -24,8 +24,7 @@ public class SpringConfig {
     private final int queueCapacity = 10;
 
 
-
-    private Executor initExecutor(String namePrefix){
+    private Executor initExecutor(String namePrefix) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
         executor.setMaxPoolSize(maxPoolSize);
@@ -39,13 +38,8 @@ public class SpringConfig {
     }
 
     @Bean
-    public Executor logExecutor(){
+    public Executor logExecutor() {
         return initExecutor("log-executor-");
-    }
-
-    @Bean
-    public Executor indexExecutor(){
-        return initExecutor("index-executor-");
     }
 
 
