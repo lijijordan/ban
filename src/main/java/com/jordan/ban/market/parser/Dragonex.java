@@ -168,6 +168,10 @@ public class Dragonex extends BaseMarket implements MarketParser {
                 break;
             case "bchusdt":
                 symbolId = 111;
+            case "ltcusdt":
+                symbolId = 130;
+            case "ethusdt":
+                symbolId = 103;
                 break;
         }
         return symbolId;

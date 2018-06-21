@@ -1,11 +1,8 @@
 package com.jordan.ban.mq;
 
 import com.jordan.ban.common.Constant;
-import com.jordan.ban.domain.*;
-import com.jordan.ban.entity.TradeRecord;
+import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.es.ElasticSearchClient;
-import com.jordan.ban.exception.TradeException;
-import com.jordan.ban.mq.MessageReceiver;
 import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
 import com.jordan.ban.service.TradeService;
