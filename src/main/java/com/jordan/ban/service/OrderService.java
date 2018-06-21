@@ -1,25 +1,27 @@
 package com.jordan.ban.service;
 
 import com.jordan.ban.dao.OrderRepository;
-import com.jordan.ban.domain.OrderRequest;
-import com.jordan.ban.domain.OrderResponse;
-import com.jordan.ban.domain.OrderState;
+import com.jordan.ban.dao.TradeStatisticsRepository;
+import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.Order;
+import com.jordan.ban.entity.TradeStatistics;
+import com.jordan.ban.exception.StatisticException;
 import com.jordan.ban.exception.TradeException;
+import com.jordan.ban.market.parser.Fcoin;
+import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.StringUtils;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -33,6 +35,9 @@ public class OrderService {
 
     @Autowired
     private SlackService slackService;
+
+    @Autowired
+    private TradeStatisticsRepository tradeStatisticsRepository;
 
     /**
      * 获取为完成交易的订单
@@ -70,7 +75,58 @@ public class OrderService {
             order.setPrice(orderResponse.getPrice());
             order.setFillFees(orderResponse.getFillFees());
             this.orderRepository.save(order);
+
+            // 交易完成：统计交易信息
+            if (orderResponse.getOrderState() == OrderState.filled) {
+                this.statisticTrade(order);
+            }
         }
+    }
+
+    public synchronized void statisticTrade(Order order) {
+        List<Order> list = this.orderRepository.findAllByOrderPairKey(order.getOrderPairKey());
+        if (list.isEmpty() || list.size() < 2) {
+            throw new StatisticException("Can not found order pair.");
+        }
+        Order buyOrder, sellOrder;
+        if (list.get(0).getType() == OrderType.BUY_LIMIT) {
+            buyOrder = list.get(0);
+            sellOrder = list.get(1);
+        } else {
+            buyOrder = list.get(1);
+            sellOrder = list.get(0);
+        }
+        if (buyOrder.getState() != OrderState.filled || sellOrder.getState() != OrderState.filled) {// 有订单未完成
+            log.info("Order :{} waiting for trade, can not statistic.", order);
+            return;
+        }
+
+        Map<String, BalanceDto> buyBalance = accountService.findBalancesCache(buyOrder.getPlatform());
+        AccountDto buyAccount = AccountDto.builder().money(buyBalance.get("usdt").getBalance())
+                .virtualCurrency(buyBalance.get("ltc").getBalance()).build();
+        Map<String, BalanceDto> sellBalance = accountService.findBalancesCache(sellOrder.getPlatform());
+        AccountDto sellAccount = AccountDto.builder().money(sellBalance.get("usdt").getBalance())
+                .virtualCurrency(sellBalance.get("ltc").getBalance()).build();
+
+        TradeStatistics last = tradeStatisticsRepository.findTopByOrderByCreateTimeDesc();
+        if (last == null) {
+            last = TradeStatistics.builder().build();
+        }
+        double totalCoin = buyAccount.getVirtualCurrency() + sellAccount.getVirtualCurrency();
+        double totalMoney = buyAccount.getMoney() + sellAccount.getMoney();
+
+        double diffCoin = totalCoin - last.getTotalCoin();
+        double diffCoinPercent = diffCoin * 100 / totalCoin;
+
+        double diffMoney = totalMoney - last.getTotalMoney();
+        double diffMoneyPercent = diffMoney * 100 / totalMoney;
+
+        TradeStatistics
+                tradeStatistics = TradeStatistics.builder().buyFees(buyOrder.getFillFees()).buyMarket(buyOrder.getPlatform()).buyOrderId(buyOrder.getOrderId()).buyPrice(buyOrder.getPrice()).buyVolume(buyOrder.getFilledAmount())
+                .sellFees(sellOrder.getFillFees()).sellMarket(sellOrder.getPlatform()).sellOrderId(sellOrder.getOrderId()).sellPrice(sellOrder.getPrice()).sellVolume(sellOrder.getAmount()).orderPairKey(order.getOrderPairKey())
+                .totalCoin(totalCoin).totalMoney(totalMoney)
+                .coinDiff(diffCoin).moneyDiff(diffMoney).coinDiffPercent(diffCoinPercent).moneyDiffPercent(diffMoneyPercent).build();
+        this.tradeStatisticsRepository.save(tradeStatistics);
     }
 
     private boolean isChanged(Order order, OrderResponse orderResponse) {
@@ -102,6 +158,7 @@ public class OrderService {
      * @param pair
      * @return
      */
+    @Async
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair) {
         String orderAid = market.placeOrder(orderRequest);
         if (StringUtils.isEmpty(orderAid)) {

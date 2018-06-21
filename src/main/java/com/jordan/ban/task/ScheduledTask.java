@@ -38,7 +38,7 @@ public class ScheduledTask {
     private SlackService slackService;
 
 
-    private static final long CHECK_ORDER_RATE = 2000;//5 second
+    private static final long CHECK_ORDER_RATE = 5000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
