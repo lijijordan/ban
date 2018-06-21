@@ -164,7 +164,6 @@ public class TradeService {
         }*/
         log.info("============================ PLACE ORDER ============================");
         // 统一精度4
-        minTradeVolume = round(minTradeVolume);
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
         OrderRequest sellOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -186,9 +185,5 @@ public class TradeService {
         // 跟踪买卖订单，准备下次买卖；
     }
 
-    private static double round(double d) {
-        DecimalFormat df = new DecimalFormat("#.####");
-        return Double.parseDouble(df.format(d));
-    }
 
 }

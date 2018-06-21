@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.text.DecimalFormat;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -30,4 +32,23 @@ public class OrderRequest {
      * 订单类型，取值范围"buy-market,sell-market,buy-limit,sell-limit"
      */
     public OrderType type;
+
+    public double getAmount() {
+        return round(this.amount);
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    private static double round(double d) {
+        DecimalFormat df = new DecimalFormat("#.####");
+        return Double.parseDouble(df.format(d));
+    }
+
+    public static void main(String[] args) {
+        OrderRequest buyOrder = OrderRequest.builder().amount(1.111111111)
+                .price(12).symbol("").type(OrderType.BUY_LIMIT).build();
+        System.out.println(buyOrder.getAmount());
+    }
 }
