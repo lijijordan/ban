@@ -158,7 +158,7 @@ public class OrderService {
      * @param pair
      * @return
      */
-//    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算钱包
+//    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算yue
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair) {
         String orderAid = market.placeOrder(orderRequest);
         if (StringUtils.isEmpty(orderAid)) {

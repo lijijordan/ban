@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 @Data
@@ -43,12 +44,16 @@ public class OrderRequest {
 
     private static double round(double d) {
         DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.FLOOR);
         return Double.parseDouble(df.format(d));
     }
 
     public static void main(String[] args) {
-        OrderRequest buyOrder = OrderRequest.builder().amount(1.111111111)
+
+        double d = 0.3765620659917748;
+        OrderRequest buyOrder = OrderRequest.builder().amount(0.3765620659917748)
                 .price(12).symbol("").type(OrderType.BUY_LIMIT).build();
         System.out.println(buyOrder.getAmount());
+        System.out.println();
     }
 }
