@@ -49,15 +49,4 @@ public class AccountServiceTest {
         System.out.println("total coin:" + (accountA.getVirtualCurrency() + accountB.getVirtualCurrency()));
     }
 
-
-    public static void main(String[] args) {
-
-        // 1  = 0.998 + (1 * 0.002)
-        // 买：1
-        // 买：1 - （1* 0.002）
-        double val3 = (1 + 0.002) - ((1 + 0.002) * 0.002);
-
-
-        System.out.println(val3);
-    }
 }

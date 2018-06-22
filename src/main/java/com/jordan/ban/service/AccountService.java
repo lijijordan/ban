@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.jordan.ban.common.Constant.*;
+
 @Service
 public class AccountService {
 
@@ -69,6 +71,14 @@ public class AccountService {
         initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "EOSUSDT", 13.1469);
         initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "NEOUSDT", 48.4760);
         initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "ETHUSDT", 572.1195);
+
+
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, BTC_USDT,  6755.22);
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT,  537.01 );
+
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, BCH_USDT,   886.26 );
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, LTC_USDT,  97.21 );
+
     }
 
 

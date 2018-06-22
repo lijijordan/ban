@@ -132,7 +132,7 @@ public class TradeService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
         if (diffPercent < 0) {  // 亏损
-            if (coinDiffAfter < coinDiffBefore) {
+            if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                 if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
                     //往回搬;
                     log.info("+++++++:{},move back!", diffPercent);
@@ -147,7 +147,7 @@ public class TradeService {
         } else {
             // 有利润
             if (diffPercent < avgEatDiffPercent) {
-                if (coinDiffAfter < coinDiffBefore) { // 方向正确
+                if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
                     log.info("++++++++++++++:{},move back!", diffPercent);
                 } else { // 方向错误
@@ -185,5 +185,8 @@ public class TradeService {
         // 跟踪买卖订单，准备下次买卖；
     }
 
+    public static void main(String[] args) {
+
+    }
 
 }

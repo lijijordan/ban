@@ -15,7 +15,9 @@ public class TradeRecord extends BaseEntity {
     private Date tradeTime;
 
     private long accountA;
+    private String platformA;
     private long accountB;
+    private String platformB;
 
     private String symbol;
 

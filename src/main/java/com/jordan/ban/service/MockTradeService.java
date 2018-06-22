@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -27,18 +28,20 @@ public class MockTradeService {
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
 
-    private Map<String, Double> lastTradeMap = new HashMap<>();
+    private Map<String, Double> lastTradeMap = new ConcurrentHashMap<>();
 
     /**
      * 模拟买卖，计算收益
+     *
      * @param tradeResult
      */
     public synchronized void mockTrade(MockTradeResultIndex tradeResult) {
-        if (this.lastTradeMap.get(tradeResult.getSymbol()) != null && this.lastTradeMap.get(tradeResult.getSymbol()) == tradeResult.getEatTradeVolume()) {
+        String lastTradeKey = tradeResult.getSymbol() + tradeResult.getDiffPlatform() + tradeResult.getTradeDirect();
+        if (this.lastTradeMap.get(lastTradeKey) != null && this.lastTradeMap.get(lastTradeKey) == tradeResult.getEatTradeVolume()) {
             log.info(String.format("Last trade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));
             return;
         }
-        lastTradeMap.put(tradeResult.getSymbol(), tradeResult.getEatTradeVolume());
+        lastTradeMap.put(lastTradeKey, tradeResult.getEatTradeVolume());
         // Market A
         Account accountA = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformA());
         Account accountB = this.accountRepository.findBySymbolAndPlatform(tradeResult.getSymbol(), tradeResult.getPlatformB());
@@ -51,7 +54,9 @@ public class MockTradeService {
         TradeRecord record = new TradeRecord();
         log.info(tradeResult.toString());
         record.setAccountA(accountA.getID());
+        record.setPlatformA(accountA.getPlatform());
         record.setAccountB(accountB.getID());
+        record.setPlatformB(accountB.getPlatform());
         record.setDirect(tradeResult.getTradeDirect());
         record.setEatDiff(tradeResult.getEatDiff());
         record.setEatDiffPercent(tradeResult.getEatPercent());
