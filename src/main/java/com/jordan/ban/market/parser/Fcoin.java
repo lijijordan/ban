@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.exception.ApiException;
+import com.jordan.ban.utils.JSONUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
@@ -244,7 +245,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
         try {
             Request.Builder builder;
             if ("POST".equals(method)) {
-                RequestBody body = RequestBody.create(JSON, JsonUtil.writeValue(obj));
+                RequestBody body = RequestBody.create(JSON, JSONUtil.writeValue(obj));
                 builder = new Request.Builder().url(uri).post(body);
             } else {
                 builder = new Request.Builder().url(uri).get();
@@ -259,7 +260,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
             if (ref == null) {
                 return null;
             }
-            return JsonUtil.readValue(s, ref);
+            return JSONUtil.readValue(s, ref);
         } catch (IOException e) {
             throw new ApiException(e);
         }

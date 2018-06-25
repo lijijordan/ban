@@ -1,5 +1,6 @@
 package com.jordan.ban.market;
 
+import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 
@@ -11,6 +12,8 @@ public class FeeUtils {
                 return 0.002;
             case Fcoin.PLATFORM_NAME:
                 return 0.001;
+            case Dragonex.PLATFORM_NAME:
+                return 0.002;
         }
         return 0;
     }

@@ -44,9 +44,9 @@ public class TradeApp {
     }
 
     private void doDepthDiff(String json) {
+
         MockTradeResultIndex mockTradeResultIndex = JSONUtil.getEntity(json, MockTradeResultIndex.class);
-//        this.mockTradeService.mockTrade(mockTradeResultIndex);
-        if (mockTradeResultIndex.getDiffPlatform().equals("Huobi-Fcoin") && mockTradeResultIndex.getSymbol().equals("LTCUSDT")) {
+        if (mockTradeResultIndex.getDiffPlatform().equals("Dragonex-Fcoin")) {
             long costTime = System.currentTimeMillis() - mockTradeResultIndex.getCreateTime().getTime();
             if (costTime > 5000) {
                 log.info("[{}]second ago,pass it!", costTime / 1000);

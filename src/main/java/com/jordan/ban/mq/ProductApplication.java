@@ -52,8 +52,8 @@ public class ProductApplication {
                     mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
                     sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
 
-                    //FIXME: ltcusdt发送到交易队列
-                    if (symbol.toLowerCase().equals("ltcusdt")) {
+                    //FIXME: ethusdt发送到交易队列
+                    if (symbol.toLowerCase().equals("ethusdt")) {
                         sender.send(depthTopic + "-trade", JSONUtil.toJsonString(mockTrade));
                     }
 

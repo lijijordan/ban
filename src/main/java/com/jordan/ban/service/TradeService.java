@@ -25,8 +25,8 @@ import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 @Slf4j
 public class TradeService {
 
-    private static double DEFAULT_METRICS_MAX = 0.003; // 0.8%
-    private static double METRICS_BACK_PERCENT = 0.7;
+    private static double DEFAULT_METRICS_MAX = 0.01; // 1%
+    private static double METRICS_BACK_PERCENT = 0.85;
     private static final double MIN_TRADE_AMOUNT = 0.01;
 
     private static double DEFAULT_MIN_TRADE_VOLUME = 1;
@@ -38,27 +38,26 @@ public class TradeService {
     private AccountService accountService;
 
     public synchronized void trade(MockTradeResultIndex tradeResult) {
-        log.info("Data:" + tradeResult.toString());
+
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
 
-        Map<String, BalanceDto> huobiBalance = accountService.findBalancesCache(Huobi.PLATFORM_NAME);
-        AccountDto accountA = AccountDto.builder().money(huobiBalance.get("usdt").getBalance()).platform(Huobi.PLATFORM_NAME).symbol(tradeResult.getSymbol())
-                .virtualCurrency(huobiBalance.get("ltc").getBalance()).build();
-        Map<String, BalanceDto> fcoinBalance = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
-        AccountDto accountB = AccountDto.builder().money(fcoinBalance.get("usdt").getBalance()).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol())
-                .virtualCurrency(fcoinBalance.get("ltc").getBalance()).build();
-
-        //FIXME：平衡币量AccountDto(ID=null, platform=Huobi, money=0.04120900000000009, virtualCurrency=0.3994360659917748, symbol=ltcusdt)
-        accountB.setVirtualCurrency(accountB.getVirtualCurrency() - 0.8);
-
+        String symbol = tradeResult.getSymbol().toLowerCase();
+        String coinName = symbol.replace("usdt", "");
+        log.info("Data:" + tradeResult.toString());
+        Map<String, BalanceDto> balanceA = accountService.findBalancesCache(marketA.getName());
+        AccountDto accountA = AccountDto.builder().money(balanceA.get("usdt").getBalance()).platform(marketA.getName()).symbol(symbol)
+                .virtualCurrency(balanceA.get(coinName).getBalance()).build();
+        Map<String, BalanceDto> balanceB = accountService.findBalancesCache(marketB.getName());
+        AccountDto accountB = AccountDto.builder().money(balanceB.get("usdt").getBalance()).platform(marketB.getName()).symbol(symbol)
+                .virtualCurrency(balanceB.get(coinName).getBalance()).build();
 
         log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
         log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
 //        log.info("Mock account!");
-//        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
+//        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(symbol).virtualCurrency(10).build();
         /*
-        AccountDto accountA = AccountDto.builder().money(96.88 * 10).platform(Huobi.PLATFORM_NAME).symbol(tradeResult.getSymbol()).virtualCurrency(10).build();
+        AccountDto accountA = AccountDto.builder().money(96.88 * 10).platform(Huobi.PLATFORM_NAME).symbol(symbol).virtualCurrency(10).build();
         */
 
         if (accountA == null || accountB == null) {
@@ -71,7 +70,6 @@ public class TradeService {
         double minTradeVolume = tradeResult.getEatTradeVolume();
         double buyPrice = tradeResult.getBuyPrice();
         double sellPrice = tradeResult.getSellPrice();
-        String symbol = tradeResult.getSymbol().toLowerCase();
         double canBuyCoin;
         //计算最小量
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
@@ -184,9 +182,4 @@ public class TradeService {
         log.info("Done!");
         // 跟踪买卖订单，准备下次买卖；
     }
-
-    public static void main(String[] args) {
-
-    }
-
 }

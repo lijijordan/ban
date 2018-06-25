@@ -21,6 +21,12 @@ public interface MarketParser {
 
     BalanceDto getBalance(String symbol);
 
+    /**
+     * 挂单，返回订单ID
+     *
+     * @param request
+     * @return
+     */
     String placeOrder(OrderRequest request);
 
     OrderResponse getFilledOrder(String orderId);

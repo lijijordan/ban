@@ -21,9 +21,4 @@ public class TradeApplication {
         tradeApp.receiveDiff("LTCUSDT");
         System.out.println("Listener Started!");
     }
-
-    public static void receiveDiff(ConsumerApplication application, String topic) {
-        System.out.println("Topic:" + topic + "-depth");
-        application.receiveDepthDiff(topic + "-depth");
-    }
 }

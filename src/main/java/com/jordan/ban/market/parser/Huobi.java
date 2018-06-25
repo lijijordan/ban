@@ -12,6 +12,7 @@ import com.jordan.ban.domain.*;
 import com.jordan.ban.exception.ApiException;
 import com.jordan.ban.http.HttpClientFactory;
 
+import com.jordan.ban.utils.JSONUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -388,9 +389,9 @@ public class Huobi extends BaseMarket implements MarketParser {
         ApiSignature sign = new ApiSignature();
         sign.createSignature(this.accessKeyId, this.accessKeySecret, method, API_HOST, uri, params);
         try {
-            Request.Builder builder = null;
+            Request.Builder builder;
             if ("POST".equals(method)) {
-                RequestBody body = RequestBody.create(JSON, JsonUtil.writeValue(object));
+                RequestBody body = RequestBody.create(JSON, JSONUtil.writeValue(object));
                 builder = new Request.Builder().url(API_URL + uri + "?" + toQueryString(params)).post(body);
             } else {
                 builder = new Request.Builder().url(API_URL + uri + "?" + toQueryString(params)).get();
@@ -402,14 +403,14 @@ public class Huobi extends BaseMarket implements MarketParser {
             Response response = client.newCall(request).execute();
             String s = response.body().string();
             log.info("response:" + s);
-            return JsonUtil.readValue(s, ref);
+            return JSONUtil.readValue(s, ref);
         } catch (IOException e) {
             throw new ApiException(e);
         }
     }
 
     String authData() {
-        MessageDigest md = null;
+        MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
@@ -420,7 +421,7 @@ public class Huobi extends BaseMarket implements MarketParser {
         Map<String, String> map = new HashMap<>();
         map.put("assetPwd", DatatypeConverter.printHexBinary(md.digest()).toLowerCase());
         try {
-            return ApiSignature.urlEncode(JsonUtil.writeValue(map));
+            return ApiSignature.urlEncode(JSONUtil.writeValue(map));
         } catch (IOException e) {
             throw new RuntimeException("Get json failed: " + e.getMessage());
         }
@@ -544,30 +545,6 @@ class AccountsResponse<T> {
 
 }
 
-class JsonUtil {
-
-    public static String writeValue(Object obj) throws IOException {
-        return objectMapper.writeValueAsString(obj);
-    }
-
-    public static <T> T readValue(String s, TypeReference<T> ref) throws IOException {
-        return objectMapper.readValue(s, ref);
-    }
-
-    static final ObjectMapper objectMapper = createObjectMapper();
-
-    static ObjectMapper createObjectMapper() {
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
-        mapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
-        // disabled features:
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper;
-    }
-
-}
 
 @Data
 class Accounts {

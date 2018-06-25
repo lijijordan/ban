@@ -160,7 +160,11 @@ public class OrderService {
      */
 //    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算yue
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair) {
-        String orderAid = market.placeOrder(orderRequest);
+        // debug
+        log.info("market:{},request:{}", market.getName(), orderRequest.toString());
+        return null;
+
+        /*String orderAid = market.placeOrder(orderRequest);
         if (StringUtils.isEmpty(orderAid)) {
             throw new TradeException("Create Order failed！");
         }
@@ -175,7 +179,7 @@ public class OrderService {
         return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair)
                 .platform(market.getName())
-                .orderId(orderAid).build());
+                .orderId(orderAid).build());*/
     }
 
     public Order findByOrderId(String orderId) {

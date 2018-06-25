@@ -35,7 +35,7 @@ public class MockTradeService {
      *
      * @param tradeResult
      */
-    public synchronized void mockTrade(MockTradeResultIndex tradeResult) {
+    public void mockTrade(MockTradeResultIndex tradeResult) {
         String lastTradeKey = tradeResult.getSymbol() + tradeResult.getDiffPlatform() + tradeResult.getTradeDirect();
         if (this.lastTradeMap.get(lastTradeKey) != null && this.lastTradeMap.get(lastTradeKey) == tradeResult.getEatTradeVolume()) {
             log.info(String.format("Last trade volume=%s, do nothing!", tradeResult.getEatTradeVolume()));

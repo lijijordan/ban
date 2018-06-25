@@ -73,11 +73,11 @@ public class AccountService {
         initAccount(Huobi.PLATFORM_NAME, Dragonex.PLATFORM_NAME, "ETHUSDT", 572.1195);
 
 
-        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, BTC_USDT,  6755.22);
-        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT,  537.01 );
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, BTC_USDT, 6755.22);
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT, 537.01);
 
-        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, BCH_USDT,   886.26 );
-        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, LTC_USDT,  97.21 );
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, BCH_USDT, 886.26);
+        initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, LTC_USDT, 97.21);
 
     }
 
@@ -121,6 +121,10 @@ public class AccountService {
             });
         } else if (market instanceof Fcoin) {
             ((Fcoin) market).getBalances().forEach(balanceDto -> {
+                map.put(balanceDto.getCurrency(), balanceDto);
+            });
+        } else if (market instanceof Dragonex) {
+            ((Dragonex) market).getBalances().forEach(balanceDto -> {
                 map.put(balanceDto.getCurrency(), balanceDto);
             });
         }

@@ -1,8 +1,17 @@
 package com.jordan.ban.market.parser;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.jordan.ban.common.HttpParams;
+import com.jordan.ban.common.HttpUtils;
 import com.jordan.ban.domain.*;
+import com.jordan.ban.exception.ApiException;
 import com.jordan.ban.http.HttpClientFactory;
-import lombok.extern.java.Log;
+import com.jordan.ban.utils.JSONUtil;
+import io.netty.handler.codec.json.JsonObjectDecoder;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -13,13 +22,16 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.DoubleBinaryOperator;
 
-/**
- * https://github.com/huobiapi/API_Docs/wiki/REST_api_reference
- */
-@Log
+import static com.jordan.ban.common.HttpUtils.sendPost;
+
+@Slf4j
 public class Dragonex extends BaseMarket implements MarketParser {
 
     private static final String PRICE_URL_TEMPLATE = "https://openapi.dragonex.im/api/v1/market/real/?symbol_id=%s";
@@ -28,10 +40,49 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     public static final String PLATFORM_NAME = "Dragonex";
 
+    private volatile DragonexToken token;
+
+    private ConcurrentHashMap<String, BalanceDto> balanceCache;
+
+    private ConcurrentHashMap<String, DragonexSymbol> symbolCache;
+    private ConcurrentHashMap<Integer, DragonexSymbol> symbolIdCache;
+
+    private static final Long TOKE_15MIN_TIME = 15 * 60 * 1000l;
+
+    private String accessKeyId;
+    private String accessKeySecret;
+
+    public Dragonex() {
+    }
+
+    public Dragonex(String accessKeyId, String accessKeySecret) {
+        this.accessKeyId = accessKeyId;
+        this.accessKeySecret = accessKeySecret;
+        this.balanceCache = new ConcurrentHashMap();
+        this.symbolCache = new ConcurrentHashMap();
+        this.symbolIdCache = new ConcurrentHashMap();
+    }
+
+    public static String MAIN_HOST = "https://openapi.dragonex.im";
+
+    // get token
+    public static String GET_TOKEN = "/api/v1/token/new/";
+
+    // check token status(POST)
+    public static String CHECK_TOKEN_STATUS = "/api/v1/token/status/";
+
+    // get all the coin(GET)
+    public static String GET_COIN_ALL = "/api/v1/coin/all/";
+
+    // get the currency information that the user has.(POST)
+    public static String GET_USER_COIN = "/api/v1/user/own/";
+
+
     @Override
     public String getName() {
         return PLATFORM_NAME;
     }
+
 
     @Override
     public Symbol getPrice(String symbol) {
@@ -100,19 +151,116 @@ public class Dragonex extends BaseMarket implements MarketParser {
         return depth;
     }
 
+    public void setToken() throws IOException {
+        if (this.token == null || this.token.getExpireTime() < (System.currentTimeMillis() + TOKE_15MIN_TIME)) {
+            String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
+            log.info("Get token response:{}", response);
+            this.token = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexToken>>() {
+            }).checkAndReturn();
+            log.info("Set token to http params!");
+            HttpParams.setToken(this.token.getToken());
+        }
+    }
+
     @Override
     public BalanceDto getBalance(String symbol) {
-        return null;
+        String path = "/api/v1/user/own/";
+        AtomicReference<BalanceDto> dto = new AtomicReference();
+        String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
+        log.info(response);
+        DragonexBalance dragonexBalance[] = null;
+        try {
+            dragonexBalance = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexBalance[]>>() {
+            }).checkAndReturn();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (dragonexBalance != null) {
+            Arrays.stream(dragonexBalance).forEach(d -> {
+                if (d.getCurrency().equals(symbol)) {
+                    dto.set(d.to());
+                }
+            });
+        }
+        return dto.get();
+    }
+
+
+    public List<BalanceDto> getBalances() {
+        List<BalanceDto> list = new ArrayList<>();
+        String path = "/api/v1/user/own/";
+        AtomicReference<BalanceDto> dto = new AtomicReference();
+        String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
+        log.info(response);
+        DragonexBalance dragonexBalance[] = null;
+        try {
+            dragonexBalance = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexBalance[]>>() {
+            }).checkAndReturn();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (dragonexBalance != null) {
+            Arrays.stream(dragonexBalance).forEach(d -> {
+                list.add(d.to());
+
+            });
+        }
+        return list;
     }
 
     @Override
     public String placeOrder(OrderRequest request) {
-        return null;
+        DragonexOrderRequest dragonexOrderRequest = DragonexOrderRequest.builder().price(String.valueOf(request.getPrice()))
+                .symbolId(this.getSymbolId(request.getSymbol())).volume(String.valueOf(request.getAmount())).build();
+        String path;
+        if (request.getType() == OrderType.BUY_LIMIT) {
+            path = "/api/v1/order/buy/";
+        } else {
+            path = "/api/v1/order/sell/";
+        }
+        String response = HttpUtils.sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path, JSONUtil.toJsonString(dragonexOrderRequest));
+        DragonexOrderResponse dragonexOrderResponse = null;
+        try {
+            dragonexOrderResponse = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexOrderResponse>>() {
+            }).checkAndReturn();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return String.valueOf(dragonexOrderResponse.getOrderId());
     }
 
     @Override
     public OrderResponse getFilledOrder(String orderId) {
         return null;
+    }
+
+    public OrderResponse getFilledOrder(String orderId, String symbol) {
+        String path = "/api/v1/order/detail/";
+        DragonexOrderDetailRequest request = DragonexOrderDetailRequest.builder().orderId(Long.valueOf(orderId))
+                .symbolId(this.getSymbolId(symbol)).build();
+        String response = HttpUtils.sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path
+                , JSONUtil.toJsonString(request));
+        DragonexOrderDetailResponse dragonexOrderResponse = null;
+        try {
+            dragonexOrderResponse = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexOrderDetailResponse>>() {
+            }).checkAndReturn();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        OrderType orderType;
+        if (dragonexOrderResponse.getOrderType() == 1) {
+            orderType = OrderType.BUY_LIMIT;
+        } else {
+            orderType = OrderType.SELL_LIMIT;
+        }
+        OrderState orderState = OrderState.none;
+        if (dragonexOrderResponse.getTradeVolume().equals(dragonexOrderResponse.getVolume())) {
+            orderState = OrderState.filled;
+        }
+        return OrderResponse.builder().createTime(new Date(dragonexOrderResponse.getTimestamp()))
+                .filledAmount(Double.valueOf(dragonexOrderResponse.getTradeVolume()))
+                .price(Double.valueOf(dragonexOrderResponse.getPrice())).symbol(symbol)
+                .type(orderType).orderState(orderState).build();
     }
 
     @Override
@@ -147,38 +295,175 @@ public class Dragonex extends BaseMarket implements MarketParser {
         return list;
     }
 
-    // fixme : https://openapi.dragonex.im/api/v1/symbol/all/
-    private int getSymbolId(String symbol) {
-        int symbolId = 0;
-        switch (symbol.toLowerCase()) {
-            case "neousdt":
-                symbolId = 129;
-                break;
-            case "eosusdt":
-                symbolId = 113;
-                break;
-            case "btcusdt":
-                symbolId = 101;
-                break;
-            case "eoseth":
-                symbolId = 1130103;
-                break;
-            case "gxseth":
-                symbolId = 1400103;
-                break;
-            case "bchusdt":
-                symbolId = 111;
-            case "ltcusdt":
-                symbolId = 130;
-            case "ethusdt":
-                symbolId = 103;
-                break;
+    private void initSymbol() {
+        if (this.symbolIdCache.isEmpty() || this.symbolCache.isEmpty()) {
+            JSONObject jsonObject = super.parseJSONByURL("https://openapi.dragonex.im/api/v1/symbol/all/");
+            try {
+                DragonexSymbol[] symbols = JSONUtil.readValue(jsonObject.toString(), new TypeReference<DragonexApiResponse<DragonexSymbol[]>>() {
+                }).checkAndReturn();
+                Arrays.stream(symbols).forEach(x -> {
+                    x.setSymbol(x.getSymbol().replace("_", ""));
+                    this.symbolCache.put(x.getSymbol(), x);
+                    this.symbolIdCache.put(x.getSymbolId(), x);
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return symbolId;
     }
 
-    public static void main(String[] args) {
-        Dragonex dragonex = new Dragonex();
-        System.out.println(dragonex.getDepth("EOSUSDT").toString());
+
+    // fixme : https://openapi.dragonex.im/api/v1/symbol/all/
+    protected int getSymbolId(String symbol) {
+        this.initSymbol();
+        return this.symbolCache.get(symbol).getSymbolId();
     }
+
+    protected String getSymbol(int symbolId) {
+        this.initSymbol();
+        return this.symbolIdCache.get(symbolId).getSymbol();
+    }
+
+
+    public static void main(String[] args) throws IOException {
+
+        Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
+        dragonex.setToken();
+
+        // get symbol
+//        System.out.println(dragonex.getSymbolId("ethusdt"));
+
+//        System.out.println(dragonex.getBalance("usdt"));
+
+        //place order
+        OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
+                .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
+        String orderId = dragonex.placeOrder(orderRequest);
+        System.out.println("order id:" + orderId);
+
+        System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));
+
+    }
+
+
+}
+
+@Data
+class DragonexApiResponse<T> {
+    boolean ok;
+    int code;
+    String msg;
+    T data;
+
+    public T checkAndReturn() {
+        if (ok) {
+            return data;
+        }
+        throw new ApiException(String.valueOf(code), msg);
+    }
+}
+
+/**
+ * {"ok": true, "code": 1, "data": {"token": "KbtSrikcQKonyZpVwJwMGRJoVhU=", "expire_time": 1529915196}, "msg": ""}
+ */
+@Data
+class DragonexToken {
+
+    String token;
+
+    @JsonProperty("expire_time")
+    long expireTime;
+
+    public long getExpireTime() {
+        return expireTime * 1000;
+    }
+}
+
+/**
+ * 2018-06-24 18:55:35,545 main | com.jordan.ban.market.parser.Dragonex | {"ok": true, "code": 1, "msg": "",
+ * "data": [{"coin_id": 1, "code": "usdt", "frozen": "0.00000000", "volume": "15.45384615"}]}
+ */
+@Data
+class DragonexBalance {
+    @JsonProperty("coin_id")
+    private int coidId;
+
+    @JsonProperty("code")
+    private String currency;
+
+    private double volume;
+
+    private double frozen;
+
+    BalanceDto to() {
+        return BalanceDto.builder().available(this.volume)
+                .currency(this.currency).frozen(frozen).balance(this.volume).build();
+    }
+}
+
+@Data
+class DragonexSymbol {
+    String symbol;
+    @JsonProperty("symbol_id")
+    int symbolId;
+}
+
+@Data
+@Builder
+class DragonexOrderRequest {
+    @JsonProperty("symbol_id")
+    private int symbolId;
+
+    private String price;
+
+    private String volume;
+}
+
+@Data
+class DragonexOrderResponse {
+    @JsonProperty("order_id")
+    long orderId;
+    String price;
+
+    int status;
+    long timestamp;
+    @JsonProperty("trade_volume")
+    String tradeVolume;
+    String volume;
+}
+
+@Data
+@Builder
+class DragonexOrderDetailRequest {
+    @JsonProperty("symbol_id")
+    int symbolId;
+    @JsonProperty("order_id")
+    long orderId;
+}
+
+/**
+ * 字段名	数据类型	说明
+ * order_id	int	订单ID
+ * order_type	int	订单类型：1-买单，2-卖单
+ * price	string	下单价格
+ * status	int	订单状态
+ * symbol_id	int	交易对ID
+ * timestamp	int	时间戳
+ * trade_volume	string	已成交数量
+ * volume	string	下单数量
+ */
+@Data
+class DragonexOrderDetailResponse {
+    @JsonProperty("order_id")
+    long orderId;
+    @JsonProperty("order_type")
+    int orderType;
+    String price;
+    int status;
+    @JsonProperty("symbol_id")
+    int symbolId;
+    long timestamp;
+    @JsonProperty("trade_volume")
+    String tradeVolume;
+    String volume;
 }
