@@ -56,6 +56,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         this.balanceCache = new ConcurrentHashMap();
         this.symbolCache = new ConcurrentHashMap();
         this.symbolIdCache = new ConcurrentHashMap();
+        this.initSymbol();
     }
 
     public Dragonex(String accessKeyId, String accessKeySecret) {
@@ -64,6 +65,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         this.balanceCache = new ConcurrentHashMap();
         this.symbolCache = new ConcurrentHashMap();
         this.symbolIdCache = new ConcurrentHashMap();
+        this.initSymbol();
     }
 
     public static String MAIN_HOST = "https://openapi.dragonex.im";
@@ -300,6 +302,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     private void initSymbol() {
         if (this.symbolIdCache.isEmpty() || this.symbolCache.isEmpty()) {
+            log.info("Init dragonex symbols.....");
             JSONObject jsonObject = super.parseJSONByURL("https://openapi.dragonex.im/api/v1/symbol/all/");
             try {
                 DragonexSymbol[] symbols = JSONUtil.readValue(jsonObject.toString(), new TypeReference<DragonexApiResponse<DragonexSymbol[]>>() {
@@ -312,18 +315,17 @@ public class Dragonex extends BaseMarket implements MarketParser {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            log.info("Init dragonex symbols.....Done!!");
         }
     }
 
 
     // fixme : https://openapi.dragonex.im/api/v1/symbol/all/
     protected int getSymbolId(String symbol) {
-        this.initSymbol();
-        return this.symbolCache.get(symbol).getSymbolId();
+        return this.symbolCache.get(symbol.toLowerCase()).getSymbolId();
     }
 
     protected String getSymbol(int symbolId) {
-        this.initSymbol();
         return this.symbolIdCache.get(symbolId).getSymbol();
     }
 
