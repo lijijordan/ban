@@ -7,8 +7,10 @@ import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.domain.CycleType;
 import com.jordan.ban.entity.Order;
 import com.jordan.ban.entity.ProfitStatistics;
+import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
+import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.OrderService;
 import com.jordan.ban.service.SlackService;
@@ -41,6 +43,8 @@ public class ScheduledTask {
     private static final long CHECK_ORDER_RATE = 5000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
+    private static final long HOURS_12 = 1000 * 60 * 60 * 12;
+
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
     public void watchUnfilledOrder() {
         List<Order> list = orderService.getUnfilledOrders();
@@ -53,45 +57,19 @@ public class ScheduledTask {
         });
     }
 
-    /**
-     * 每天中午十二点触发
-     */
-//    @Scheduled(cron = "0 0 12 * * ?")
-    public void statisticProfit() {
 
-        String symbol = "ltcusdt";
-        Map<String, BalanceDto> huobiBalance = accountService.findBalancesCache(Huobi.PLATFORM_NAME);
-        AccountDto accountA = AccountDto.builder().money(huobiBalance.get("usdt").getBalance()).platform(Huobi.PLATFORM_NAME).symbol(symbol)
-                .virtualCurrency(huobiBalance.get("ltc").getBalance()).build();
-        Map<String, BalanceDto> fcoinBalance = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
-        AccountDto accountB = AccountDto.builder().money(fcoinBalance.get("usdt").getBalance()).platform(Fcoin.PLATFORM_NAME).symbol(symbol)
-                .virtualCurrency(fcoinBalance.get("ltc").getBalance()).build();
-        System.out.println("acount A:"+accountA.toString());
-        System.out.println("acount B:"+accountB.toString());
-        ProfitStatistics before = profitStatisticsRepository.findTopBySymbolAndAndPlatformAAndAndPlatformBOrderByCreateTimeDesc(symbol, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME);
-        double moneyBefore, coinBefore, increase, increasePercent, moneyAfter, coinAfter;
-        moneyAfter = accountA.getMoney() + accountB.getMoney();
-        coinAfter = accountA.getVirtualCurrency() + accountB.getVirtualCurrency();
-        if (before != null) {
-            moneyBefore = before.getSumMoney();
-            coinBefore = before.getSumCoin();
-        } else {
-            moneyBefore = moneyAfter;
-            coinBefore = coinAfter;
-        }
-        increase = moneyAfter - moneyBefore;
-        increasePercent = (increase / Math.min(moneyAfter, moneyBefore)) * 100;
-        ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
-                .increase(increase).sumCoin(coinAfter).sumMoney(moneyAfter)
-                .increasePercent(increasePercent).platformA(accountA.getPlatform())
-                .platformB(accountB.getPlatform()).build();
-        this.profitStatisticsRepository.save(after);
+
+    /**
+     * Reset Dragonex token
+     */
+    @Scheduled(initialDelay = HOURS_12, fixedRate = HOURS_12)
+    public void resetDragonexToken() {
+        Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
         try {
-            slackService.sendMessage("Statistic Profit", after.toString());
+            dragonex.setToken();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 

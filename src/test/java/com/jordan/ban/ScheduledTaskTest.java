@@ -2,6 +2,7 @@ package com.jordan.ban;
 
 
 import com.jordan.ban.task.ScheduledTask;
+import com.jordan.ban.task.StatisticTask;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,8 +18,11 @@ public class ScheduledTaskTest {
     @Autowired
     private ScheduledTask scheduledTask;
 
+    @Autowired
+    private StatisticTask statisticProfit;
+
     @Test
     public void testStatisticProfit(){
-        scheduledTask.statisticProfit();
+        statisticProfit.statisticDragonexVSHuobiProfit();
     }
 }
