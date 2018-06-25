@@ -231,8 +231,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         DragonexOrderResponse dragonexOrderResponse = null;
         try {
             dragonexOrderResponse = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexOrderResponse>>() {
-            }).checkAndReturn();
-        } catch (IOException e) {
+            }).checkAndReturn(); } catch (IOException e) {
             e.printStackTrace();
         }
         return String.valueOf(dragonexOrderResponse.getOrderId());

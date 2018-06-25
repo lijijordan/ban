@@ -43,7 +43,7 @@ public class ScheduledTask {
     private static final long CHECK_ORDER_RATE = 5000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
-    private static final long HOURS_12 = 1000 * 60 * 60 * 12;
+    private static final long HOURS_ONE = 1000 * 60 * 60;
 
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
     public void watchUnfilledOrder() {
@@ -58,11 +58,10 @@ public class ScheduledTask {
     }
 
 
-
     /**
      * Reset Dragonex token
      */
-    @Scheduled(initialDelay = HOURS_12, fixedRate = HOURS_12)
+    @Scheduled(initialDelay = HOURS_ONE, fixedRate = HOURS_ONE)
     public void resetDragonexToken() {
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
         try {

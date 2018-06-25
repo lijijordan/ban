@@ -7,6 +7,7 @@ import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.market.parser.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -110,6 +111,7 @@ public class AccountService {
      * @return
      */
     // TODO:use cache
+    @Async
     public Map<String, BalanceDto> updateBalancesCache(String platformName) {
         Map<String, BalanceDto> map = new HashMap<>();
         MarketParser market = MarketFactory.getMarket(platformName);

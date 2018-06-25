@@ -11,6 +11,7 @@ public class ApiException extends RuntimeException {
 
     final String errCode;
 
+
     public ApiException(String errCode, String errMsg) {
         super(errMsg);
         this.errCode = errCode;
