@@ -1,13 +1,8 @@
 import com.jordan.ban.TacticsApplication;
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
-import com.jordan.ban.domain.Depth;
-import com.jordan.ban.domain.MarketDepth;
-import com.jordan.ban.domain.MockTradeResultIndex;
-import com.jordan.ban.market.parser.Gateio;
-import com.jordan.ban.market.parser.Huobi;
-import com.jordan.ban.market.parser.MarketFactory;
-import com.jordan.ban.market.parser.MarketParser;
+import com.jordan.ban.domain.*;
+import com.jordan.ban.market.parser.*;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.TradeService;
 import com.jordan.ban.utils.JSONUtil;
@@ -21,6 +16,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TacticsApplication.class)
@@ -99,5 +96,16 @@ public class TradeServiceTest {
     public void searchAccount() {
         Assert.assertNotNull(this.accountRepository.findById(1l));
         Assert.assertNotNull(this.accountRepository.findBySymbolAndPlatform("EOSUSDT", "Huobi"));
+    }
+
+    @Test
+    public void testDragonexAccount() {
+        MarketParser marketA = MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
+        String coinName = "eth";
+        String symbol = "ethusdt";
+        Map<String, BalanceDto> balanceA = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
+        AccountDto accountA = AccountDto.builder().money(balanceA.get("usdt").getBalance()).platform(marketA.getName()).symbol(symbol)
+                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getBalance() : 0).build();
+        Assert.assertNotNull(accountA);
     }
 }

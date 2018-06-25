@@ -50,11 +50,13 @@ public class ProductApplication {
                     MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
                     mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
                     mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                    sender.send(depthTopic, JSONUtil.toJsonString(mockTrade));
+
+                    String json = JSONUtil.toJsonString(mockTrade);
+                    sender.send(depthTopic, json);
 
                     //FIXME: ethusdt发送到交易队列
                     if (symbol.toLowerCase().equals("ethusdt")) {
-                        sender.send(depthTopic + "-trade", JSONUtil.toJsonString(mockTrade));
+                        sender.send(depthTopic + "-trade", json);
                     }
 
                 } catch (Exception e) {

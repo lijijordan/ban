@@ -25,11 +25,10 @@ import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 @Slf4j
 public class TradeService {
 
-    private static double DEFAULT_METRICS_MAX = 0.01; // 1%
+    private static double DEFAULT_METRICS_MAX = 0.022; // 2.2%
     private static double METRICS_BACK_PERCENT = 0.85;
+    //min limit order amount 0.01
     private static final double MIN_TRADE_AMOUNT = 0.01;
-
-    private static double DEFAULT_MIN_TRADE_VOLUME = 1;
 
     @Autowired
     private OrderService orderService;
@@ -47,10 +46,10 @@ public class TradeService {
         log.info("Data:" + tradeResult.toString());
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(marketA.getName());
         AccountDto accountA = AccountDto.builder().money(balanceA.get("usdt").getBalance()).platform(marketA.getName()).symbol(symbol)
-                .virtualCurrency(balanceA.get(coinName).getBalance()).build();
+                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getBalance() : 0).build();
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(marketB.getName());
         AccountDto accountB = AccountDto.builder().money(balanceB.get("usdt").getBalance()).platform(marketB.getName()).symbol(symbol)
-                .virtualCurrency(balanceB.get(coinName).getBalance()).build();
+                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getBalance() : 0).build();
 
         log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
         log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
@@ -93,7 +92,8 @@ public class TradeService {
         }
         log.info("trade volume={}", minTradeVolume);
         if (minTradeVolume <= 0) {
-            throw new TradeException("trade volume is 0!");
+            log.info("trade volume is 0!");
+            return;
         }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
             log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
@@ -133,13 +133,13 @@ public class TradeService {
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                 if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
                     //往回搬;
-                    log.info("+++++++:{},move back!", diffPercent);
+                    log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
-                    log.info("-------:{},not deal!", diffPercent);
+                    log.info("-------diffPercent:{},not deal!", diffPercent);
                     return;
                 }
             } else {
-                log.info("--------[{}]------not deal!", diffPercent);
+                log.info("--------diffPercent:{},not deal!", diffPercent);
                 return;
             }
         } else {
@@ -147,9 +147,9 @@ public class TradeService {
             if (diffPercent < avgEatDiffPercent) {
                 if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
-                    log.info("++++++++++++++:{},move back!", diffPercent);
+                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
                 } else { // 方向错误
-                    log.info("+++++:{},too little，not deal！", diffPercent);
+                    log.info("+++++diffPercent:{},too little，not deal！", diffPercent);
                     return;
                 }
             }

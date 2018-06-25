@@ -66,6 +66,11 @@ public class Dragonex extends BaseMarket implements MarketParser {
         this.symbolCache = new ConcurrentHashMap();
         this.symbolIdCache = new ConcurrentHashMap();
         this.initSymbol();
+        try {
+            this.setToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static String MAIN_HOST = "https://openapi.dragonex.im";
@@ -194,7 +199,6 @@ public class Dragonex extends BaseMarket implements MarketParser {
     public List<BalanceDto> getBalances() {
         List<BalanceDto> list = new ArrayList<>();
         String path = "/api/v1/user/own/";
-        AtomicReference<BalanceDto> dto = new AtomicReference();
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
         log.info(response);
         DragonexBalance dragonexBalance[] = null;
@@ -236,7 +240,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     @Override
     public OrderResponse getFilledOrder(String orderId) {
-        return null;
+        return this.getFilledOrder(orderId, "ethusdt");
     }
 
     public OrderResponse getFilledOrder(String orderId, String symbol) {
@@ -335,18 +339,20 @@ public class Dragonex extends BaseMarket implements MarketParser {
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
         dragonex.setToken();
 
+        dragonex.getBalances();
+
         // get symbol
 //        System.out.println(dragonex.getSymbolId("ethusdt"));
 
 //        System.out.println(dragonex.getBalance("usdt"));
 
         //place order
-        OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
+        /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
                 .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
         String orderId = dragonex.placeOrder(orderRequest);
         System.out.println("order id:" + orderId);
 
-        System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));
+        System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));*/
 
     }
 
@@ -402,7 +408,7 @@ class DragonexBalance {
 
     BalanceDto to() {
         return BalanceDto.builder().available(this.volume)
-                .currency(this.currency).frozen(frozen).balance(this.volume).build();
+                .currency(this.currency).frozen(frozen).balance(this.volume - this.frozen).build();
     }
 }
 
