@@ -16,7 +16,7 @@ public class Sender {
     @Async
     public void send(String topic, String message) {
 //        log.info(message);
-        log.info("topic:{}, message:{}", topic, message);
+//        log.info("topic:{}, message:{}", topic, message);
         this.amqpTemplate.convertAndSend(topic, message);
     }
 }
