@@ -53,6 +53,9 @@ public class Dragonex extends BaseMarket implements MarketParser {
     private String accessKeySecret;
 
     public Dragonex() {
+        this.balanceCache = new ConcurrentHashMap();
+        this.symbolCache = new ConcurrentHashMap();
+        this.symbolIdCache = new ConcurrentHashMap();
     }
 
     public Dragonex(String accessKeyId, String accessKeySecret) {
