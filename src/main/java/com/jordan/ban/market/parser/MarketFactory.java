@@ -1,30 +1,38 @@
 package com.jordan.ban.market.parser;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class MarketFactory {
 
+    private static ConcurrentHashMap<String, MarketParser> instanceMap = new ConcurrentHashMap<>();
+
     public static MarketParser getMarket(String market) {
+        if (instanceMap.get(market) != null) {
+            return instanceMap.get(market);
+        }
         MarketParser marketParser = null;
         if (market.equals(Huobi.class.getSimpleName())) {
-            return new Huobi();
+            marketParser = new Huobi();
         }
         if (market.equals(Dragonex.class.getSimpleName())) {
-            return new Dragonex();
+            marketParser = new Dragonex();
         }
         if (market.equals(Okex.class.getSimpleName())) {
-            return new Okex();
+            marketParser = new Okex();
         }
         if (market.equals(Gateio.class.getSimpleName())) {
-            return new Gateio();
+            marketParser = new Gateio();
         }
         if (market.equals(BitZ.class.getSimpleName())) {
-            return new BitZ();
+            marketParser = new BitZ();
         }
         if (market.equals(Exmo.class.getSimpleName())) {
-            return new Exmo();
+            marketParser = new Exmo();
         }
         if (market.equals(Fcoin.class.getSimpleName())) {
-            return new Fcoin();
+            marketParser = new Fcoin();
         }
-        return null;
+        instanceMap.put(market, marketParser);
+        return marketParser;
     }
 }
