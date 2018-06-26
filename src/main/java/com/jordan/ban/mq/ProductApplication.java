@@ -1,18 +1,18 @@
 package com.jordan.ban.mq;
 
-import com.jordan.ban.domain.*;
-import com.jordan.ban.market.parser.*;
-import com.jordan.ban.market.policy.MarketDiffer;
+import com.jordan.ban.domain.Depth;
+import com.jordan.ban.domain.MarketDepth;
+import com.jordan.ban.domain.MockTradeResult;
+import com.jordan.ban.domain.MockTradeResultIndex;
+import com.jordan.ban.market.parser.MarketFactory;
+import com.jordan.ban.market.parser.MarketParser;
 import com.jordan.ban.market.trade.TradeHelper;
-import com.jordan.ban.mq.MessageSender;
 import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.utils.JSONUtil;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 

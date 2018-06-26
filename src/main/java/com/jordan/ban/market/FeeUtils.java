@@ -15,7 +15,7 @@ public class FeeUtils {
             case Dragonex.PLATFORM_NAME:
                 return 0.002;
         }
-        return 0;
+        return 0.002;
     }
 
     public static void main(String[] args) {

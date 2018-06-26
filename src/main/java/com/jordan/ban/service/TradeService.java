@@ -77,7 +77,7 @@ public class TradeService {
                 minTradeVolume = accountB.getVirtualCurrency();
             }
             // 市场A可买入币量
-            canBuyCoin = accountA.getMoney() / (buyPrice * (1 + 0.002));
+            canBuyCoin = accountA.getMoney() / (buyPrice * (1 + FeeUtils.getFee(marketA.getName())));
 
 
         } else {  // 市场B买. 市场A卖
@@ -85,7 +85,7 @@ public class TradeService {
                 minTradeVolume = accountA.getVirtualCurrency();
             }
             // 市场B可买入币量
-            canBuyCoin = accountB.getMoney() / (buyPrice * (1 + 0.002));
+            canBuyCoin = accountB.getMoney() / (buyPrice * (1 + FeeUtils.getFee(marketB.getName())));
         }
         if (canBuyCoin < minTradeVolume) {
             minTradeVolume = canBuyCoin;
