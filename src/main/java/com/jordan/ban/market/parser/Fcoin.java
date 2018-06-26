@@ -320,14 +320,17 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
 //        fcoin.getOrdersDetail("1");
 
+        fcoin.getBalances();
 
-        /*FcoinOrderRequest request = new FcoinOrderRequest();
-        request.setAmount(0.1);
-        request.setPrice(0.01);
+        FcoinOrderRequest request = new FcoinOrderRequest();
+        request.setAmount(0.01);
+        request.setPrice(458.31);
         request.setSide("buy");
-        request.setSymbol("ltcusdt");
+        request.setSymbol("ethusdt");
         request.setType("limit");
-        fcoin.placeOrder(request);*/
+        fcoin.placeOrder(request);
+
+        fcoin.getBalances();
 
         /*OrderRequest request = new OrderRequest();
         request.setAmount(0.01);
@@ -336,8 +339,8 @@ public class Fcoin extends BaseMarket implements MarketParser {
         request.setSymbol("ltcusdt");
         fcoin.placeOrder(request);*/
 
-        FcoinOrdersDetailResponse response = fcoin.getOrdersDetail("zM_cP9WUmovRYP20wZdewkUWDooaSaBztE7dm0jkbc8=");
-        response.getAmount();
+        /*FcoinOrdersDetailResponse response = fcoin.getOrdersDetail("zM_cP9WUmovRYP20wZdewkUWDooaSaBztE7dm0jkbc8=");
+        response.getAmount();*/
     }
 }
 

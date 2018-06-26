@@ -7,8 +7,7 @@ import com.jordan.ban.entity.Order;
 import com.jordan.ban.entity.TradeStatistics;
 import com.jordan.ban.exception.StatisticException;
 import com.jordan.ban.exception.TradeException;
-import com.jordan.ban.market.parser.Fcoin;
-import com.jordan.ban.market.parser.Huobi;
+import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -38,6 +36,9 @@ public class OrderService {
 
     @Autowired
     private TradeStatisticsRepository tradeStatisticsRepository;
+
+    @Autowired
+    private TradeContext tradeContext;
 
     /**
      * 获取为完成交易的订单
@@ -57,15 +58,10 @@ public class OrderService {
         if (orderResponse != null) {
             // 判断订单是否变化，如果变化发送通知
             if (isChanged(order, orderResponse)) {
-                try {
-                    Date date = order.getCreateTime();
-                    long costTime = System.currentTimeMillis() - date.getTime();
-                    this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
-                            orderResponse.toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    log.info("Send slack failed!");
-                }
+                Date date = order.getCreateTime();
+                long costTime = System.currentTimeMillis() - date.getTime();
+                this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
+                        orderResponse.toString());
             }
             order.setState(orderResponse.getOrderState());
             order.setFillFees(orderResponse.getFillFees());
@@ -77,12 +73,14 @@ public class OrderService {
             this.orderRepository.save(order);
 
             // 交易完成：统计交易信息
-            /*if (orderResponse.getOrderState() == OrderState.filled) {
-                this.statisticTrade(order);
-            }*/
+            if (orderResponse.getOrderState() == OrderState.filled) {
+//                this.accountService.queryAndUpdateBalances(order.getPlatform());
+                this.accountService.queryAndUpdateBalances(order.getPlatform());
+            }
         }
     }
 
+    @Deprecated
     public synchronized void statisticTrade(Order order) {
         List<Order> list = this.orderRepository.findAllByOrderPairKey(order.getOrderPairKey());
         if (list.isEmpty() || list.size() < 2) {
@@ -165,15 +163,12 @@ public class OrderService {
         return null;*/
         String orderAid = market.placeOrder(orderRequest);
         if (StringUtils.isEmpty(orderAid)) {
+            slackService.sendMessage("Order", "Create Order failed！");
             throw new TradeException("Create Order failed！");
         }
-        try {
-            slackService.sendMessage("Order", "Place order:" + orderRequest.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        slackService.sendMessage("Order", "Place order:" + orderRequest.toString());
         // update account;
-        accountService.updateBalancesCache(market.getName());
+        accountService.queryAndUpdateBalances(market.getName());
         // record order
         return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair)

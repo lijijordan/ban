@@ -231,7 +231,8 @@ public class Dragonex extends BaseMarket implements MarketParser {
         DragonexOrderResponse dragonexOrderResponse = null;
         try {
             dragonexOrderResponse = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexOrderResponse>>() {
-            }).checkAndReturn(); } catch (IOException e) {
+            }).checkAndReturn();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return String.valueOf(dragonexOrderResponse.getOrderId());
@@ -338,7 +339,11 @@ public class Dragonex extends BaseMarket implements MarketParser {
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
         dragonex.setToken();
 
-        dragonex.getBalances();
+        /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
+                .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
+        String orderId = dragonex.placeOrder(orderRequest);*/
+        List<BalanceDto> balanceDtos = dragonex.getBalances();
+        System.out.println("done!");
 
         // get symbol
 //        System.out.println(dragonex.getSymbolId("ethusdt"));
@@ -406,8 +411,8 @@ class DragonexBalance {
     private double frozen;
 
     BalanceDto to() {
-        return BalanceDto.builder().available(this.volume)
-                .currency(this.currency).frozen(frozen).balance(this.volume - this.frozen).build();
+        return BalanceDto.builder().available(this.volume - this.frozen)
+                .currency(this.currency).frozen(frozen).balance(this.volume).build();
     }
 }
 

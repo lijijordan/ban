@@ -1,21 +1,16 @@
 package com.jordan.ban.service;
 
-import com.jordan.ban.common.Context;
-import com.jordan.ban.dao.OrderRepository;
-import com.jordan.ban.dao.PlatformRepository;
 import com.jordan.ban.domain.*;
-import com.jordan.ban.entity.Account;
+import com.jordan.ban.entity.Order;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
-import com.jordan.ban.market.parser.Fcoin;
-import com.jordan.ban.market.parser.Huobi;
+import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,23 +31,34 @@ public class TradeService {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private TradeContext tradeContext;
+
     public synchronized void trade(MockTradeResultIndex tradeResult) {
+
+        log.info("Data:" + tradeResult.toString());
 
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
 
         String symbol = tradeResult.getSymbol().toLowerCase();
         String coinName = symbol.replace("usdt", "");
-        log.info("Data:" + tradeResult.toString());
+
+        String aKey = marketA.getName() + symbol;
+        String bKey = marketB.getName() + symbol;
+
+        AccountDto accountA, accountB;
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(marketA.getName());
-        AccountDto accountA = AccountDto.builder().money(balanceA.get("usdt").getBalance()).platform(marketA.getName()).symbol(symbol)
-                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getBalance() : 0).build();
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(marketB.getName());
-        AccountDto accountB = AccountDto.builder().money(balanceB.get("usdt").getBalance()).platform(marketB.getName()).symbol(symbol)
-                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getBalance() : 0).build();
+
+        accountA = AccountDto.builder().money(balanceA.get("usdt").getAvailable()).platform(marketA.getName()).symbol(symbol)
+                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getAvailable() : 0).build();
+        accountB = AccountDto.builder().money(balanceB.get("usdt").getAvailable()).platform(marketB.getName()).symbol(symbol)
+                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
 
         log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
         log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
+
 //        log.info("Mock account!");
 //        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(symbol).virtualCurrency(10).build();
         /*
@@ -168,16 +174,17 @@ public class TradeService {
                 .price(sellPrice).symbol(symbol).type(OrderType.SELL_LIMIT).build();
         log.info("Place order, buy:" + buyOrder + "sell:" + sellOrder);
         String pair = UUID.randomUUID().toString();
+        Order orderA, orderB;
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketA.getName())));
-            orderService.createOrder(buyOrder, marketA, pair);
-            orderService.createOrder(sellOrder, marketB, pair);
+            orderA = orderService.createOrder(buyOrder, marketA, pair);
+            orderB = orderService.createOrder(sellOrder, marketB, pair);
         } else {  // 市场B买. 市场A卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketB.getName())));
-            orderService.createOrder(sellOrder, marketA, pair);
-            orderService.createOrder(buyOrder, marketB, pair);
+            orderA = orderService.createOrder(sellOrder, marketA, pair);
+            orderB = orderService.createOrder(buyOrder, marketB, pair);
         }
         log.info("Done!");
         // 跟踪买卖订单，准备下次买卖；

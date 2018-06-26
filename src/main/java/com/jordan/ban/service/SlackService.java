@@ -33,13 +33,17 @@ public class SlackService {
      * @param content
      */
     @Async
-    public void sendMessage(String title, String content) throws IOException {
+    public void sendMessage(String title, String content) {
         HttpPost post = new HttpPost(WEB_HOOK_URL);
-        post.setEntity(new StringEntity(String.format(PAYLOAD_TPL, title, content)));
-        CloseableHttpResponse response;
-        response = (CloseableHttpResponse) HttpClientFactory.getHttpClient().execute(post);
-        HttpEntity entity = response.getEntity();
         try {
+            post.setEntity(new StringEntity(String.format(PAYLOAD_TPL, title, content)));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        CloseableHttpResponse response;
+        try {
+            response = (CloseableHttpResponse) HttpClientFactory.getHttpClient().execute(post);
+            HttpEntity entity = response.getEntity();
             System.out.println(EntityUtils.toString(entity, "UTF-8"));
         } catch (IOException e) {
             e.printStackTrace();

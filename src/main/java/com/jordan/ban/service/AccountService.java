@@ -6,8 +6,8 @@ import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.market.parser.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.jordan.ban.common.Constant.*;
 
 @Service
+@Slf4j
 public class AccountService {
 
     private Map<String, Map<String, BalanceDto>> balanceCache = new ConcurrentHashMap<>();
@@ -111,8 +112,8 @@ public class AccountService {
      * @return
      */
     // TODO:use cache
-    @Async
-    public Map<String, BalanceDto> updateBalancesCache(String platformName) {
+    public Map<String, BalanceDto> queryAndUpdateBalances(String platformName) {
+        log.info("update [{}] balances!", platformName);
         Map<String, BalanceDto> map = new HashMap<>();
         MarketParser market = MarketFactory.getMarket(platformName);
         if (market instanceof Huobi) {
@@ -138,7 +139,7 @@ public class AccountService {
 
     public Map<String, BalanceDto> findBalancesCache(String platformName) {
         if (this.balanceCache.get(platformName) == null) {
-            return this.updateBalancesCache(platformName);
+            return this.queryAndUpdateBalances(platformName);
         } else {
             return this.balanceCache.get(platformName);
         }

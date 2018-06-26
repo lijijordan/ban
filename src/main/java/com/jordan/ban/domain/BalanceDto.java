@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 public class BalanceDto {
 
     private String currency;
+    // 可以使用的
     private double available;
     private double frozen;
     private double balance;

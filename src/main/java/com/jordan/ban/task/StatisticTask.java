@@ -69,11 +69,7 @@ public class StatisticTask {
                 .increasePercent(increasePercent).platformA(accountA.getPlatform())
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);
-        try {
-            slackService.sendMessage("Statistic Profit", after.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        slackService.sendMessage("Statistic Profit", after.toString());
     }
 
 }
