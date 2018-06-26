@@ -45,7 +45,7 @@ public class ConsumerApplication {
 
     private void doDepthDiff(String json) {
         ElasticSearchClient.indexAsynchronous(json, Constant.MOCK_TRADE_INDEX);
-        this.mockTradeService.mockTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+//        this.mockTradeService.mockTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
     }
 
     public void receiveDiff(String topic) {

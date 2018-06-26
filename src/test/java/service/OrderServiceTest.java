@@ -47,7 +47,7 @@ public class OrderServiceTest {
 
     @Test
     public void testRefreshOrderById(){
-        Order order = this.orderService.findByOrderId("4a17pXp7BtvogAyDtrT3OvBeVoI5N-ejJXWau3cq4Rs=");
+        Order order = this.orderService.findByOrderId("1529906476045148001");
         this.orderService.refreshOrderState(order);
     }
 

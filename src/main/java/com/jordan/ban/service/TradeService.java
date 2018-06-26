@@ -149,7 +149,7 @@ public class TradeService {
                     //往回搬;
                     log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
                 } else { // 方向错误
-                    log.info("+++++diffPercent:{},too little，not deal！", diffPercent);
+                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
                     return;
                 }
             }

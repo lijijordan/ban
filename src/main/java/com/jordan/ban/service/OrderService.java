@@ -50,7 +50,7 @@ public class OrderService {
 
 
     //    @Transactional(Pro=Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
-    @Async
+//    @Async
     public void refreshOrderState(Order order) {
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
@@ -58,7 +58,7 @@ public class OrderService {
             // 判断订单是否变化，如果变化发送通知
             if (isChanged(order, orderResponse)) {
                 try {
-                    Date date = order.getUpdateTime() != null ? order.getUpdateTime() : order.getCreateTime();
+                    Date date = order.getCreateTime();
                     long costTime = System.currentTimeMillis() - date.getTime();
                     this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
                             orderResponse.toString());
@@ -77,9 +77,9 @@ public class OrderService {
             this.orderRepository.save(order);
 
             // 交易完成：统计交易信息
-            if (orderResponse.getOrderState() == OrderState.filled) {
+            /*if (orderResponse.getOrderState() == OrderState.filled) {
                 this.statisticTrade(order);
-            }
+            }*/
         }
     }
 

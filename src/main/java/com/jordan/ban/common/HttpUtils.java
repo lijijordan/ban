@@ -1,5 +1,7 @@
 package com.jordan.ban.common;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +11,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class HttpUtils {
 
     public static String sendPost(String access_key, String secret_key, String mainHost, String path) {
@@ -34,6 +37,7 @@ public class HttpUtils {
                 sb.append(line);
             }
             result = sb.toString();
+            log.info("response:{}", result);
         } catch (Exception e) {
             System.out.println("[request error][address:" + uri + "][error msg:" + e.getMessage() + "]");
         } finally {
@@ -83,6 +87,7 @@ public class HttpUtils {
                 bs.append(line);
             }
             result = bs.toString();
+            log.info("response:{}", result);
         } catch (Exception e) {
             System.out.println("[request error][address:" + path + "][params:" + jsonData + "][error msg:" + e.getMessage() + "]");
         } finally {
