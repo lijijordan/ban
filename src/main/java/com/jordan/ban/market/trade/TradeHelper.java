@@ -7,7 +7,7 @@ import com.jordan.ban.domain.TradeDirect;
 public class TradeHelper {
 
     // 交易手续费
-    public static final double TRADE_FEES = 0.000;
+    public static final double TRADE_FEES = 0.002;
 
     public static MockTradeResult eatA2B(MarketDepth marketDepth) {
         double buyPrice = Math.max(marketDepth.getD1ask(), marketDepth.getD1bid());
