@@ -24,8 +24,6 @@ public class TradeContext {
     private TradeDirect lastTradeDirect;
 
 
-
-
     public TradeDirect getLastTradeDirect() {
         return lastTradeDirect;
     }

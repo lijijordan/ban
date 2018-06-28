@@ -41,6 +41,11 @@ public class OrderService {
     @Autowired
     private TradeContext tradeContext;
 
+
+    public List<Order> queryOrder(String symbol) {
+        return this.orderRepository.findAllBySymbolOrderByCreateTimeAsc(symbol);
+    }
+
     /**
      * 获取为完成交易的订单
      *

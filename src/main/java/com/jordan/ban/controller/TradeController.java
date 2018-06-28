@@ -6,6 +6,7 @@ import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.service.AccountService;
+import com.jordan.ban.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +25,8 @@ public class TradeController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/greeting")
     public String greetingForm(Model model) {
@@ -33,7 +36,7 @@ public class TradeController {
         Map<String, BalanceDto> fcoinBalance = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
         Map<String, BalanceDto> dragonexBalance = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
 
-
+        model.addAttribute("orderList", this.orderService.queryOrder("ethusdt"));
         model.addAttribute("fcoinBalance", fcoinBalance.toString());
         model.addAttribute("dragonexBalance", dragonexBalance.toString());
         return "greeting";

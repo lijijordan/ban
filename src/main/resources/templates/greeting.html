@@ -10,12 +10,44 @@
 <p name="textarea"  th:text="'dragonexBalance: ' + ${dragonexBalance}"/>
 
 
+
+
+
 <h1>Form</h1>
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
     <p>move Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}" /></p>
     <p>move Back Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}" /></p>
     <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
 </form>
+
+
+<h2>Order</h2>
+<table th:object="${orderList}" id="userTable" border="1">
+    <tr>
+        <td>create time</td>
+        <td>platform</td>
+        <td>amount</td>
+        <td>filled amount</td>
+        <td>fill fees</td>
+        <td>order pair key</td>
+        <td>state</td>
+        <td>trade direct</td>
+    </tr>
+
+    <tr th:each="order :${orderList}">
+        <td  th:text="${order.createTime}"></td>
+        <td  th:text="${order.platform}"></td>
+        <td  th:text="${order.amount}"></td>
+        <td  th:text="${order.filledAmount}"></td>
+        <td  th:text="${order.fillFees}"></td>
+        <td  th:text="${order.orderPairKey}"></td>
+        <td  th:text="${order.state}"></td>
+        <td  th:text="${order.tradeDirect}"></td>
+
+    </tr>
+</table>
+
+
 </body>
 </html>
 <script type="text/javascript">
