@@ -1,6 +1,7 @@
 package com.jordan.ban.market;
 
 import com.jordan.ban.domain.AccountDto;
+import com.jordan.ban.domain.TradeDirect;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,22 @@ public class TradeContext {
 
     private double moveMetrics = DEFAULT_METRICS_MAX;
     private double moveBackMetrics = METRICS_BACK_PERCENT;
+
+    /**
+     * 上次交易的方向
+     */
+    private TradeDirect lastTradeDirect;
+
+
+
+
+    public TradeDirect getLastTradeDirect() {
+        return lastTradeDirect;
+    }
+
+    public void setLastTradeDirect(TradeDirect lastTradeDirect) {
+        this.lastTradeDirect = lastTradeDirect;
+    }
 
 
     public double getMoveMetrics() {

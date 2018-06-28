@@ -63,6 +63,7 @@ public class OrderService {
                 long costTime = System.currentTimeMillis() - date.getTime();
                 this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
                         orderResponse.toString());
+                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
             }
             order.setState(orderResponse.getOrderState());
             order.setFillFees(orderResponse.getFillFees());
@@ -73,10 +74,10 @@ public class OrderService {
             order.setFillFees(orderResponse.getFillFees());
             this.orderRepository.save(order);
 
+
             // 交易完成：统计交易信息
             if (orderResponse.getOrderState() == OrderState.filled) {
 //                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
-                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
                 this.statisticTrade(order);
             }
         }

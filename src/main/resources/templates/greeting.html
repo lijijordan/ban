@@ -6,6 +6,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
+<p name="textarea"  th:text="'fcoinBalance: ' + ${fcoinBalance}"/>
+<p name="textarea"  th:text="'dragonexBalance: ' + ${dragonexBalance}"/>
+
+
 <h1>Form</h1>
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
     <p>move Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}" /></p>

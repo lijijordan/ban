@@ -1,7 +1,9 @@
 package com.jordan.ban.service;
 
+import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.Order;
+import com.jordan.ban.entity.TradeRecord;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
 import com.jordan.ban.market.TradeContext;
@@ -32,6 +34,9 @@ public class TradeService {
 
     @Autowired
     private TradeContext tradeContext;
+
+    @Autowired
+    private TradeRecordRepository tradeRecordRepository;
 
     public synchronized void trade(MockTradeResultIndex tradeResult) {
 
@@ -187,7 +192,22 @@ public class TradeService {
             orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         }
-        log.info("Done!");
-        // 跟踪买卖订单，准备下次买卖；
+        log.info("Trade done!");
+        // 记录Record
+        log.info("Record trade information:");
+        double totalMoney = accountA.getMoney() + accountB.getMoney();
+        TradeRecord record = new TradeRecord();
+        record.setPlatformA(accountA.getPlatform());
+        record.setPlatformB(accountB.getPlatform());
+        record.setDirect(tradeResult.getTradeDirect());
+        record.setEatDiff(tradeResult.getEatDiff());
+        record.setEatDiffPercent(tradeResult.getEatPercent());
+        record.setSymbol(tradeResult.getSymbol());
+        record.setTradeTime(tradeResult.getCreateTime());
+        record.setVolume(tradeResult.getEatTradeVolume());
+        record.setProfit(profit);
+        record.setTotalMoney(totalMoney);
+        this.tradeRecordRepository.save(record);
+        log.info("Record done!");
     }
 }
