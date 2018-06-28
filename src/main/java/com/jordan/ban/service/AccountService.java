@@ -132,18 +132,22 @@ public class AccountService {
             });
         }
         if (!map.isEmpty()) {
-            balanceCache.put(platformName, map);
+            synchronized (balanceCache) {
+                log.info("update balance cache,{}:{}", platformName, map);
+                balanceCache.put(platformName, map);
+            }
         }
         return map;
     }
 
     public Map<String, BalanceDto> findBalancesCache(String platformName) {
-        if (this.balanceCache.get(platformName) == null) {
-            return this.queryAndUpdateBalancesCache(platformName);
-        } else {
-            return this.balanceCache.get(platformName);
+        Map<String, BalanceDto> map;
+        synchronized (balanceCache) {
+            map = balanceCache.get(platformName);
         }
+        if (map == null) {
+            map = queryAndUpdateBalancesCache(platformName);
+        }
+        return map;
     }
-
-
 }
