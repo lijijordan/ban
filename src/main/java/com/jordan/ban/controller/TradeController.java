@@ -1,8 +1,10 @@
 package com.jordan.ban.controller;
 
 import com.jordan.ban.domain.BalanceDto;
+import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.domain.in.Greeting;
 import com.jordan.ban.market.TradeContext;
+import com.jordan.ban.market.TradeCounter;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.service.AccountService;
@@ -28,6 +30,9 @@ public class TradeController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private TradeCounter tradeCounter;
+
     @GetMapping("/greeting")
     public String greetingForm(Model model) {
         model.addAttribute("greeting", Greeting.builder()
@@ -39,6 +44,8 @@ public class TradeController {
         model.addAttribute("orderList", this.orderService.queryOrder("ethusdt"));
         model.addAttribute("fcoinBalance", fcoinBalance.toString());
         model.addAttribute("dragonexBalance", dragonexBalance.toString());
+        model.addAttribute("a2bAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.A2B));
+        model.addAttribute("b2aAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.B2A));
         return "greeting";
     }
 

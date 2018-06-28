@@ -7,6 +7,7 @@ import com.jordan.ban.entity.TradeRecord;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
 import com.jordan.ban.market.TradeContext;
+import com.jordan.ban.market.TradeCounter;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +37,16 @@ public class TradeService {
     private TradeContext tradeContext;
 
     @Autowired
+    private TradeCounter tradeCounter;
+
+    @Autowired
     private TradeRecordRepository tradeRecordRepository;
 
     public synchronized void trade(MockTradeResultIndex tradeResult) {
 
         log.info("Data:" + tradeResult.toString());
+
+        this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
 
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());

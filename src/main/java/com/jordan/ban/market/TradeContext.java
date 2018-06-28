@@ -7,6 +7,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 
 
 @Component
@@ -22,6 +27,7 @@ public class TradeContext {
      * 上次交易的方向
      */
     private TradeDirect lastTradeDirect;
+
 
 
     public TradeDirect getLastTradeDirect() {
