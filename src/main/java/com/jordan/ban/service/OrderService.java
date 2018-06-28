@@ -16,10 +16,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static com.jordan.ban.common.Constant.USDT;
 
 @Slf4j
 @Service
@@ -74,13 +75,13 @@ public class OrderService {
 
             // 交易完成：统计交易信息
             if (orderResponse.getOrderState() == OrderState.filled) {
-//                this.accountService.queryAndUpdateBalances(order.getPlatform());
-                this.accountService.queryAndUpdateBalances(order.getPlatform());
+//                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
+                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
+                this.statisticTrade(order);
             }
         }
     }
 
-    @Deprecated
     public synchronized void statisticTrade(Order order) {
         List<Order> list = this.orderRepository.findAllByOrderPairKey(order.getOrderPairKey());
         if (list.isEmpty() || list.size() < 2) {
@@ -99,13 +100,15 @@ public class OrderService {
             return;
         }
 
-        Map<String, BalanceDto> buyBalance = accountService.findBalancesCache(buyOrder.getPlatform());
-        AccountDto buyAccount = AccountDto.builder().money(buyBalance.get("usdt").getBalance())
-                .virtualCurrency(buyBalance.get("ltc").getBalance()).build();
-        Map<String, BalanceDto> sellBalance = accountService.findBalancesCache(sellOrder.getPlatform());
-        AccountDto sellAccount = AccountDto.builder().money(sellBalance.get("usdt").getBalance())
-                .virtualCurrency(sellBalance.get("ltc").getBalance()).build();
+        String symbol = buyOrder.getSymbol().toLowerCase();
+        String coinName = symbol.replace(USDT.toLowerCase(), "");
 
+        Map<String, BalanceDto> buyBalance = accountService.findBalancesCache(buyOrder.getPlatform());
+        AccountDto buyAccount = AccountDto.builder().money(buyBalance.get(USDT.toLowerCase()).getBalance())
+                .virtualCurrency(buyBalance.get(coinName).getBalance()).build();
+        Map<String, BalanceDto> sellBalance = accountService.findBalancesCache(sellOrder.getPlatform());
+        AccountDto sellAccount = AccountDto.builder().money(sellBalance.get(USDT.toLowerCase()).getBalance())
+                .virtualCurrency(sellBalance.get(coinName).getBalance()).build();
         TradeStatistics last = tradeStatisticsRepository.findTopByOrderByCreateTimeDesc();
         if (last == null) {
             last = TradeStatistics.builder().build();
@@ -157,7 +160,7 @@ public class OrderService {
      * @return
      */
 //    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算yue
-    public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair) {
+    public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
         // debug
         /*log.info("market:{},request:{}", market.getName(), orderRequest.toString());
         return null;*/
@@ -168,10 +171,10 @@ public class OrderService {
         }
         slackService.sendMessage("Order", "Place order:" + orderRequest.toString());
         // update account;
-        accountService.queryAndUpdateBalances(market.getName());
+        accountService.queryAndUpdateBalancesCache(market.getName());
         // record order
         return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
-                .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair)
+                .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair).diffPercent(diffPercent).tradeDirect(direct)
                 .platform(market.getName())
                 .orderId(orderAid).build());
     }

@@ -2,6 +2,7 @@ package com.jordan.ban.entity;
 
 import com.jordan.ban.domain.OrderType;
 import com.jordan.ban.domain.OrderState;
+import com.jordan.ban.domain.TradeDirect;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -71,5 +72,9 @@ public class Order extends BaseEntity {
 
     // 关联的订单
     private String orderPairKey;
+
+    private TradeDirect tradeDirect;
+
+    private double diffPercent;
 
 }

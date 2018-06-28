@@ -2,14 +2,8 @@ package com.jordan.ban.task;
 
 import com.jordan.ban.common.Context;
 import com.jordan.ban.dao.ProfitStatisticsRepository;
-import com.jordan.ban.domain.AccountDto;
-import com.jordan.ban.domain.BalanceDto;
-import com.jordan.ban.domain.CycleType;
 import com.jordan.ban.entity.Order;
-import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.market.parser.Dragonex;
-import com.jordan.ban.market.parser.Fcoin;
-import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.service.AccountService;
 import com.jordan.ban.service.OrderService;
@@ -21,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -43,7 +36,7 @@ public class ScheduledTask {
     private static final long CHECK_ORDER_RATE = 5000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
-    private static final long HOURS_ONE = 1000 * 60 * 60;
+    private static final long HOURS_ONE = 1000 * 60 * 60; // 1 hour
 
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
     public void watchUnfilledOrder() {

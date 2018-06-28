@@ -1,6 +1,7 @@
 package com.jordan.ban;
 
 import com.jordan.ban.es.ElasticSearchClient;
+import com.jordan.ban.market.TradeApp;
 import com.jordan.ban.mq.ConsumerApplication;
 import com.jordan.ban.service.AccountService;
 import org.springframework.boot.SpringApplication;
@@ -40,6 +41,10 @@ public class TacticsApplication {
         application.receiveDiff("LTCUSDT");
         application.receiveDiff("NEOUSDT");
         System.out.println("Consumer Started!");
+
+        TradeApp tradeApp = context.getBean(TradeApp.class);
+        tradeApp.receiveDiff("ETHUSDT");
+        System.out.println("Listener Started!");
     }
 
 }

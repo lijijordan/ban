@@ -162,14 +162,12 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
     public void setToken() throws IOException {
-        if (this.token == null || this.token.getExpireTime() < (System.currentTimeMillis() + TOKE_15MIN_TIME)) {
-            String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
-            log.info("Get token response:{}", response);
-            this.token = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexToken>>() {
-            }).checkAndReturn();
-            log.info("Set token to http params!");
-            HttpParams.setToken(this.token.getToken());
-        }
+        String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
+        log.info("Get token response:{}", response);
+        this.token = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexToken>>() {
+        }).checkAndReturn();
+        log.info("Set token to http params!");
+        HttpParams.setToken(this.token.getToken());
     }
 
     @Override

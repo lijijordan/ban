@@ -112,7 +112,7 @@ public class AccountService {
      * @return
      */
     // TODO:use cache
-    public Map<String, BalanceDto> queryAndUpdateBalances(String platformName) {
+    public Map<String, BalanceDto> queryAndUpdateBalancesCache(String platformName) {
         log.info("update [{}] balances!", platformName);
         Map<String, BalanceDto> map = new HashMap<>();
         MarketParser market = MarketFactory.getMarket(platformName);
@@ -139,7 +139,7 @@ public class AccountService {
 
     public Map<String, BalanceDto> findBalancesCache(String platformName) {
         if (this.balanceCache.get(platformName) == null) {
-            return this.queryAndUpdateBalances(platformName);
+            return this.queryAndUpdateBalancesCache(platformName);
         } else {
             return this.balanceCache.get(platformName);
         }

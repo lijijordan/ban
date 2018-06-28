@@ -1,32 +1,41 @@
 package com.jordan.ban.market.parser;
 
 import com.jordan.ban.domain.*;
-import com.jordan.ban.http.HttpClientFactory;
-import com.jordan.ban.utils.JSONUtil;
-import com.sun.net.ssl.internal.www.protocol.https.HttpsURLConnectionOldImpl;
-import lombok.extern.java.Log;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
+import com.jordan.ban.market.gateio.HttpUtilManager;
+import com.jordan.ban.market.gateio.IStockRestApi;
+import com.jordan.ban.market.gateio.StockRestApi;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
-@Log
+@Slf4j
 public class Gateio extends BaseMarket implements MarketParser {
 
     public static final String PLATFORM_NAME = "Gateio";
-
-    private static String PRICE_URL_TEMPLATE = "";
     private static String DEPTH_URL_TEMPLATE = "https://data.gateio.io/api2/1/orderBook/%s";
+
+    public static final String TRADE_URL = "https://api.gateio.io";
+    private String accessKeyId;
+    private String accessKeySecret;
+
+    IStockRestApi stockPost;
+
+    public Gateio(String accessKeyId, String accessKeySecret) {
+        this.accessKeyId = accessKeyId;
+        this.accessKeySecret = accessKeySecret;
+        stockPost = new StockRestApi(TRADE_URL);
+        HttpUtilManager.getInstance().initKey(this.accessKeyId, this.accessKeySecret);
+    }
+
+    public Gateio() {
+    }
 
     @Override
     public String getName() {
@@ -38,17 +47,19 @@ public class Gateio extends BaseMarket implements MarketParser {
         return null;
     }
 
-    @Override
-    public Depth getDepth(String symbol) {
+    private String convertSymbol(String symbol) {
+        if (StringUtils.isEmpty(symbol) || symbol.indexOf("_") != -1) {
+            return symbol;
+        }
         symbol = symbol.substring(0, 3) + "_" + symbol.substring(3, symbol.length());
         symbol = symbol.toLowerCase();
+        return symbol;
+    }
+
+    @Override
+    public Depth getDepth(String symbol) {
+        symbol = this.convertSymbol(symbol);
         JSONObject jsonObject = super.parseJSONByURL(String.format(DEPTH_URL_TEMPLATE, symbol));
-        /*JSONObject jsonObject = null;
-        try {
-            jsonObject = new JSONObject("{\"asks\":[[14.5875,0.1],[14.586,52.6347],[14.58,801.4299],[14.578,15],[14.5775,0.1],[14.5675,0.1],[14.56,1.3984],[14.558,0.2775],[14.5575,0.1],[14.5475,0.1],[14.5459,90.5287],[14.5375,0.1],[14.5343,0.9328],[14.5304,2.8],[14.5275,0.1],[14.5274,5],[14.52,0.4],[14.5175,0.1],[14.51,13],[14.5075,0.1],[14.5006,26.2498],[14.5,3961.1309],[14.4975,0.1],[14.4935,0.2787],[14.49,49.925],[14.489,10],[14.4875,0.1],[14.4818,0.1],[14.48,0.4],[14.4775,0.1],[14.4707,0.2791],[14.4675,0.1],[14.466,10],[14.46,50.82],[14.4575,0.1],[14.452,50],[14.4507,4.6698],[14.45,1115.8116],[14.4475,0.1],[14.4444,32.105],[14.44,2.4],[14.4375,0.1],[14.4313,0.2799],[14.4275,0.1],[14.4175,0.1],[14.4075,0.1],[14.4061,0.2804],[14.4,1545.996],[14.3975,0.1],[14.3875,0.1],[14.3842,0.2808],[14.3775,0.1],[14.37,572.7604],[14.3683,0.1],[14.3675,0.1],[14.36,9.3169],[14.3575,0.1],[14.35,2158.434],[14.3475,0.1],[14.3458,87],[14.3375,0.1],[14.3324,1.714],[14.33,600],[14.3275,0.1],[14.32,0.4],[14.3175,0.1],[14.3075,0.1],[14.3,1824.5163],[14.2999,14.0348],[14.299,9.426],[14.298,20],[14.2975,0.1],[14.29,90],[14.2875,0.1],[14.2855,5],[14.285,52.6346],[14.2832,0.2828],[14.282,1],[14.28,0.4],[14.2775,0.1],[14.2675,0.1],[14.26,0.9525],[14.2587,0.2833],[14.2575,0.1],[14.25,125.4402],[14.2475,0.1],[14.24,71.4],[14.2391,447.1103],[14.2375,0.1],[14.2275,0.1],[14.22,259.0046],[14.2175,0.1],[14.2075,0.1],[14.2,2081.3098],[14.1975,0.1],[14.19,521.5],[14.1886,10],[14.1875,0.1],[14.1868,0.2847],[14.18,20],[14.1775,0.1],[14.1675,0.1],[14.1575,0.1],[14.152,3],[14.15,174.1221],[14.1475,0.1],[14.14,234.4501],[14.1375,0.1],[14.135,22.6856],[14.13,176.0092],[14.1275,0.1],[14.12,24.2793],[14.1175,0.1],[14.112,67.0175],[14.11,0.2863],[14.1075,0.1],[14.1,1411.417],[14.0975,0.1],[14.0875,0.1],[14.0861,0.2868],[14.08,254.0128],[14.0786,287.3],[14.0775,0.1],[14.0675,0.1],[14.066,5],[14.0638,2.8],[14.0627,0.2872],[14.0575,0.1],[14.0506,17.5],[14.0499,324.1401],[14.0475,0.1],[14.04,4.4914],[14.0375,0.1],[14.0367,0.2878],[14.0275,0.1],[14.0175,0.1],[14.0174,47.552],[14.01,2137.3527],[14.0075,17.6],[14.0059,0.2884],[14,262.3954],[13.9999,0.5106],[13.9975,0.1],[13.9908,1288.7019],[13.99,508.4784],[13.9875,0.1],[13.9824,17.5],[13.98,100],[13.9775,0.1],[13.97,82.3365],[13.9688,100],[13.9683,0.2892],[13.9675,0.1],[13.9575,0.1],[13.9553,35],[13.951,200],[13.95,105.4792],[13.9475,0.1],[13.941,0.2897],[13.9406,5],[13.9375,0.1],[13.9275,0.1],[13.9208,1288.7019],[13.92,11.899],[13.9193,0.2902],[13.9175,0.1],[13.9075,0.1],[13.9,114.0673],[13.8975,0.1],[13.8936,12.7513],[13.89,49.1004],[13.8875,0.1],[13.88,914],[13.8775,0.1],[13.8756,248.504],[13.8718,15.268],[13.8716,248.4996],[13.87,47.3352],[13.8686,7.7642],[13.8675,0.1],[13.8646,42.5955],[13.8645,88.9025],[13.862,42.5955],[13.8609,85.1909],[13.86,119.8967],[13.8575,5.5034],[13.85,889.0529],[13.8475,0.1],[13.8447,54.5583],[13.84,449.1386],[13.8389,31.816],[13.8375,0.1],[13.836,25.2963],[13.8275,0.1],[13.8263,250],[13.8258,27.885],[13.8242,250],[13.8239,29.999],[13.8176,1],[13.81,23]],\"bids\":[[13.8068,1576.384],[13.8037,14.5772],[13.802,1],[13.7996,82.53],[13.7983,82.53],[13.792,2587.8006],[13.79,6.3302],[13.7883,34.861],[13.7877,37.165],[13.7875,0.1],[13.7868,50],[13.7802,50.008],[13.7801,12.8042],[13.7769,16.7247],[13.7767,248.4735],[13.7765,44.008],[13.7761,4.7546],[13.776,42.5951],[13.7753,5.1414],[13.775,26.4362],[13.7745,0.6746],[13.7744,4.9808],[13.7734,43.2344],[13.7733,44.287],[13.773,90.9402],[13.7726,248.4735],[13.7723,5.0931],[13.771,6.6596],[13.7704,13.9116],[13.7703,0.6348],[13.7694,85.8226],[13.7654,85.2153],[13.7576,47.456],[13.7575,0.1],[13.7562,0.2],[13.75,538.5956],[13.7475,0.1],[13.7442,200],[13.7425,28.722],[13.74,34.7415],[13.7375,0.1],[13.7353,35],[13.7352,43.6833],[13.7275,0.1],[13.7251,134.3025],[13.7214,5],[13.7212,130.2833],[13.7201,325.2061],[13.7175,0.1],[13.7164,21.8716],[13.71,29.294],[13.7088,1288.7019],[13.7075,0.1],[13.7068,31.721],[13.7001,17.5],[13.7,2229.9886],[13.6975,0.1],[13.69,26],[13.6875,0.1],[13.6831,10],[13.68,0.4],[13.6775,0.1],[13.6765,31.442],[13.6723,10],[13.6675,0.1],[13.66,43.6684],[13.6575,0.1],[13.65,2544],[13.6475,0.1],[13.64,179.4],[13.6388,1288.7019],[13.6375,0.1],[13.6325,150],[13.63,295.3615],[13.629,0.68],[13.6275,0.1],[13.6269,17.5],[13.62,499.3778],[13.6175,0.1],[13.6161,75.484],[13.6101,17.5],[13.61,241.9589],[13.6097,2.8],[13.6075,0.1],[13.6016,10],[13.6011,187.6369],[13.601,53.88],[13.6,28652.5872],[13.5922,7],[13.5876,194.0766],[13.5875,0.1],[13.5775,0.1],[13.5685,132.7],[13.5675,0.1],[13.567,3.6],[13.56,0.4],[13.5555,112.5061],[13.55,264.3864],[13.54,200],[13.5375,0.1],[13.5286,1.005],[13.5275,0.1],[13.52,2063.289],[13.518,11.2671],[13.5111,381.3087],[13.51,191.5929],[13.5042,0.4474],[13.5024,5],[13.501,10],[13.5,2908.2997],[13.4975,0.1],[13.4875,0.1],[13.48,0.4],[13.4775,0.1],[13.47,10],[13.45,175.7],[13.44,0.4],[13.4375,0.1],[13.43,2344],[13.4275,0.1],[13.422,0.6],[13.4175,0.1],[13.41,20],[13.4088,43.5903],[13.4075,0.1],[13.401,20],[13.4,6645.6436],[13.3975,0.1],[13.3919,2.8],[13.3875,0.1],[13.3868,180.3554],[13.3775,0.1],[13.3675,0.1],[13.36,2.4],[13.3593,88.1782],[13.3575,0.1],[13.35,100],[13.3475,0.1],[13.3375,0.1],[13.3288,47.3895],[13.3275,0.1],[13.325,200],[13.32,0.4],[13.3175,0.1],[13.3115,4.1621],[13.31,4117.8],[13.3075,0.1],[13.302,4290.3359],[13.3001,6.2902],[13.3,305.5947],[13.2975,0.1],[13.2875,0.1],[13.28,0.4],[13.2775,0.1],[13.2675,0.1],[13.2575,0.1],[13.2535,100],[13.2534,175.5968],[13.25,175.4717],[13.2475,0.1],[13.24,0.4],[13.2375,0.1],[13.2275,0.1],[13.2255,35],[13.2175,0.1],[13.211,28.7786],[13.21,354.4024],[13.2075,0.1],[13.201,262.9071],[13.2001,10],[13.2,1477.7977],[13.1975,0.1],[13.1875,0.1],[13.18,61.4716],[13.1775,0.1],[13.1737,33.276],[13.1675,0.1],[13.1603,15.19],[13.16,0.4],[13.1594,1472.079],[13.1575,0.1],[13.1501,382.6334],[13.15,106.9455],[13.1475,0.1],[13.1375,0.1],[13.1275,0.1],[13.12,0.4],[13.1175,0.1],[13.1166,1],[13.11,187.2628],[13.1075,0.1],[13.1001,10],[13.1,2547.8434],[13.0975,0.1],[13.09,30],[13.0875,0.1],[13.08,179.51],[13.0788,3.82],[13.0775,0.1],[13.07,380]]}");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }*/
         Depth depth = new Depth();
         List<Ticker> bidList = new ArrayList();
         List<Ticker> askList = new ArrayList();
@@ -58,7 +69,6 @@ public class Gateio extends BaseMarket implements MarketParser {
             JSONArray asks = jsonObject.getJSONArray("asks");
             parseOrder(bidList, bids);
             parseOrder(askList, asks);
-
             //OK Ask返回结果重新排序
             askList.sort(Comparator.comparingDouble(Ticker::getPrice));
             depth.setBids(bidList);
@@ -72,18 +82,102 @@ public class Gateio extends BaseMarket implements MarketParser {
         return depth;
     }
 
-    @Override
-    public BalanceDto getBalance(String symbol) {
-        return null;
+
+    public List<BalanceDto> getBalances() {
+        String response = null;
+        List<BalanceDto> list = new ArrayList<>();
+        try {
+            response = this.stockPost.balance();
+            log.info(response);
+        } catch (HttpException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            if (jsonObject != null && jsonObject.getString("result").equals("true")) {
+                JSONObject available = jsonObject.getJSONObject("available");
+                JSONObject locked = jsonObject.getJSONObject("locked");
+                Iterator<String> it = available.keys();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    String availableValue = available.getString(key).toLowerCase();
+                    String lockedValue = locked.getString(key);
+                    list.add(BalanceDto.builder().currency(key).balance(Double.valueOf(availableValue) + Double.valueOf(lockedValue))
+                            .frozen(Double.valueOf(lockedValue)).available(Double.valueOf(availableValue)).build());
+
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override
+    public BalanceDto getBalance(String symbol) {
+        symbol = this.convertSymbol(symbol);
+        return null;
+    }
+
+    /**
+     * {"result":"true","message":"Success","code":0,"orderNumber":946102022
+     * ,"rate":"7.58","leftAmount":"0.20000000","filledAmount":"0","filledRate":"7.58"}
+     *
+     * @param request
+     * @return
+     */
+    @Override
     public String placeOrder(OrderRequest request) {
+        String symbol = this.convertSymbol(request.getSymbol());
+        String response = null, id = null;
+        try {
+            if (request.getType() == OrderType.BUY_LIMIT) {
+                response = stockPost.buy(symbol, String.valueOf(request.getPrice()),
+                        String.valueOf(request.getAmount()));
+            } else {
+                response = stockPost.sell(symbol, String.valueOf(request.getPrice()),
+                        String.valueOf(request.getAmount()));
+            }
+        } catch (HttpException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("respone:{}", response);
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            id = String.valueOf(jsonObject.getInt("orderNumber"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return id;
+    }
+
+    /**
+     * {"result":"true","order":{"orderNumber":"946157366","status":"open","currencyPair":"eos_usdt","type":"buy","rate":"7.5801","amount":"0.20000000","initialRate":"7.5801","initialAmount":"0.2","filledAmount":"0","filledRate":"7.5801","feePercentage":0.2,"feeValue":"0","feeCurrency":"USDT","fee":"0 USDT","timestamp":1530090833},"message":"Success","code":0,"elapsed":"1.10984ms"}
+     * @param orderId
+     * @param symbol
+     * @return
+     */
+    private OrderResponse getFilledOrder(String orderId, String symbol) {
+        symbol = this.convertSymbol(symbol);
+        String response = null;
+        try {
+            response = stockPost.getOrder(orderId, symbol);
+        } catch (HttpException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("response:{}", response);
         return null;
     }
 
     @Override
     public OrderResponse getFilledOrder(String orderId) {
+        this.getFilledOrder(orderId, "");
         return null;
     }
 
@@ -105,7 +199,20 @@ public class Gateio extends BaseMarket implements MarketParser {
     }
 
 
-    public static void main(String[] args) {
-        System.out.println(JSONUtil.toJsonString(new Gateio().getDepth("eosusdt")));
+    public static void main(String[] args) throws IOException, HttpException {
+        String symbol = "eosusdt";
+        Gateio gateio = (Gateio) MarketFactory.getMarket(Gateio.PLATFORM_NAME);
+
+
+//        System.out.println(gateio.getBalances());
+
+        // place order
+        /*OrderRequest request = OrderRequest.builder().type(OrderType.BUY_LIMIT)
+                .symbol(symbol).price(7.5801).amount(0.2).build();
+        String orderId = gateio.placeOrder(request);*/
+
+
+        // query order  :946157366
+        gateio.getFilledOrder("946157366", symbol);
     }
 }

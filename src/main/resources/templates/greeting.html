@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Handling Form Submission</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h1>Form</h1>
+<form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
+    <p>move Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}" /></p>
+    <p>move Back Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}" /></p>
+    <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+</form>
+</body>
+</html>
+<script type="text/javascript">
+    $('textarea').bind('input propertychange', function () {
+        alert(11);
+        alert("#moveMetrics").val();
+    });
+
+</script>

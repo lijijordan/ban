@@ -20,8 +20,7 @@ import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 @Slf4j
 public class TradeService {
 
-    private static double DEFAULT_METRICS_MAX = 0.022; // 2.2%
-    private static double METRICS_BACK_PERCENT = 0.85;
+
     //min limit order amount 0.01
     private static final double MIN_TRADE_AMOUNT = 0.01;
 
@@ -96,7 +95,6 @@ public class TradeService {
         if (canBuyCoin < minTradeVolume) {
             minTradeVolume = canBuyCoin;
         }
-        log.info("trade volume={}", minTradeVolume);
         if (minTradeVolume <= 0) {
             log.info("trade volume is 0!");
             return;
@@ -131,13 +129,17 @@ public class TradeService {
             log.info("Coin is not enough！!");
             return;
         }
-        Double avgEatDiffPercent = DEFAULT_METRICS_MAX;
+        Double avgEatDiffPercent = tradeContext.getMoveMetrics();
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
+
+        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
+                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
+
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                if (Math.abs(diffPercent) <= (avgEatDiffPercent * METRICS_BACK_PERCENT)) {
+                if (Math.abs(diffPercent) <= (avgEatDiffPercent * tradeContext.getMoveBackMetrics())) {
                     //往回搬;
                     log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
@@ -174,17 +176,16 @@ public class TradeService {
                 .price(sellPrice).symbol(symbol).type(OrderType.SELL_LIMIT).build();
         log.info("Place order, buy:" + buyOrder + "sell:" + sellOrder);
         String pair = UUID.randomUUID().toString();
-        Order orderA, orderB;
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketA.getName())));
-            orderA = orderService.createOrder(buyOrder, marketA, pair);
-            orderB = orderService.createOrder(sellOrder, marketB, pair);
+            orderService.createOrder(buyOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
+            orderService.createOrder(sellOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         } else {  // 市场B买. 市场A卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketB.getName())));
-            orderA = orderService.createOrder(sellOrder, marketA, pair);
-            orderB = orderService.createOrder(buyOrder, marketB, pair);
+            orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
+            orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         }
         log.info("Done!");
         // 跟踪买卖订单，准备下次买卖；

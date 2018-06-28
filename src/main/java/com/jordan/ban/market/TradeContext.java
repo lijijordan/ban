@@ -11,22 +11,26 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class TradeContext {
 
-    private Map<String, AccountDto> accountDtoMap = new ConcurrentHashMap<>();
+    private static double DEFAULT_METRICS_MAX = 0.022; // 2.2%
+    private static double METRICS_BACK_PERCENT = 0.85;
+
+    private double moveMetrics = DEFAULT_METRICS_MAX;
+    private double moveBackMetrics = METRICS_BACK_PERCENT;
 
 
-    public void putAccount(String key, AccountDto account) {
-        accountDtoMap.put(key, account);
+    public double getMoveMetrics() {
+        return moveMetrics;
     }
 
-    public AccountDto getAccount(String key) {
-        return accountDtoMap.get(key);
+    public void setMoveMetrics(double moveMetrics) {
+        this.moveMetrics = moveMetrics;
     }
 
-    public void removeAccount(String key) {
-        this.accountDtoMap.remove(key);
+    public double getMoveBackMetrics() {
+        return moveBackMetrics;
     }
 
-    public void clear(){
-        this.accountDtoMap.clear();
+    public void setMoveBackMetrics(double moveBackMetrics) {
+        this.moveBackMetrics = moveBackMetrics;
     }
 }

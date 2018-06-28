@@ -2,6 +2,7 @@ package com.jordan.ban.entity;
 
 
 import com.jordan.ban.domain.CycleType;
+import com.jordan.ban.domain.TradeDirect;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,4 +39,5 @@ public class ProfitStatistics extends BaseEntity {
      * increasePercent = increase/sumMoney
      */
     private double increasePercent;
+
 }

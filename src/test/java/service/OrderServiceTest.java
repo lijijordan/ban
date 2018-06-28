@@ -28,7 +28,7 @@ public class OrderServiceTest {
     public void createOrder() {
         OrderRequest request = OrderRequest.builder().amount(0.01).price(0.1)
                 .symbol("ltcusdt").type(OrderType.BUY_LIMIT).build();
-        orderService.createOrder(request, MarketFactory.getMarket("Huobi"), "");
+        orderService.createOrder(request, MarketFactory.getMarket("Huobi"), "", null, 0);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class OrderServiceTest {
 
 
     @Test
-    public void testRefreshOrderById(){
+    public void testRefreshOrderById() {
         Order order = this.orderService.findByOrderId("1529906476045148001");
         this.orderService.refreshOrderState(order);
     }
@@ -55,7 +55,7 @@ public class OrderServiceTest {
     public void createOrderAndRefresh() {
         OrderRequest request = OrderRequest.builder().amount(0.001).price(98.16)
                 .symbol("ltcusdt").type(OrderType.BUY_LIMIT).build();
-        Order order = orderService.createOrder(request, MarketFactory.getMarket("Huobi"), "");
+        Order order = orderService.createOrder(request, MarketFactory.getMarket("Huobi"), "", null, 0);
         for (int i = 0; i < 100; i++) {
             orderService.refreshOrderState(order);
             try {
@@ -67,8 +67,8 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void statisticTrade(){
-        orderService.statisticTrade(Order.builder().orderPairKey("43e66392-2827-4223-82a3-0b05fe48662c").build());
-        orderService.statisticTrade(Order.builder().orderPairKey("811bec20-0655-4107-8dfb-6ddeaa66811c").build());
+    public void statisticTrade() {
+        orderService.statisticTrade(Order.builder().orderPairKey("8874af4a-bbd8-4e78-b241-9abe8a16bedd").build());
+//        orderService.statisticTrade(Order.builder().orderPairKey("811bec20-0655-4107-8dfb-6ddeaa66811c").build());
     }
 }
