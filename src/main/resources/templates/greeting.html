@@ -32,6 +32,8 @@
         <td>order pair key</td>
         <td>state</td>
         <td>trade direct</td>
+        <td>price</td>
+        <td>diff percent%</td>
     </tr>
 
     <tr th:each="order :${orderList}">
@@ -43,6 +45,8 @@
         <td  th:text="${order.orderPairKey}"></td>
         <td  th:text="${order.state}"></td>
         <td  th:text="${order.tradeDirect}"></td>
+        <td  th:text="${order.price}"></td>
+        <td  th:text="${order.diffPercent}"></td>
 
     </tr>
 </table>
