@@ -42,9 +42,9 @@ public class TacticsApplication {
         application.receiveDiff("NEOUSDT");
         System.out.println("Consumer Started!");
 
-        TradeApp tradeApp = context.getBean(TradeApp.class);
+        /*TradeApp tradeApp = context.getBean(TradeApp.class);
         tradeApp.receiveDiff("ETHUSDT");
-        System.out.println("Listener Started!");
+        System.out.println("Listener Started!");*/
     }
 
 }
