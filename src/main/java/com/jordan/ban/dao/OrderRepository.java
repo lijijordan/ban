@@ -17,4 +17,6 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
     List<Order> findAllByOrderPairKey(String pairKey);
 
     List<Order> findAllBySymbolOrderByCreateTimeAsc(String symbol);
+
+    List<Order> findAllByOrderByCreateTime();
 }

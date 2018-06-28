@@ -43,7 +43,7 @@ public class OrderService {
 
 
     public List<Order> queryOrder(String symbol) {
-        return this.orderRepository.findAllBySymbolOrderByCreateTimeAsc(symbol);
+        return this.orderRepository.findAllByOrderByCreateTime();
     }
 
     /**
