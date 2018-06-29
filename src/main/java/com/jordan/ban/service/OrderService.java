@@ -1,9 +1,11 @@
 package com.jordan.ban.service;
 
 import com.jordan.ban.dao.OrderRepository;
+import com.jordan.ban.dao.ProfitStatisticsRepository;
 import com.jordan.ban.dao.TradeStatisticsRepository;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.Order;
+import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.entity.TradeStatistics;
 import com.jordan.ban.exception.StatisticException;
 import com.jordan.ban.exception.TradeException;
@@ -41,6 +43,9 @@ public class OrderService {
     @Autowired
     private TradeContext tradeContext;
 
+
+    @Autowired
+    private ProfitStatisticsRepository profitStatisticsRepository;
 
     public List<Order> queryOrder(String symbol) {
         return this.orderRepository.findAllByOrderByCreateTime();
@@ -196,5 +201,10 @@ public class OrderService {
 
     public Order findByOrderId(String orderId) {
         return this.orderRepository.findByOrderId(orderId);
+    }
+
+
+    public List<ProfitStatistics> queryProfitStatistics() {
+        return this.profitStatisticsRepository.findAllByOrderByCreateTimeDesc();
     }
 }

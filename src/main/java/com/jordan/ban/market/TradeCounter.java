@@ -15,6 +15,7 @@ public class TradeCounter {
     LimitQueue<Double> a2bQueue = new LimitQueue<>(QUEUE_SIZE);
     LimitQueue<Double> b2aQueue = new LimitQueue<>(QUEUE_SIZE);
 
+
     public long getA2bTradeCount() {
         return a2bQueue.size();
     }
@@ -49,8 +50,12 @@ public class TradeCounter {
     }
 
     public double getSuggestDiffPercent() {
-        return (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
+        double result = (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
                 Math.abs(this.getAvgDiffPercent(TradeDirect.B2A))) / 2;
+        if (result == 0) {
+            return TradeContext.DEFAULT_METRICS_MAX;
+        }
+        return result;
     }
 
     public static void main(String[] args) {

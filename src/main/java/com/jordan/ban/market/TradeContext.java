@@ -17,8 +17,8 @@ import java.util.function.Function;
 @Component
 public class TradeContext {
 
-    private static double DEFAULT_METRICS_MAX = 0.022; // 2.2%
-    private static double METRICS_BACK_PERCENT = 0.85;
+    public final static double DEFAULT_METRICS_MAX = 0.022; // 2.2%
+    public final static double METRICS_BACK_PERCENT = 0.85;
 
     private double moveMetrics = DEFAULT_METRICS_MAX;
     private double moveBackMetrics = METRICS_BACK_PERCENT;
@@ -27,7 +27,6 @@ public class TradeContext {
      * 上次交易的方向
      */
     private TradeDirect lastTradeDirect;
-
 
 
     public TradeDirect getLastTradeDirect() {

@@ -34,11 +34,12 @@ public class TradeController {
     @Autowired
     private TradeCounter tradeCounter;
 
+
     @GetMapping("/greeting")
     public String greetingForm(Model model) {
         model.addAttribute("greeting", Greeting.builder()
                 .moveBackMetrics(tradeContext.getMoveBackMetrics())
-                .moveMetrics(tradeContext.getMoveMetrics()).build());
+                .moveMetrics(this.tradeCounter.getSuggestDiffPercent()).build());
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
 
@@ -48,17 +49,19 @@ public class TradeController {
         AccountDto accountB = AccountDto.builder().money(balanceB.get("usdt").getAvailable()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
 
-        String suggestText = "suggest:" + this.tradeCounter.getSuggestDiffPercent() + ",a2b count:"
+        String suggestText = this.tradeCounter.getSuggestDiffPercent() + "["
                 + this.tradeCounter.getA2bTradeCount()
-                + ",b2a count:"
-                + this.tradeCounter.getB2aTradeCount();
+                + "]";
 
         model.addAttribute("orderList", this.orderService.queryOrder("ethusdt"));
         model.addAttribute("accountA", accountA);
         model.addAttribute("accountB", accountB);
+        model.addAttribute("sumMoney", (accountA.getMoney() + accountB.getMoney()));
+        model.addAttribute("sumCoin", (accountA.getVirtualCurrency() + accountB.getVirtualCurrency()));
         model.addAttribute("a2bAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.A2B));
         model.addAttribute("b2aAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.B2A));
         model.addAttribute("suggest", suggestText);
+        model.addAttribute("profitStatistics", this.orderService.queryProfitStatistics());
         return "greeting";
     }
 

@@ -8,6 +8,7 @@ import com.jordan.ban.entity.Order;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,5 +71,10 @@ public class OrderServiceTest {
     public void statisticTrade() {
         orderService.statisticTrade(Order.builder().orderPairKey("8874af4a-bbd8-4e78-b241-9abe8a16bedd").build());
 //        orderService.statisticTrade(Order.builder().orderPairKey("811bec20-0655-4107-8dfb-6ddeaa66811c").build());
+    }
+
+    @Test
+    public void queryProfit(){
+        Assert.assertNotNull(orderService.queryProfitStatistics());
     }
 }

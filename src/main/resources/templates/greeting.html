@@ -30,13 +30,15 @@
         <td th:text="${accountB.virtualCurrency}"></td>
     </tr>
 </table>
-
+<p></p>
+sum money: <b th:text="${sumMoney}"/>
+sum coin: <b th:text="${sumCoin}"/>
 
 <h1>Form</h1>
 
-<p name="textarea" th:text="'A->B: ' + ${a2bAvgPercent}"/>
-<p name="textarea" th:text="'B->A: ' + ${b2aAvgPercent}"/>
-<p name="textarea" th:text="'Suggest value: ' + ${suggest}"/>
+<p name="textarea" th:text="'A->B ' + ${a2bAvgPercent}"/>
+<p name="textarea" th:text="'B->A ' + ${b2aAvgPercent}"/>
+<p name="textarea" th:text="'Suggest: ' + ${suggest}"/>
 
 
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
@@ -73,6 +75,28 @@
         <td th:text="${order.price}"></td>
         <td th:text="${order.diffPercent}"></td>
 
+    </tr>
+</table>
+
+
+<h2>Profit Statistics</h2>
+<table th:object="${profitStatistics}" id="statTable" border="1">
+    <tr>
+        <td>create time</td>
+        <td>platform A</td>
+        <td>platform B</td>
+        <td>sum coin</td>
+        <td>sum money</td>
+        <td>symbol</td>
+    </tr>
+
+    <tr th:each="stat :${profitStatistics}">
+        <td th:text="${stat.createTime}"></td>
+        <td th:text="${stat.platformA}"></td>
+        <td th:text="${stat.platformB}"></td>
+        <td th:text="${stat.sumCoin}"></td>
+        <td th:text="${stat.sumMoney}"></td>
+        <td th:text="${stat.symbol}"></td>
     </tr>
 </table>
 
