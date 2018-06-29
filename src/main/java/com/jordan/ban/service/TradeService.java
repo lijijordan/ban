@@ -140,7 +140,7 @@ public class TradeService {
             log.info("Coin is not enough！!");
             return;
         }
-        Double avgEatDiffPercent = tradeContext.getMoveMetrics();
+        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
