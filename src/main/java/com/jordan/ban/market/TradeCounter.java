@@ -11,6 +11,15 @@ public class TradeCounter {
     private double a2bSumDiffPercent = 0;
     private double b2aSumDiffPercent = 0;
 
+    public long getA2bTradeCount() {
+        return a2bTradeCount;
+    }
+
+
+    public long getB2aTradeCount() {
+        return b2aTradeCount;
+    }
+
     public void count(TradeDirect direct, double diffPercent) {
         if (direct == TradeDirect.A2B) {
             a2bTradeCount++;
@@ -32,4 +41,8 @@ public class TradeCounter {
         }
     }
 
+    public double getSuggestDiffPercent() {
+        return (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
+                Math.abs(this.getAvgDiffPercent(TradeDirect.B2A))) / 2;
+    }
 }

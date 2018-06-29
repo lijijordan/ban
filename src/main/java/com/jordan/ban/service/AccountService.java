@@ -113,7 +113,7 @@ public class AccountService {
      */
     // TODO:use cache
     public Map<String, BalanceDto> queryAndUpdateBalancesCache(String platformName) {
-        log.info("update [{}] balances!", platformName);
+        log.info("update {} balances!", platformName);
         Map<String, BalanceDto> map = new HashMap<>();
         MarketParser market = MarketFactory.getMarket(platformName);
         if (market instanceof Huobi) {

@@ -6,18 +6,42 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 <body>
-<p name="textarea" th:text="'fcoinBalance: ' + ${fcoinBalance}"/>
-<p name="textarea" th:text="'dragonexBalance: ' + ${dragonexBalance}"/>
+
+<h2>Account</h2>
+<table border="1">
+    <tr>
+        <td>platform</td>
+        <td>symbol</td>
+        <td>money</td>
+        <td>coin</td>
+    </tr>
+
+    <tr>
+        <td th:text="${accountA.platform}"></td>
+        <td th:text="${accountA.symbol}"></td>
+        <td th:text="${accountA.money}"></td>
+        <td th:text="${accountA.virtualCurrency}"></td>
+    </tr>
+
+    <tr>
+        <td th:text="${accountB.platform}"></td>
+        <td th:text="${accountB.symbol}"></td>
+        <td th:text="${accountB.money}"></td>
+        <td th:text="${accountB.virtualCurrency}"></td>
+    </tr>
+</table>
 
 
 <h1>Form</h1>
 
 <p name="textarea" th:text="'A->B: ' + ${a2bAvgPercent}"/>
 <p name="textarea" th:text="'B->A: ' + ${b2aAvgPercent}"/>
+<p name="textarea" th:text="'Suggest value: ' + ${suggest}"/>
+
 
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
-    <p>move Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/></p>
-    <p>move Back Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}"/></p>
+    <p>Move Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/></p>
+    <p>Move Back Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}"/></p>
     <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
 </form>
 

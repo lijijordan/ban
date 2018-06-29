@@ -59,6 +59,7 @@ public class OrderService {
     //    @Transactional(Pro=Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
 //    @Async
     public void refreshOrderState(Order order) {
+        log.info("refreshOrderState");
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
         if (orderResponse != null) {
@@ -66,8 +67,16 @@ public class OrderService {
             if (isChanged(order, orderResponse)) {
                 Date date = order.getCreateTime();
                 long costTime = System.currentTimeMillis() - date.getTime();
+                log.info("send slack message:{}", "Order changed:" + "[" + (costTime / 1000) + "]s");
                 this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
                         orderResponse.toString());
+                // 等待5s以后再刷新余额：等待网站更新
+                log.info("wait for 5s! update balance.");
+                try {
+                    Thread.sleep(1000 * 5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
             }
             order.setState(orderResponse.getOrderState());

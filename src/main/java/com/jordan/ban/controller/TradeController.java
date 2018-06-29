@@ -1,5 +1,6 @@
 package com.jordan.ban.controller;
 
+import com.jordan.ban.domain.AccountDto;
 import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.domain.in.Greeting;
@@ -38,14 +39,26 @@ public class TradeController {
         model.addAttribute("greeting", Greeting.builder()
                 .moveBackMetrics(tradeContext.getMoveBackMetrics())
                 .moveMetrics(tradeContext.getMoveMetrics()).build());
-        Map<String, BalanceDto> fcoinBalance = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
-        Map<String, BalanceDto> dragonexBalance = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
+        Map<String, BalanceDto> balanceA = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
+        Map<String, BalanceDto> balanceB = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
+
+        String coinName = "eth";
+        AccountDto accountA = AccountDto.builder().money(balanceA.get("usdt").getAvailable()).platform(Fcoin.PLATFORM_NAME).symbol("ethusdt")
+                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getAvailable() : 0).build();
+        AccountDto accountB = AccountDto.builder().money(balanceB.get("usdt").getAvailable()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
+                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
+
+        String suggestText = "suggest:" + this.tradeCounter.getSuggestDiffPercent() + ",a2b count:"
+                + this.tradeCounter.getA2bTradeCount()
+                + ",b2a count:"
+                + this.tradeCounter.getB2aTradeCount();
 
         model.addAttribute("orderList", this.orderService.queryOrder("ethusdt"));
-        model.addAttribute("fcoinBalance", fcoinBalance.toString());
-        model.addAttribute("dragonexBalance", dragonexBalance.toString());
+        model.addAttribute("accountA", accountA);
+        model.addAttribute("accountB", accountB);
         model.addAttribute("a2bAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.A2B));
         model.addAttribute("b2aAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.B2A));
+        model.addAttribute("suggest", suggestText);
         return "greeting";
     }
 
