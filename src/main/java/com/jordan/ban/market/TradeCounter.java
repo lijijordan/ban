@@ -1,48 +1,63 @@
 package com.jordan.ban.market;
 
+import com.jordan.ban.common.LimitQueue;
 import com.jordan.ban.domain.TradeDirect;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class TradeCounter {
 
-    private long a2bTradeCount = 0;
-    private long b2aTradeCount = 0;
-    private double a2bSumDiffPercent = 0;
-    private double b2aSumDiffPercent = 0;
+
+    private static final int QUEUE_SIZE = 60 * 2 * 30; // 30 min data
+
+    LimitQueue<Double> a2bQueue = new LimitQueue<>(QUEUE_SIZE);
+    LimitQueue<Double> b2aQueue = new LimitQueue<>(QUEUE_SIZE);
 
     public long getA2bTradeCount() {
-        return a2bTradeCount;
+        return a2bQueue.size();
     }
 
 
     public long getB2aTradeCount() {
-        return b2aTradeCount;
+        return b2aQueue.size();
     }
 
     public void count(TradeDirect direct, double diffPercent) {
         if (direct == TradeDirect.A2B) {
-            a2bTradeCount++;
-            a2bSumDiffPercent = a2bSumDiffPercent + diffPercent;
+            a2bQueue.offer(diffPercent);
         } else {
-            b2aTradeCount++;
-            b2aSumDiffPercent = b2aSumDiffPercent + diffPercent;
+            b2aQueue.offer(diffPercent);
         }
     }
 
+    private double sum(LimitQueue<Double> queue) {
+        return queue.stream().mapToDouble(q -> q).sum();
+    }
+
+
     public double getAvgDiffPercent(TradeDirect tradeDirect) {
-        if (a2bTradeCount == 0 || b2aTradeCount == 0) {
+        if (this.getA2bTradeCount() == 0 || this.getB2aTradeCount() == 0) {
             return 0;
         }
         if (tradeDirect == TradeDirect.A2B) {
-            return a2bSumDiffPercent / a2bTradeCount;
+            return sum(this.a2bQueue) / this.getA2bTradeCount();
         } else {
-            return b2aSumDiffPercent / b2aTradeCount;
+            return sum(this.b2aQueue) / this.getB2aTradeCount();
         }
     }
 
     public double getSuggestDiffPercent() {
         return (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
                 Math.abs(this.getAvgDiffPercent(TradeDirect.B2A))) / 2;
+    }
+
+    public static void main(String[] args) {
+        LimitQueue<Double> queue = new LimitQueue<>(QUEUE_SIZE);
+        queue.offer(1d);
+        queue.offer(2d);
+        queue.offer(2d);
+        System.out.println(queue.stream().mapToDouble(q -> q).sum());
     }
 }
