@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpParams {
 
     private static final SimpleDateFormat GMT_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 
-    private static Map<String, String> sHttpHeaders = new HashMap<>();
+    private static Map<String, String> sHttpHeaders = new ConcurrentHashMap<>();
 
     private static boolean HAS_CUSTOM_KEY = false;
 
