@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
-@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
+@SpringBootApplication
 public class TradeApplication {
 
     public static void main(String[] args) {
