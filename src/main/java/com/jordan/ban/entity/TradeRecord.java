@@ -37,4 +37,7 @@ public class TradeRecord extends BaseEntity {
 
     private double totalProfit;
 
+    // 一次交易:costBuy + costSell
+    private double tradeCostMoney;
+
 }

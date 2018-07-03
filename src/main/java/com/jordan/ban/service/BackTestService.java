@@ -75,6 +75,8 @@ public class BackTestService {
 
     private long totalData;
 
+    private static final double FIX_MOVE_PERCENT = 0.022;
+
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -165,7 +167,11 @@ public class BackTestService {
 //            log.info("Coin is not enough！!");
             return;
         }
-        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
+//        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
+        // FIXME: 固定diff 策略
+        Double avgEatDiffPercent = FIX_MOVE_PERCENT;
+
+
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
@@ -257,7 +263,7 @@ public class BackTestService {
         this.accountRepository.save(account);
     }
 
-    private void init(double price) {
+    public void init(double price) {
         this.accountService.emptyAccount();
         this.tradeRecordRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
@@ -304,16 +310,16 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/06/27 00:00:00");
-        Date end = format.parse("2018/07/02 23:59:59");
+        Date start = format.parse("2018/06/28 00:00:00");
+        Date end = format.parse("2018/06/28 23:59:59");
 
-        this.run(start, end, 0.9);
         this.run(start, end, 0.8);
+        /*this.run(start, end, 0.8);
         this.run(start, end, 0.7);
         this.run(start, end, 0.6);
         this.run(start, end, 0.85);
         this.run(start, end, 0.81);
-        this.run(start, end, 0.89);
+        this.run(start, end, 0.89);*/
     }
 
     public void run(Date start, Date end, double percent) throws ParseException {

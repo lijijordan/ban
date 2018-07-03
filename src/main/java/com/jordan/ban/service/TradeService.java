@@ -44,7 +44,7 @@ public class TradeService {
 
     public synchronized void trade(MockTradeResultIndex tradeResult) {
 
-        log.info("Data:" + tradeResult.toString());
+//        log.info("Data:" + tradeResult.toString());
 
         this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
 
@@ -53,9 +53,6 @@ public class TradeService {
 
         String symbol = tradeResult.getSymbol().toLowerCase();
         String coinName = symbol.replace("usdt", "");
-
-        String aKey = marketA.getName() + symbol;
-        String bKey = marketB.getName() + symbol;
 
         AccountDto accountA, accountB;
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(marketA.getName());
@@ -66,8 +63,8 @@ public class TradeService {
         accountB = AccountDto.builder().money(balanceB.get("usdt").getAvailable()).platform(marketB.getName()).symbol(symbol)
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
 
-        log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
-        log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
+//        log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
+//        log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
 
 //        log.info("Mock account!");
 //        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(symbol).virtualCurrency(10).build();
@@ -111,7 +108,7 @@ public class TradeService {
             return;
         }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
-            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
+//            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
             return;
         }
 
@@ -133,11 +130,11 @@ public class TradeService {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-            log.info("Money is not enough！!");
+//            log.info("Money is not enough！!");
             return;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-            log.info("Coin is not enough！!");
+//            log.info("Coin is not enough！!");
             return;
         }
         Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
@@ -145,20 +142,20 @@ public class TradeService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
-        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
-                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
+//        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
+//                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
 
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                 if (Math.abs(diffPercent) <= (avgEatDiffPercent * tradeContext.getMoveBackMetrics())) {
                     //往回搬;
-                    log.info("+++++++diffPercent:{},move back!", diffPercent);
+//                    log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
-                    log.info("-------diffPercent:{},not deal!", diffPercent);
+//                    log.info("-------diffPercent:{},not deal!", diffPercent);
                     return;
                 }
             } else {
-                log.info("--------diffPercent:{},not deal!", diffPercent);
+//                log.info("--------diffPercent:{},not deal!", diffPercent);
                 return;
             }
         } else {
@@ -166,20 +163,21 @@ public class TradeService {
             if (diffPercent < avgEatDiffPercent) {
                 if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
-                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
+//                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
                 } else { // 方向错误
-                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
+//                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
                     return;
                 }
             }
         }
         double profit = ((moneyAfter - moneyBefore) / moneyBefore) * 100;
-        log.info("Profit:{}", profit);
+//        log.info("Profit:{}", profit);
         /*if (Context.getUnFilledOrderNum() > 0) {
             log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
             throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!");
         }*/
         log.info("============================ PLACE ORDER ============================");
+        long start = System.currentTimeMillis();
         // 统一精度4
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
@@ -189,12 +187,14 @@ public class TradeService {
         String pair = UUID.randomUUID().toString();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
-            buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketA.getName())));
+            double fees = 1 + FeeUtils.getFee(marketA.getName());
+            buyOrder.setAmount(buyOrder.getAmount() * fees * fees);
             orderService.createOrder(buyOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(sellOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         } else {  // 市场B买. 市场A卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
-            buyOrder.setAmount(buyOrder.getAmount() * (1 + FeeUtils.getFee(marketB.getName())));
+            double fees = 1 + FeeUtils.getFee(marketB.getName());
+            buyOrder.setAmount(buyOrder.getAmount() * fees * fees);
             orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         }
@@ -212,8 +212,19 @@ public class TradeService {
         record.setTradeTime(tradeResult.getCreateTime());
         record.setVolume(tradeResult.getEatTradeVolume());
         record.setProfit(profit);
+        record.setTradeCostMoney(buyCost + sellCost);
         record.setTotalMoney(totalMoney);
         this.tradeRecordRepository.save(record);
-        log.info("Record done!");
+        log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start) * 1000);
+    }
+
+    public static void main(String[] args) {
+//        buyOrder.getAmount() * (1 + FeeUtils.getFee(marketA.getName()
+
+        double amount = 10;
+        double fees = 0.002;
+
+        double addFees = 1 + fees;
+        System.out.println(amount * addFees * addFees);
     }
 }

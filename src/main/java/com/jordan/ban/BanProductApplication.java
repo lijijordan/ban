@@ -1,11 +1,13 @@
 package com.jordan.ban;
 
 import com.jordan.ban.common.Constant;
-import com.jordan.ban.market.parser.*;
+import com.jordan.ban.market.parser.Dragonex;
+import com.jordan.ban.market.parser.Fcoin;
+import com.jordan.ban.market.parser.Gateio;
+import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.mq.ProductApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.concurrent.ExecutionException;

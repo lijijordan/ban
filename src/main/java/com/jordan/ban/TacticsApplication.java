@@ -30,7 +30,7 @@ public class TacticsApplication {
         accountService.emptyAccount();
         accountService.mockAccountTestData();*/
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
-        application.receiveDiff("EOSUSDT");
+        /*application.receiveDiff("EOSUSDT");
         application.receiveDiff("BTCUSDT");
         application.receiveDiff("EOSETH");
         application.receiveDiff("EOSBTC");
@@ -40,7 +40,9 @@ public class TacticsApplication {
         application.receiveDiff("BCHUSDT");
         application.receiveDiff("ETHUSDT");
         application.receiveDiff("LTCUSDT");
-        application.receiveDiff("NEOUSDT");
+        application.receiveDiff("NEOUSDT");*/
+
+        application.receiveDiff("ETHUSDT");
         System.out.println("Consumer Started!");
 
         /*TradeApp tradeApp = context.getBean(TradeApp.class);
