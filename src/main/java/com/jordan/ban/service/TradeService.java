@@ -2,7 +2,6 @@ package com.jordan.ban.service;
 
 import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.*;
-import com.jordan.ban.entity.Order;
 import com.jordan.ban.entity.TradeRecord;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
