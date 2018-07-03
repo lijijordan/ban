@@ -5,11 +5,12 @@ import com.jordan.ban.market.parser.*;
 import com.jordan.ban.mq.ProductApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.concurrent.ExecutionException;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
 public class BanProductApplication {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -39,6 +40,7 @@ public class BanProductApplication {
         productApplication.diffTask(Constant.BTC_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BCH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
+        productApplication.diffTask(Constant.XRP_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 3000);
 
         System.out.println("Product application Started!");
     }

@@ -6,6 +6,7 @@ import com.jordan.ban.mq.ConsumerApplication;
 import com.jordan.ban.service.AccountService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -14,7 +15,7 @@ import java.net.UnknownHostException;
 
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
-@SpringBootApplication
+@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
 public class TacticsApplication {
 
     public static void main(String[] args) {
@@ -25,9 +26,9 @@ public class TacticsApplication {
             e.printStackTrace();
         }
         ConfigurableApplicationContext context = SpringApplication.run(TacticsApplication.class, args);
-        AccountService accountService = context.getBean(AccountService.class);
+        /*AccountService accountService = context.getBean(AccountService.class);
         accountService.emptyAccount();
-        accountService.mockAccountTestData();
+        accountService.mockAccountTestData();*/
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
         application.receiveDiff("EOSUSDT");
         application.receiveDiff("BTCUSDT");

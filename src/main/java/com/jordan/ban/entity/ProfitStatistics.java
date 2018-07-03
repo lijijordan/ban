@@ -29,6 +29,11 @@ public class ProfitStatistics extends BaseEntity {
 
     private String platformB;
 
+
+    /**
+     * 总的交易金额
+     */
+    private double totalCostMoney;
     /**
      * increase money
      */

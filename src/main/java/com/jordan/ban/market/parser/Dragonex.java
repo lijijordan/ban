@@ -161,6 +161,20 @@ public class Dragonex extends BaseMarket implements MarketParser {
         return depth;
     }
 
+
+    public boolean validateToken() {
+        String path = "/api/v1/token/status/";
+        String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
+        DragonexApiResponse dragonexApiResponse = null;
+        try {
+            dragonexApiResponse = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexToken>>() {
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return dragonexApiResponse.ok;
+    }
+
     public void setToken() throws IOException {
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
         log.info("Get token response:{}", response);
@@ -335,12 +349,13 @@ public class Dragonex extends BaseMarket implements MarketParser {
     public static void main(String[] args) throws IOException {
 
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
-        dragonex.setToken();
+        dragonex.validateToken();
+//        dragonex.setToken();
 
         /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
                 .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
         String orderId = dragonex.placeOrder(orderRequest);*/
-        List<BalanceDto> balanceDtos = dragonex.getBalances();
+//        List<BalanceDto> balanceDtos = dragonex.getBalances();
         System.out.println("done!");
 
         // get symbol

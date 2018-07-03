@@ -25,7 +25,7 @@ public class TradeService {
 
 
     //min limit order amount 0.01
-    private static final double MIN_TRADE_AMOUNT = 0.01;
+    public static final double MIN_TRADE_AMOUNT = 0.01;
 
     @Autowired
     private OrderService orderService;

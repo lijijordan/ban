@@ -13,7 +13,7 @@ public class MQConnectionFactory {
     private static ConnectionFactory factory;
     private static Connection connection;
 
-    static {
+    private static void initFactory() {
         factory = new ConnectionFactory();
         factory.setHost("204.48.17.119");
         factory.setPort(5672);
@@ -22,10 +22,14 @@ public class MQConnectionFactory {
         factory.setVirtualHost("/");
     }
 
+
     public static Connection getConnection() {
+        if (factory == null) {
+            initFactory();
+        }
         if (connection != null) {
             return connection;
-        }else {
+        } else {
             try {
                 connection = factory.newConnection();
             } catch (IOException e) {
@@ -37,7 +41,7 @@ public class MQConnectionFactory {
         }
     }
 
-    public static void closeConnection(){
+    public static void closeConnection() {
         if (connection != null) {
             try {
                 connection.close();

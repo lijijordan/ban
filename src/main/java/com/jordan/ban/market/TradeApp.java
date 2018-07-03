@@ -43,6 +43,7 @@ public class TradeApp {
         }
     }
 
+    //TODO： 异步？
     private void doDepthDiff(String json) {
 
         MockTradeResultIndex mockTradeResultIndex = JSONUtil.getEntity(json, MockTradeResultIndex.class);

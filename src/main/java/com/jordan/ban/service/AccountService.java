@@ -21,7 +21,7 @@ import static com.jordan.ban.common.Constant.*;
 public class AccountService {
 
     private Map<String, Map<String, BalanceDto>> balanceCache = new ConcurrentHashMap<>();
-    public static double USD_MONEY = 20000;
+    public static double USD_MONEY = 1000;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -102,6 +102,8 @@ public class AccountService {
         double coin = USD_MONEY / price / 2;
         double money = USD_MONEY - (coin * price);
         Account account = Account.builder().platform(platform).symbol(symbol).money(money).virtualCurrency(coin).build();
+        log.info("price:{}", price);
+        log.info("Create account:{}", account.toString());
         this.accountRepository.save(account);
     }
 
