@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
 
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
-@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
+@SpringBootApplication
 public class TacticsApplication {
 
     public static void main(String[] args) {

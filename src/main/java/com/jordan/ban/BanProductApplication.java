@@ -10,7 +10,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.concurrent.ExecutionException;
 
-@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
+@SpringBootApplication
 public class BanProductApplication {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {

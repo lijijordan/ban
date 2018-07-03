@@ -15,7 +15,7 @@ import java.text.ParseException;
 
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
-@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class})
+@SpringBootApplication
 public class BackTestApplication {
 
     public static void main(String[] args) throws ParseException, UnknownHostException {
