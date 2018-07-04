@@ -20,6 +20,5 @@ public class BackTestServiceTest {
 
     @Test
     public void initAccount(){
-        this.backTestService.init(498.2700	);
     }
 }

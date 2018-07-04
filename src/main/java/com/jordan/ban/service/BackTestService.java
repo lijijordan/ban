@@ -17,7 +17,6 @@ import com.jordan.ban.market.FeeUtils;
 import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.TradeCounter;
 import com.jordan.ban.market.parser.*;
-import com.jordan.ban.task.StatisticTask;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -36,8 +35,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.jordan.ban.common.Constant.ETH_USDT;
-import static com.jordan.ban.common.Constant.MOCK_TRADE_INDEX;
+import static com.jordan.ban.common.Constant.*;
 import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 import static com.jordan.ban.service.TradeService.MIN_TRADE_AMOUNT;
 
@@ -75,9 +73,15 @@ public class BackTestService {
 
     private long totalData;
 
-    private static final double FIX_MOVE_PERCENT = 0.022;
-
     private double openPrice;
+
+    private double marketAAvgPrice;
+    private double marketBAvgPrice;
+
+    private double marketASumPrice;
+    private double marketBSumPrice;
+
+    private double moveMetric;
 
 
     public Account getAccount(String platform, String symbol) {
@@ -169,8 +173,17 @@ public class BackTestService {
 //            log.info("Coin is not enough！!");
             return;
         }
-        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
-
+//
+//  Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
+        double avgEatDiffPercent;
+        if (this.moveMetric == 0) {
+            throw new TradeException("Please set move metric value!");
+        }
+        if (this.moveMetric < 0) {
+            avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
+        } else {
+            avgEatDiffPercent = this.moveMetric;
+        }
 
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
@@ -263,12 +276,12 @@ public class BackTestService {
         this.accountRepository.save(account);
     }
 
-    public void init(double price) {
+    public void init(double price, String symbol) {
         this.openPrice = price;
         this.accountService.emptyAccount();
         this.tradeRecordRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
-        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT, price);
+        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, price);
 //        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT);
     }
 
@@ -313,37 +326,54 @@ public class BackTestService {
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
                 .start(start).end(end).tradeCount(this.tradeRecordRepository.countBy())
                 .profit(this.totalCostMoney * 0.001 + moneyAfter - 1000).total(totalData)
-                .queueSize(queueSize)
+                .queueSize(queueSize).symbol(symbol)
                 .build();
         backTestStatisticsRepository.save(backTestStatistics);
     }
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/04 00:00:00");
+        Date start = format.parse("2018/06/29 00:00:00");
         Date end = format.parse("2018/07/04 23:59:59");
         int defaultQueueSize = 60 * 2 * 30;
+
+        this.moveMetric = 0.02692;
 //        this.run(start, end, 0.8, defaultQueueSize * 2);
 //        this.run(start, end, 0.8, defaultQueueSize / 2);
 //        this.run(start, end, 0.8, defaultQueueSize * 4);
 //        this.run(start, end, 0.8, defaultQueueSize * 8);
 //        this.run(start, end, 0.9, defaultQueueSize);
-        this.run(start, end, 1, defaultQueueSize);
+        /*this.run(start, end, 0.7, defaultQueueSize, BCH_USDT);
+        this.run(start, end, 0.81, defaultQueueSize, BCH_USDT);
+        this.run(start, end, 0.9, defaultQueueSize, BCH_USDT);
+        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.9, defaultQueueSize, ETH_USDT);*/
 
-        /*this.run(start, end, 0.8);
-        this.run(start, end, 0.7);
-        this.run(start, end, 0.6);
-        this.run(start, end, 0.85);
-        this.run(start, end, 0.81);
-        this.run(start, end, 0.89);*/
+        /*run(start, end, 1, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.9, defaultQueueSize, ETH_USDT);*/
+
+
+        this.moveMetric = 0.0358;
+        run(start, end, 1, defaultQueueSize, BCH_USDT);
+        run(start, end, 0.9, defaultQueueSize, BCH_USDT);
+        this.moveMetric = -1;
+        run(start, end, 0.81, defaultQueueSize, BCH_USDT);
+
+        this.moveMetric = 0.02944;
+        run(start, end, 1, defaultQueueSize, BTC_USDT);
+        this.moveMetric = -1;
+        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
+
+        System.out.println("End at:" + new Date());
+
     }
 
-    public void run(Date start, Date end, double percent, int queueSize) throws ParseException {
+    public void run(Date start, Date end, double percent, int queueSize, String symbol) throws ParseException {
         this.start = start;
         this.end = end;
         this.configContext(percent, queueSize);
         MatchPhraseQueryBuilder mpq1 = QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin");
-        MatchPhraseQueryBuilder mpq2 = QueryBuilders.matchPhraseQuery("symbol", "ETHUSDT");
+        MatchPhraseQueryBuilder mpq2 = QueryBuilders.matchPhraseQuery("symbol", symbol);
         QueryBuilder qb2 = QueryBuilders.boolQuery()
                 .must(mpq1)
                 .must(mpq2);
@@ -364,9 +394,9 @@ public class BackTestService {
                 Map<String, Object> map = hit.getSourceAsMap();
                 ObjectMapper mapper = new ObjectMapper(); // jackson's objectmapper
                 MockTradeResultIndex index = mapper.convertValue(map, MockTradeResultIndex.class);
-                if (index.getSymbol().equals(ETH_USDT)) {
+                if (index.getSymbol().equals(symbol)) {
                     if (sum == 1) {
-                        this.init(index.getBuyPrice());
+                        this.init(index.getBuyPrice(), symbol);
                     }
                     this.trade(index);
                     System.out.println("::::::::::::::::::::::::sum::::::::::::::::::" + sum++);
@@ -376,7 +406,7 @@ public class BackTestService {
             scrollResp = ElasticSearchClient.getClient().prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
         }
         while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
-        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT, queueSize);
+        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, queueSize);
 
 
     }
