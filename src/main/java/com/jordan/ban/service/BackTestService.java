@@ -167,9 +167,7 @@ public class BackTestService {
 //            log.info("Coin is not enough！!");
             return;
         }
-//        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
-        // FIXME: 固定diff 策略
-        Double avgEatDiffPercent = FIX_MOVE_PERCENT;
+        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
 
 
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
@@ -272,12 +270,13 @@ public class BackTestService {
     }
 
 
-    private void configContext(double backPercent) {
+    private void configContext(double backPercent, int queueSize) {
 //        TradeCounter.QUEUE_SIZE = 60 * 2 * 30 * 2;
         this.tradeContext.setMoveBackMetrics(backPercent);
+        TradeCounter.setQueueSize(queueSize);
     }
 
-    private void statistic(String platformA, String platformB, String symbol) {
+    private void statistic(String platformA, String platformB, String symbol, int queueSize) {
         Account accountA = this.getAccount(platformA, symbol);
         Account accountB = this.getAccount(platformB, symbol);
 
@@ -303,17 +302,22 @@ public class BackTestService {
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
                 .start(start).end(end).tradeCount(this.tradeRecordRepository.countBy())
                 .profit(this.totalCostMoney * 0.001 + moneyAfter - 1000).total(totalData)
-                .queueSize(TradeCounter.QUEUE_SIZE)
+                .queueSize(queueSize)
                 .build();
         backTestStatisticsRepository.save(backTestStatistics);
     }
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/06/28 00:00:00");
-        Date end = format.parse("2018/06/28 23:59:59");
+        Date start = format.parse("2018/06/29 00:00:00");
+        Date end = format.parse("2018/06/29 23:59:59");
+        int defaultQueueSize = 60 * 2 * 30;
+//        this.run(start, end, 0.8, defaultQueueSize * 2);
+//        this.run(start, end, 0.8, defaultQueueSize / 2);
+//        this.run(start, end, 0.8, defaultQueueSize * 4);
+//        this.run(start, end, 0.8, defaultQueueSize * 8);
+        this.run(start, end, 0.8, defaultQueueSize * 16);
 
-        this.run(start, end, 0.8);
         /*this.run(start, end, 0.8);
         this.run(start, end, 0.7);
         this.run(start, end, 0.6);
@@ -322,11 +326,10 @@ public class BackTestService {
         this.run(start, end, 0.89);*/
     }
 
-    public void run(Date start, Date end, double percent) throws ParseException {
+    public void run(Date start, Date end, double percent, int queueSize) throws ParseException {
         this.start = start;
         this.end = end;
-        this.configContext(percent);
-
+        this.configContext(percent, queueSize);
         MatchPhraseQueryBuilder mpq1 = QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin");
         MatchPhraseQueryBuilder mpq2 = QueryBuilders.matchPhraseQuery("symbol", "ETHUSDT");
         QueryBuilder qb2 = QueryBuilders.boolQuery()
@@ -361,7 +364,7 @@ public class BackTestService {
             scrollResp = ElasticSearchClient.getClient().prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
         }
         while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
-        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT);
+        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT, queueSize);
 
 
     }

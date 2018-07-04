@@ -2,19 +2,26 @@ package com.jordan.ban.market;
 
 import com.jordan.ban.common.LimitQueue;
 import com.jordan.ban.domain.TradeDirect;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
+@Slf4j
 public class TradeCounter {
 
 
-    public static int QUEUE_SIZE = 60 * 2 * 30; // 30 min data
+    private static int QUEUE_SIZE = 60 * 2 * 30 * 2; // 30 min data
 
-    LimitQueue<Double> a2bQueue = new LimitQueue<>(QUEUE_SIZE);
-    LimitQueue<Double> b2aQueue = new LimitQueue<>(QUEUE_SIZE);
+    private static LimitQueue<Double> a2bQueue = null;
+    private static LimitQueue<Double> b2aQueue = null;
 
+    public static void setQueueSize(int size) {
+        log.info("Set queue size:{}", size);
+        a2bQueue = new LimitQueue<>(size);
+        b2aQueue = new LimitQueue<>(size);
+    }
 
     public long getA2bTradeCount() {
         return a2bQueue.size();

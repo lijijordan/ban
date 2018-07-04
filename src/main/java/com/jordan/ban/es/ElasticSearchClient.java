@@ -91,29 +91,6 @@ public class ElasticSearchClient {
 //        System.out.println(response.toString());
     }
 
-    public static ESQueryResponse query(String platform, String symbol, Date start, Date end, int from, int to) {
-        logger.info("ES query . start:{}, end:{}, from:{}, to:{}", start, end, from, to);
-        List result = new ArrayList();
-
-        SearchResponse response = client.prepareSearch(MOCK_TRADE_INDEX)
-                .setQuery(QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin"))
-//                .setPostFilter(QueryBuilders.matchPhraseQuery("symbol", ETH_USDT))
-//                .setQuery(QueryBuilders.matchQuery("symbol", ETH_USDT))
-//                .setPostFilter( QueryBuilders.boolQuery()
-//                        .must(QueryBuilders.matchPhraseQuery("symbol", ETH_USDT))
-//                        .must(QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin"))
-                .setPostFilter(QueryBuilders.rangeQuery("createTime").from(start.getTime()).to(end.getTime()))
-                .setFrom(from).setSize(to).setExplain(true)
-                .addSort(SortBuilders.fieldSort("createTime"))
-                .get();
-        System.out.println(response.getHits().getTotalHits());
-        Arrays.stream(response.getHits().getHits()).forEach(h -> {
-            result.add(h.getSourceAsMap());
-        });
-        return ESQueryResponse.builder().result(result).total(response.getHits().totalHits).build();
-    }
-
-
     public static void indexAsynchronous(String json, String name) {
         executor.execute(() -> index(json, name));
     }
@@ -126,39 +103,6 @@ public class ElasticSearchClient {
 
         Date start = format.parse("2018/06/28 00:00:00");
         Date end = format.parse("2018/06/28 00:05:00");
-
-        /*Differ differ = new Differ();
-        differ.setDifferPlatform("plat");
-        differ.setDiffer(11);
-        differ.setCreateTime(new Date());
-        differ.setSymbol("etcbtc");
-        index(JSONUtil.toJsonString(differ));*/
-
-
-        /*long startTime = System.currentTimeMillis() - (1000l * 60 * 60 * 24); // one day before
-        SearchResponse response = client.prepareSearch("mock_trade")
-                .setQuery(QueryBuilders.matchQuery("diffPlatform", "Dragonex-Fcoin"))
-                .setQuery(QueryBuilders.matchQuery("symbol", "ETHUSDT"))
-//                .setFrom(0).setSize(60).setExplain(true)
-                .setPostFilter(QueryBuilders.rangeQuery("createTime").from(new Date(startTime).getTime()).to(new Date().getTime()))
-                .get();
-        System.out.println(response.getHits().getTotalHits());
-        System.out.println(response.getHits().getHits()[0].getSourceAsMap());
-        System.out.println(new Date((long) response.getHits().getHits()[0].getSourceAsMap().get("createTime")));
-        System.out.println(new Date((long) response.getHits().getHits()[1].getSourceAsMap().get("createTime")));
-*/
-
-
-        /*
-        System.out.println(start);
-
-        List<Map<String, Object>> list = query("Dragonex-Fcoin", "ETHUSDT", start, end, 0, 200).getResult();
-        System.out.println(list.size());
-        list.stream().forEach(map -> {
-
-            System.out.println((String) map.get("diffPlatform"));
-            System.out.println((String) map.get("symbol"));
-        });*/
 
         //多条件设置
         MatchPhraseQueryBuilder mpq1 = QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin");

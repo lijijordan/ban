@@ -1,4 +1,4 @@
-import com.jordan.ban.TacticsApplication;
+import com.jordan.ban.BackTestApplication;
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.Depth;
@@ -24,7 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TacticsApplication.class)
+@SpringBootTest(classes = BackTestApplication.class)
 @Slf4j
 public class MockTradeServiceTest {
 

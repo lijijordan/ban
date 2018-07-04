@@ -1,7 +1,7 @@
 package service;
 
 
-import com.jordan.ban.TacticsApplication;
+import com.jordan.ban.BackTestApplication;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.service.InitService;
@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TacticsApplication.class)
+@SpringBootTest(classes = BackTestApplication.class)
 @Slf4j
 public class InitServiceTest {
 

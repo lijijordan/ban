@@ -1,7 +1,7 @@
 package dao;
 
 
-import com.jordan.ban.TacticsApplication;
+import com.jordan.ban.BackTestApplication;
 import com.jordan.ban.dao.OrderRepository;
 import com.jordan.ban.entity.Order;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Optional;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TacticsApplication.class)
+@SpringBootTest(classes = BackTestApplication.class)
 @Slf4j
 public class OrderRepositoryTest {
 

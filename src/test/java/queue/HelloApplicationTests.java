@@ -1,6 +1,6 @@
 package queue;
 
-import com.jordan.ban.BanProductApplication;
+import com.jordan.ban.BackTestApplication;
 import com.jordan.ban.mq.spring.Sender;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = BanProductApplication.class)
+@SpringBootTest(classes = BackTestApplication.class)
 public class HelloApplicationTests {
 
     @Autowired
