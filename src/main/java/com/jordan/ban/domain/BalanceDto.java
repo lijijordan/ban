@@ -21,6 +21,9 @@ public class BalanceDto {
     private double frozen;
     private double balance;
 
+
+
+
     public Balance toBalance(Platform platform) {
         return Balance.builder().platform(platform).available(available)
                 .balance(balance).frozen(frozen).currency(currency).build();

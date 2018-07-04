@@ -28,6 +28,8 @@ public class AccountDto {
      */
     private double virtualCurrency;
 
+    private double frozen;
+
     private String symbol;
 
 }

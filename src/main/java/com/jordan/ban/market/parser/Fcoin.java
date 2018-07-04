@@ -320,9 +320,10 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
 //        fcoin.getOrdersDetail("1");
 
-        fcoin.getBalances();
+        List<BalanceDto> balanceDtos = fcoin.getBalances();
+        System.out.println(balanceDtos);
 
-        FcoinOrderRequest request = new FcoinOrderRequest();
+        /*FcoinOrderRequest request = new FcoinOrderRequest();
         request.setAmount(0.01);
         request.setPrice(458.31);
         request.setSide("buy");
@@ -330,7 +331,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
         request.setType("limit");
         fcoin.placeOrder(request);
 
-        fcoin.getBalances();
+        fcoin.getBalances();*/
 
         /*OrderRequest request = new OrderRequest();
         request.setAmount(0.01);

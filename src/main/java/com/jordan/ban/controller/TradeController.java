@@ -44,9 +44,13 @@ public class TradeController {
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
 
         String coinName = "eth";
-        AccountDto accountA = AccountDto.builder().money(balanceA.get("usdt").getAvailable()).platform(Fcoin.PLATFORM_NAME).symbol("ethusdt")
+        AccountDto accountA = AccountDto.builder()
+                .frozen(balanceA.get(coinName).getFrozen())
+                .money(balanceA.get("usdt").getAvailable()).platform(Fcoin.PLATFORM_NAME).symbol("ethusdt")
                 .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getAvailable() : 0).build();
-        AccountDto accountB = AccountDto.builder().money(balanceB.get("usdt").getAvailable()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
+        AccountDto accountB = AccountDto.builder()
+                .frozen(balanceB.get(coinName).getFrozen())
+                .money(balanceB.get("usdt").getAvailable()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
 
         String suggestText = this.tradeCounter.getSuggestDiffPercent() + "["

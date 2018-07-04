@@ -17,7 +17,6 @@ import java.util.List;
 public class Account extends BaseEntity {
 
     private String platform;
-
     /**
      * USDT
      */

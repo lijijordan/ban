@@ -14,6 +14,7 @@
         <td>symbol</td>
         <td>money</td>
         <td>coin</td>
+        <td>frozen</td>
     </tr>
 
     <tr>
@@ -21,13 +22,14 @@
         <td th:text="${accountA.symbol}"></td>
         <td th:text="${accountA.money}"></td>
         <td th:text="${accountA.virtualCurrency}"></td>
+        <td th:text="${accountA.frozen}"></td>
     </tr>
 
     <tr>
         <td th:text="${accountB.platform}"></td>
         <td th:text="${accountB.symbol}"></td>
         <td th:text="${accountB.money}"></td>
-        <td th:text="${accountB.virtualCurrency}"></td>
+        <td th:text="${accountB.frozen}"></td>
     </tr>
 </table>
 <p></p>
