@@ -77,6 +77,8 @@ public class BackTestService {
 
     private static final double FIX_MOVE_PERCENT = 0.022;
 
+    private double openPrice;
+
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -262,6 +264,7 @@ public class BackTestService {
     }
 
     public void init(double price) {
+        this.openPrice = price;
         this.accountService.emptyAccount();
         this.tradeRecordRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
@@ -276,9 +279,17 @@ public class BackTestService {
         TradeCounter.setQueueSize(queueSize);
     }
 
+    private void reBalance(Account account, double totalCoin) {
+        double balanceCoin = totalCoin / 2;
+        double coin = account.getVirtualCurrency();
+        account.setMoney(((coin - balanceCoin) * openPrice) + account.getMoney());
+        account.setVirtualCurrency(balanceCoin);
+    }
+
     private void statistic(String platformA, String platformB, String symbol, int queueSize) {
         Account accountA = this.getAccount(platformA, symbol);
         Account accountB = this.getAccount(platformB, symbol);
+
 
         ProfitStatistics before = profitStatisticsRepository.findTopBySymbolAndAndPlatformAAndAndPlatformBOrderByCreateTimeDesc(symbol, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME);
         double moneyBefore, increase, increasePercent, moneyAfter, coinAfter;
@@ -309,14 +320,15 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/06/29 00:00:00");
-        Date end = format.parse("2018/06/29 23:59:59");
+        Date start = format.parse("2018/07/04 00:00:00");
+        Date end = format.parse("2018/07/04 23:59:59");
         int defaultQueueSize = 60 * 2 * 30;
 //        this.run(start, end, 0.8, defaultQueueSize * 2);
 //        this.run(start, end, 0.8, defaultQueueSize / 2);
 //        this.run(start, end, 0.8, defaultQueueSize * 4);
 //        this.run(start, end, 0.8, defaultQueueSize * 8);
-        this.run(start, end, 0.8, defaultQueueSize * 16);
+//        this.run(start, end, 0.9, defaultQueueSize);
+        this.run(start, end, 1, defaultQueueSize);
 
         /*this.run(start, end, 0.8);
         this.run(start, end, 0.7);
