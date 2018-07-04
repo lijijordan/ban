@@ -1,5 +1,6 @@
 package com.jordan.ban.service;
 
+import com.jordan.ban.domain.OrderState;
 import com.jordan.ban.http.HttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 
 @Slf4j
 @Service
@@ -52,6 +54,11 @@ public class SlackService {
 
     public static void main(String[] args) throws IOException {
         SlackService slackService = new SlackService();
-        slackService.sendMessage("Ban", "test");
+        String msg = String.format("type=%s, date=%s, amount=%s, fill=%s, price=%s diffPercent=%s",
+                OrderState.filled, new Date(), 1.2,
+                1.2, 122.12, 0.0218 * 100);
+        msg = msg + ",OKey";
+
+        slackService.sendMessage("Test", msg);
     }
 }

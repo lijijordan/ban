@@ -72,9 +72,13 @@ public class OrderService {
             if (isChanged(order, orderResponse)) {
                 Date date = order.getCreateTime();
                 long costTime = System.currentTimeMillis() - date.getTime();
-                log.info("send slack message:{}", "Order changed:" + "[" + (costTime / 1000) + "]s");
-                this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s",
-                        orderResponse.toString());
+                String msg = String.format("type=%s, date=%s, amount=%s, filled=%s, price=%s diffPercent=%s",
+                        orderResponse.getOrderState(), orderResponse.getCreateTime(), order.getAmount(),
+                        orderResponse.getFilledAmount(), orderResponse.getPrice(), order.getDiffPercent() * 100);
+                if (orderResponse.getFilledAmount() == order.getAmount()) {
+                    msg = msg + ",OKey";
+                }
+                this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s", msg);
                 // 等待5s以后再刷新余额：等待网站更新
                 log.info("wait for 5s! update balance.");
                 try {
