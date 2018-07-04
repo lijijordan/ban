@@ -91,8 +91,8 @@ public class BackTestService {
         }
 
         this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-        MarketParser marketA = MarketFactory.getMarketNoKey(tradeResult.getPlatformA());
-        MarketParser marketB = MarketFactory.getMarketNoKey(tradeResult.getPlatformB());
+        MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
+        MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
 
         String symbol = tradeResult.getSymbol().toLowerCase();
 

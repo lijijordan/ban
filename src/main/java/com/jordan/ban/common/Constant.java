@@ -6,6 +6,11 @@ package com.jordan.ban.common;
  * Time: 上午10:55
  */
 public class Constant {
+
+    public static final String KEY_SEC = "sec";
+
+    public static final String KEY = "key";
+
     public static final String INDEX_NAME = "differ_binance_otcbtc_3";
 
     public static final String REAL_DIFF_INDEX = "differ_real";

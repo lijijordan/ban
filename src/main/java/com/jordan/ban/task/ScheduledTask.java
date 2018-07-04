@@ -1,13 +1,11 @@
 package com.jordan.ban.task;
 
 import com.jordan.ban.common.Context;
-import com.jordan.ban.dao.ProfitStatisticsRepository;
 import com.jordan.ban.entity.Order;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.MarketFactory;
-import com.jordan.ban.service.AccountService;
+import com.jordan.ban.service.HealthChecker;
 import com.jordan.ban.service.OrderService;
-import com.jordan.ban.service.SlackService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,19 +22,15 @@ public class ScheduledTask {
     private OrderService orderService;
 
     @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private ProfitStatisticsRepository profitStatisticsRepository;
-
-    @Autowired
-    private SlackService slackService;
-
+    private HealthChecker healthChecker;
 
     private static final long CHECK_ORDER_RATE = 5000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
     private static final long HOURS_ONE = 1000 * 60 * 60; // 1 hour
+
+
+    private static final long THREE_MIN = 1000 * 60 * 3;//3 min
 
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
     public void watchUnfilledOrder() {
@@ -62,6 +56,12 @@ public class ScheduledTask {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    @Scheduled(initialDelay = HOURS_ONE, fixedRate = THREE_MIN)
+    public void checkHealth() {
+        this.healthChecker.check();
     }
 
 
