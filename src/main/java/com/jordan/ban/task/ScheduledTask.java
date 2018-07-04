@@ -23,15 +23,6 @@ public class ScheduledTask {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private ProfitStatisticsRepository profitStatisticsRepository;
-
-    @Autowired
-    private SlackService slackService;
-
 
     private static final long CHECK_ORDER_RATE = 5000;//5 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
@@ -49,20 +40,5 @@ public class ScheduledTask {
             this.orderService.refreshOrderState(order);
         });
     }
-
-
-    /**
-     * Reset Dragonex token
-     */
-    @Scheduled(initialDelay = HOURS_ONE, fixedRate = HOURS_ONE)
-    public void resetDragonexToken() {
-        Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
-        try {
-            dragonex.setToken();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
 }
