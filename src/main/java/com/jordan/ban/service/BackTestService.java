@@ -66,7 +66,7 @@ public class BackTestService {
     private BackTestStatisticsRepository backTestStatisticsRepository;
 
     // unit USDt
-    private final static double START_MONEY = 10000;
+    private final static double START_MONEY = 1000;
 
     private double totalCostMoney;
 
@@ -367,8 +367,8 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/02 00:00:00");
-        Date end = format.parse("2018/07/02 59:59:59");
+        Date start = format.parse("2018/07/01 00:00:00");
+        Date end = format.parse("2018/07/05 23:59:59");
         int defaultQueueSize = 60 * 2 * 30;
 
 //        this.moveMetric = 0.02692;
@@ -401,7 +401,13 @@ public class BackTestService {
         this.moveMetric = -1;
 //        run(start, end, 0.9, defaultQueueSize, BTC_USDT);
 //        run(start, end, 0.81, defaultQueueSize * 4, BTC_USDT);
-        run(start, end, 0.81, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.85, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.8, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
+
+        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
 
         System.out.println("End at:" + new Date());
 
