@@ -65,6 +65,9 @@ public class BackTestService {
     @Autowired
     private BackTestStatisticsRepository backTestStatisticsRepository;
 
+    // unit USDt
+    private final static double START_MONEY = 10000;
+
     private double totalCostMoney;
 
     private Date start;
@@ -292,8 +295,8 @@ public class BackTestService {
     // 以一个被动的形势开具
     private void initAccountAsAPoor(double price, String symbol) {
         this.accountService.emptyAccount();
-        Account a = Account.builder().platform(Fcoin.PLATFORM_NAME).symbol(symbol).money(0).virtualCurrency(1000 / price).build();
-        Account b = Account.builder().platform(Dragonex.PLATFORM_NAME).symbol(symbol).money(1000).virtualCurrency(0).build();
+        Account a = Account.builder().platform(Fcoin.PLATFORM_NAME).symbol(symbol).money(0).virtualCurrency(START_MONEY / price).build();
+        Account b = Account.builder().platform(Dragonex.PLATFORM_NAME).symbol(symbol).money(START_MONEY).virtualCurrency(0).build();
         this.accountRepository.save(a);
         this.accountRepository.save(b);
     }
@@ -303,13 +306,6 @@ public class BackTestService {
 //        TradeCounter.QUEUE_SIZE = 60 * 2 * 30 * 2;
         this.tradeContext.setMoveBackMetrics(backPercent);
         TradeCounter.setQueueSize(queueSize);
-    }
-
-    private void reBalance(Account account, double totalCoin) {
-        double balanceCoin = totalCoin / 2;
-        double coin = account.getVirtualCurrency();
-        account.setMoney(((coin - balanceCoin) * openPrice) + account.getMoney());
-        account.setVirtualCurrency(balanceCoin);
     }
 
     private void statistic(String platformA, String platformB, String symbol, int queueSize) {
@@ -371,8 +367,8 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/03 00:00:00");
-        Date end = format.parse("2018/07/04 59:59:59");
+        Date start = format.parse("2018/07/02 00:00:00");
+        Date end = format.parse("2018/07/02 59:59:59");
         int defaultQueueSize = 60 * 2 * 30;
 
 //        this.moveMetric = 0.02692;
@@ -405,8 +401,7 @@ public class BackTestService {
         this.moveMetric = -1;
 //        run(start, end, 0.9, defaultQueueSize, BTC_USDT);
 //        run(start, end, 0.81, defaultQueueSize * 4, BTC_USDT);
-        run(start, end, 0.83, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.79, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.81, defaultQueueSize, ETH_USDT);
 
         System.out.println("End at:" + new Date());
 
