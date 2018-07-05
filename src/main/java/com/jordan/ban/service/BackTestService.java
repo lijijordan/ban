@@ -75,14 +75,16 @@ public class BackTestService {
 
     private double openPrice;
 
-    private double marketAAvgPrice;
-    private double marketBAvgPrice;
+    private double marketASellPrice;
+    private double marketABuyPrice;
 
-    private double marketASumPrice;
-    private double marketBSumPrice;
+    private double marketBSellPrice;
+    private double marketBBuyPrice;
+
 
     private double moveMetric;
 
+    private double totalMoneyBefore;
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -278,11 +280,22 @@ public class BackTestService {
 
     public void init(double price, String symbol) {
         this.openPrice = price;
-        this.accountService.emptyAccount();
         this.tradeRecordRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
-        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, price);
-//        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, ETH_USDT);
+//        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, price);
+        this.initAccountAsAPoor(price, symbol);
+        Account accountA = this.getAccount(Dragonex.PLATFORM_NAME, symbol);
+        Account accountB = this.getAccount(Fcoin.PLATFORM_NAME, symbol);
+        this.totalMoneyBefore = accountA.getMoney() + accountB.getMoney();
+    }
+
+    // 以一个被动的形势开具
+    private void initAccountAsAPoor(double price, String symbol) {
+        this.accountService.emptyAccount();
+        Account a = Account.builder().platform(Fcoin.PLATFORM_NAME).symbol(symbol).money(0).virtualCurrency(1000 / price).build();
+        Account b = Account.builder().platform(Dragonex.PLATFORM_NAME).symbol(symbol).money(1000).virtualCurrency(0).build();
+        this.accountRepository.save(a);
+        this.accountRepository.save(b);
     }
 
 
@@ -304,10 +317,36 @@ public class BackTestService {
         Account accountB = this.getAccount(platformB, symbol);
 
 
+        //Balance coin
+        log.info("Balance coin again!");
+        /*double coinA = accountA.getVirtualCurrency();
+        double moneyA = accountA.getMoney();
+        double totalCoin = accountA.getVirtualCurrency() + accountB.getVirtualCurrency();
+        if (coinA > totalCoin / 2) { // sell coin
+            double diffCoin = coinA - (totalCoin / 2);
+            accountA.setMoney(moneyA + diffCoin * marketABuyPrice);
+        } else { // buy
+            double diffCoin = (totalCoin / 2) - coinA;
+            accountA.setMoney(moneyA - diffCoin * marketASellPrice);
+        }
+        accountA.setVirtualCurrency(totalCoin / 2);
+
+        double coinB = accountB.getVirtualCurrency();
+        double moneyB = accountB.getMoney();
+        if (coinB > totalCoin / 2) { // sell coin
+            double diffCoin = coinB - (totalCoin / 2);
+            accountB.setMoney(moneyB + diffCoin * marketBBuyPrice);
+        } else { // buy
+            double diffCoin = (totalCoin / 2) - coinB;
+            accountB.setMoney(moneyB - diffCoin * marketBSellPrice);
+        }
+        accountB.setVirtualCurrency(totalCoin / 2);*/
+
         ProfitStatistics before = profitStatisticsRepository.findTopBySymbolAndAndPlatformAAndAndPlatformBOrderByCreateTimeDesc(symbol, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME);
         double moneyBefore, increase, increasePercent, moneyAfter, coinAfter;
         moneyAfter = accountA.getMoney() + accountB.getMoney();
         coinAfter = accountA.getVirtualCurrency() + accountB.getVirtualCurrency();
+
         if (before != null) {
             moneyBefore = before.getSumMoney();
         } else {
@@ -321,11 +360,10 @@ public class BackTestService {
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);
 
-
         BackTestStatistics backTestStatistics = BackTestStatistics.builder().totalCostMoney(totalCostMoney).platformA(platformA)
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
                 .start(start).end(end).tradeCount(this.tradeRecordRepository.countBy())
-                .profit(this.totalCostMoney * 0.001 + moneyAfter - 1000).total(totalData)
+                .profit(this.totalCostMoney * 0.001 + moneyAfter - this.totalMoneyBefore).total(totalData)
                 .queueSize(queueSize).symbol(symbol)
                 .build();
         backTestStatisticsRepository.save(backTestStatistics);
@@ -333,36 +371,42 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/06/29 00:00:00");
-        Date end = format.parse("2018/07/04 23:59:59");
+        Date start = format.parse("2018/07/03 00:00:00");
+        Date end = format.parse("2018/07/04 59:59:59");
         int defaultQueueSize = 60 * 2 * 30;
 
-        this.moveMetric = 0.02692;
+//        this.moveMetric = 0.02692;
 //        this.run(start, end, 0.8, defaultQueueSize * 2);
 //        this.run(start, end, 0.8, defaultQueueSize / 2);
 //        this.run(start, end, 0.8, defaultQueueSize * 4);
 //        this.run(start, end, 0.8, defaultQueueSize * 8);
 //        this.run(start, end, 0.9, defaultQueueSize);
-        /*this.run(start, end, 0.7, defaultQueueSize, BCH_USDT);
-        this.run(start, end, 0.81, defaultQueueSize, BCH_USDT);
-        this.run(start, end, 0.9, defaultQueueSize, BCH_USDT);
-        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.9, defaultQueueSize, ETH_USDT);*/
 
-        /*run(start, end, 1, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.9, defaultQueueSize, ETH_USDT);*/
+//        this.run(start, end, 0.7, defaultQueueSize, BCH_USDT);
+//        this.run(start, end, 0.81, defaultQueueSize, BCH_USDT);
+//        this.run(start, end, 0.9, defaultQueueSize, BCH_USDT);
+//        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
+//        run(start, end, 1, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
 
 
-        this.moveMetric = 0.0358;
-        run(start, end, 1, defaultQueueSize, BCH_USDT);
-        run(start, end, 0.9, defaultQueueSize, BCH_USDT);
+//        this.moveMetric = 0.0358;
+//        run(start, end, 1, defaultQueueSize, BCH_USDT);
+//        run(start, end, 0.9, defaultQueueSize, BCH_USDT);
+//        this.moveMetric = -1;
+//        run(start, end, 0.81, defaultQueueSize, BCH_USDT);
+//
+//        this.moveMetric = 0.02944;
+//        run(start, end, 1, defaultQueueSize, BTC_USDT);
+//        this.moveMetric = -1;
+//        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
+
         this.moveMetric = -1;
-        run(start, end, 0.81, defaultQueueSize, BCH_USDT);
-
-        this.moveMetric = 0.02944;
-        run(start, end, 1, defaultQueueSize, BTC_USDT);
-        this.moveMetric = -1;
-        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
+//        run(start, end, 0.9, defaultQueueSize, BTC_USDT);
+//        run(start, end, 0.81, defaultQueueSize * 4, BTC_USDT);
+        run(start, end, 0.83, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.79, defaultQueueSize, ETH_USDT);
 
         System.out.println("End at:" + new Date());
 
