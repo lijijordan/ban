@@ -176,12 +176,16 @@ public class BackTestService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
+        // 上区间的平均值
+        double upDiffPercent = tradeCounter.getAvgDiffPercent(true);
+        // 下区间的平均值
+        double downDiffPercent = tradeCounter.getAvgDiffPercent(false);
 //        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
 //                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
 
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                if (Math.abs(diffPercent) <= (avgEatDiffPercent * tradeContext.getMoveBackMetrics())) {
+                if (Math.abs(diffPercent) <= (downDiffPercent * tradeContext.getMoveBackMetrics())) {
                     //往回搬;
 //                    log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
@@ -194,11 +198,11 @@ public class BackTestService {
             }
         } else {
             // 有利润
-            if (diffPercent < avgEatDiffPercent) {
+            if (diffPercent < upDiffPercent * tradeContext.getMoveBackMetrics()) {
                 if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
 //                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
-                } else { // 方向错误
+                } else { // 方向错误, 而且利润太小，不满足搬砖条件
 //                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
                     return;
                 }

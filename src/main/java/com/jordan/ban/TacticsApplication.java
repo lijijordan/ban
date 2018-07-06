@@ -31,7 +31,7 @@ public class TacticsApplication {
         accountService.mockAccountTestData();*/
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
 //        application.receiveDiff("EOSUSDT");
-//        application.receiveDiff("BTCUSDT");
+        application.receiveDiff("BTCUSDT");
 //        application.receiveDiff("EOSETH");
 //        application.receiveDiff("EOSBTC");
 //        application.receiveDiff("OMGETH");

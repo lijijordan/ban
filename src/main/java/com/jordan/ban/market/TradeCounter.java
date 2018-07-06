@@ -49,6 +49,29 @@ public class TradeCounter {
         }
     }
 
+
+    /**
+     * @param direct >0 or <0
+     * @return
+     */
+    public double getAvgDiffPercent(boolean direct) {
+        double d1 = this.getAvgDiffPercent(TradeDirect.A2B);
+        double d2 = this.getAvgDiffPercent(TradeDirect.B2A);
+        if (direct) {
+            if (d1 > 0) {
+                return d1;
+            } else {
+                return d2;
+            }
+        } else {
+            if (d1 < 0) {
+                return d1;
+            } else {
+                return d2;
+            }
+        }
+    }
+
     public double getSuggestDiffPercent() {
         double result = (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
                 Math.abs(this.getAvgDiffPercent(TradeDirect.B2A))) / 2;
