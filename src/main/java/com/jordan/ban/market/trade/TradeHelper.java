@@ -23,6 +23,7 @@ public class TradeHelper {
     public static MockTradeResult eatB2A(MarketDepth marketDepth) {
         double buyPrice = Math.max(marketDepth.getD2ask(), marketDepth.getD2bid());
         double sellPrice = Math.min(marketDepth.getD1ask(), marketDepth.getD1bid());
+
         double tradeDiff = ((sellPrice - buyPrice) - Math.abs(Math.max(buyPrice, sellPrice) * TRADE_FEES * 2));
         double tradeVolume = Math.min(marketDepth.getVolume(buyPrice), marketDepth.getVolume(sellPrice));
         double sellCost = (sellPrice * tradeVolume) - (sellPrice * tradeVolume * TRADE_FEES);

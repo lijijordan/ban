@@ -17,13 +17,24 @@ public class TradeCounter {
     private static LimitQueue<Double> a2bQueue = null;
     private static LimitQueue<Double> b2aQueue = null;
 
+    private static int queueSize;
+
     public static void setQueueSize(int size) {
+        queueSize = size;
         log.info("Set queue size:{}", size);
         a2bQueue = new LimitQueue<>(size);
         b2aQueue = new LimitQueue<>(size);
     }
 
     public long getA2bTradeCount() {
+        return a2bQueue.size();
+    }
+
+    public boolean isFull() {
+        return a2bQueue.size() >= queueSize;
+    }
+
+    public int getSize() {
         return a2bQueue.size();
     }
 
@@ -56,6 +67,47 @@ public class TradeCounter {
         }
     }
 
+    private double getMaxDiffPercent(TradeDirect tradeDirect) {
+        if (tradeDirect == TradeDirect.A2B) {
+            return a2bQueue.stream().mapToDouble(q -> q).max().getAsDouble();
+        } else {
+            return b2aQueue.stream().mapToDouble(q -> q).max().getAsDouble();
+        }
+    }
+
+    public double getMaxDiffPercent(boolean direct) {
+        double d1 = this.getMaxDiffPercent(TradeDirect.A2B);
+        double d2 = this.getMaxDiffPercent(TradeDirect.B2A);
+        return parse(direct, d1, d2);
+    }
+
+    private double parse(boolean direct, double d1, double d2) {
+        if (direct) {
+            if (d1 > 0) {
+                return d1;
+            } else {
+                return d2;
+            }
+        } else {
+            if (d1 < 0) {
+                return d1;
+            } else {
+                return d2;
+            }
+        }
+    }
+
+
+    /**
+     * @param direct >0 or <0
+     * @return
+     */
+    public double getAvgDiffPercent(boolean direct) {
+        double d1 = this.getAvgDiffPercent(TradeDirect.A2B);
+        double d2 = this.getAvgDiffPercent(TradeDirect.B2A);
+        return parse(direct, d1, d2);
+    }
+
     public double getSuggestDiffPercent() {
         double result = (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
                 Math.abs(this.getAvgDiffPercent(TradeDirect.B2A))) / 2;
@@ -70,6 +122,9 @@ public class TradeCounter {
         queue.offer(1d);
         queue.offer(2d);
         queue.offer(2d);
-        System.out.println(queue.stream().mapToDouble(q -> q).sum());
+        queue.offer(11d);
+
+//        System.out.println(queue.stream().mapToDouble(q -> q).sum());
+        System.out.println(queue.stream().mapToDouble(q -> q).max().getAsDouble());
     }
 }

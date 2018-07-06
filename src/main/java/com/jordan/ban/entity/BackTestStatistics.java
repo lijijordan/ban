@@ -49,4 +49,8 @@ public class BackTestStatistics extends BaseEntity {
     private long total;
 
     private long queueSize;
+
+    private float upPercent;
+
+    private float downPercent;
 }

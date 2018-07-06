@@ -89,19 +89,36 @@ public class BackTestService {
 
     private double totalMoneyBefore;
 
+    private float upPercent;
+    private float downPercent;
+
+    private Policy policy;
+
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
     }
 
     private Map<String, Double> lastTicker = new ConcurrentHashMap<>();
 
-    public void trade(MockTradeResultIndex tradeResult) {
+
+    public void beforeTrade(MockTradeResultIndex tradeResult) {
+        if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
+            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
+            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+        } else {
+            boolean isTrade = this.trade(tradeResult);
+            if (!isTrade) { // 交易的数据不记录到Counter
+                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+            }
+        }
+    }
+
+    private boolean trade(MockTradeResultIndex tradeResult) {
         String key = tradeResult.getSymbol() + tradeResult.getTradeDirect();
         if (lastTicker.get(key) != null && lastTicker.get(key) == tradeResult.getEatTradeVolume()) {
-            return;
+            return false;
         }
 
-        this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
 
@@ -146,11 +163,11 @@ public class BackTestService {
         }
         if (minTradeVolume <= 0) {
 //            log.info("trade volume is 0!");
-            return;
+            return false;
         }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
 //            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-            return;
+            return false;
         }
 
 
@@ -172,18 +189,15 @@ public class BackTestService {
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
 //            log.info("Money is not enough！!");
-            return;
+            return false;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
 //            log.info("Coin is not enough！!");
-            return;
+            return false;
         }
 //
 //  Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
         double avgEatDiffPercent;
-        if (this.moveMetric == 0) {
-            throw new TradeException("Please set move metric value!");
-        }
         if (this.moveMetric < 0) {
             avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
         } else {
@@ -194,31 +208,45 @@ public class BackTestService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
+        double upDiffPercent = 1;
+        double downDiffPercent = 1;
+
+        if (policy == Policy.max) {
+            // 上区间的平均值
+            upDiffPercent = tradeCounter.getMaxDiffPercent(true);
+            // 下区间的平均值
+            downDiffPercent = tradeCounter.getMaxDiffPercent(false);
+
+        }
 //        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
 //                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
-
+        double downPoint = Math.abs(downDiffPercent * this.downPercent);
+        double upPoint = Math.abs(upDiffPercent * this.upPercent);
+        log.info("downPoint={},upPoint={}", downPoint, upPoint);
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                if (Math.abs(diffPercent) <= (avgEatDiffPercent * tradeContext.getMoveBackMetrics())) {
+                if (Math.abs(diffPercent) <= downPoint) {
                     //往回搬;
 //                    log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
 //                    log.info("-------diffPercent:{},not deal!", diffPercent);
-                    return;
+                    return false;
                 }
             } else {
 //                log.info("--------diffPercent:{},not deal!", diffPercent);
-                return;
+                return false;
             }
         } else {
             // 有利润
-            if (diffPercent < avgEatDiffPercent) {
+            if (diffPercent < upPoint) {
                 if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
 //                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
-                } else { // 方向错误
+//                    FIXME: 往回搬的时机不对，这样会过早的搬回来,暂时return false，再考虑翻转的情况。
+                    return false;
+                } else { // 方向错误, 而且利润太小，不满足搬砖条件
 //                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
-                    return;
+                    return false;
                 }
             }
         }
@@ -267,6 +295,7 @@ public class BackTestService {
 
         totalCostMoney = totalCostMoney + sellCost + buyCost;
         log.info("Record done!");
+        return true;
     }
 
     private void placeOrder(Account account, OrderRequest orderRequest) {
@@ -311,7 +340,6 @@ public class BackTestService {
     private void statistic(String platformA, String platformB, String symbol, int queueSize) {
         Account accountA = this.getAccount(platformA, symbol);
         Account accountB = this.getAccount(platformB, symbol);
-
 
         //Balance coin
         log.info("Balance coin again!");
@@ -360,16 +388,16 @@ public class BackTestService {
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
                 .start(start).end(end).tradeCount(this.tradeRecordRepository.countBy())
                 .profit(this.totalCostMoney * 0.001 + moneyAfter - this.totalMoneyBefore).total(totalData)
-                .queueSize(queueSize).symbol(symbol)
+                .queueSize(queueSize).symbol(symbol).upPercent(this.upPercent).downPercent(this.downPercent)
                 .build();
         backTestStatisticsRepository.save(backTestStatistics);
     }
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/01 00:00:00");
-        Date end = format.parse("2018/07/05 23:59:59");
-        int defaultQueueSize = 60 * 2 * 30;
+        Date start = format.parse("2018/07/05 00:00:00");
+        Date end = format.parse("2018/07/05 23:59:00");
+        int defaultQueueSize = 6000 * 2; // one hour;
 
 //        this.moveMetric = 0.02692;
 //        this.run(start, end, 0.8, defaultQueueSize * 2);
@@ -398,22 +426,26 @@ public class BackTestService {
 //        this.moveMetric = -1;
 //        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
 
-        this.moveMetric = -1;
+//        this.moveMetric = -1;
 //        run(start, end, 0.9, defaultQueueSize, BTC_USDT);
 //        run(start, end, 0.81, defaultQueueSize * 4, BTC_USDT);
-        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.85, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.8, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
-        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
-
-        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
-
+//        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.85, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.8, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
+//        run(start, end, 1.4f, 0.7f, defaultQueueSize * 2, ETH_USDT);
+        run(start, end, 0.032f, 0.027f, defaultQueueSize * 2, ETH_USDT);
         System.out.println("End at:" + new Date());
-
     }
 
-    public void run(Date start, Date end, double percent, int queueSize, String symbol) throws ParseException {
+    private void run(Date start, Date end, float upPercent, float downPercent, int queueSize, String symbol) throws ParseException {
+        this.upPercent = upPercent;
+        this.downPercent = downPercent;
+        this.run(start, end, -1, queueSize, symbol);
+    }
+
+    private void run(Date start, Date end, double percent, int queueSize, String symbol) throws ParseException {
         this.start = start;
         this.end = end;
         this.configContext(percent, queueSize);
@@ -443,7 +475,7 @@ public class BackTestService {
                     if (sum == 1) {
                         this.init(index.getBuyPrice(), symbol);
                     }
-                    this.trade(index);
+                    this.beforeTrade(index);
                     System.out.println("::::::::::::::::::::::::sum::::::::::::::::::" + sum++);
                     System.out.printf("Percentage In Exam: %.1f%%%n", sum / total * 100);
                 }
