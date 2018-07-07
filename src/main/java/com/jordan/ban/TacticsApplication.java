@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.net.UnknownHostException;
 
+import static com.jordan.ban.common.Constant.*;
+
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
 @SpringBootApplication
@@ -30,7 +32,18 @@ public class TacticsApplication {
         accountService.emptyAccount();
         accountService.mockAccountTestData();*/
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
-//        application.receiveDiff("EOSUSDT");
+
+//        productApplication.diffTask(Constant.LTC_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
+//        productApplication.diffTask(Constant.BTC_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
+//        productApplication.diffTask(Constant.BCH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
+//        productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
+//        productApplication.diffTask(Constant.XRP_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 3000);
+        application.receiveDiff(LTC_USDT);
+        application.receiveDiff(BTC_USDT);
+        application.receiveDiff(BCH_USDT);
+        application.receiveDiff(ETH_USDT);
+        application.receiveDiff(XRP_USDT);
+
 
         System.out.println("Consumer Started!");
 
