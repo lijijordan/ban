@@ -23,6 +23,25 @@ public class TradeContext {
     private double moveMetrics = DEFAULT_METRICS_MAX;
     private double moveBackMetrics = METRICS_BACK_PERCENT;
 
+    private float upPoint;
+    private float downPoint;
+
+    public float getUpPoint() {
+        return upPoint;
+    }
+
+    public void setUpPoint(float upPoint) {
+        this.upPoint = upPoint;
+    }
+
+    public float getDownPoint() {
+        return downPoint;
+    }
+
+    public void setDownPoint(float downPoint) {
+        this.downPoint = downPoint;
+    }
+
     /**
      * 上次交易的方向
      */

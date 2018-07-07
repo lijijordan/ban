@@ -146,7 +146,7 @@ public class TradeService {
 
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                if (Math.abs(diffPercent) <= (avgEatDiffPercent * tradeContext.getMoveBackMetrics())) {
+                if (Math.abs(diffPercent) < 0.020) {
                     //往回搬;
 //                    log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
@@ -159,9 +159,11 @@ public class TradeService {
             }
         } else {
             // 有利润
-            if (diffPercent < avgEatDiffPercent) {
+            if (diffPercent < 0.026) {
                 if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
+                    // TODO:币的翻转情况没有考虑
+                    return;
 //                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
                 } else { // 方向错误
 //                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
