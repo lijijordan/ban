@@ -31,18 +31,7 @@ public class TacticsApplication {
         accountService.mockAccountTestData();*/
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
 //        application.receiveDiff("EOSUSDT");
-        application.receiveDiff("BTCUSDT");
-//        application.receiveDiff("EOSETH");
-//        application.receiveDiff("EOSBTC");
-//        application.receiveDiff("OMGETH");
-//        application.receiveDiff("GXSETH");
-//        application.receiveDiff("LTCBTC");
-//        application.receiveDiff("BCHUSDT");
-//        application.receiveDiff("ETHUSDT");
-//        application.receiveDiff("LTCUSDT");
-//        application.receiveDiff("NEOUSDT");
 
-        application.receiveDiff("ETHUSDT");
         System.out.println("Consumer Started!");
 
         /*TradeApp tradeApp = context.getBean(TradeApp.class);
