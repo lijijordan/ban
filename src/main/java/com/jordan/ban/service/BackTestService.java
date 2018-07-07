@@ -395,8 +395,8 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/05 00:00:00");
-        Date end = format.parse("2018/07/05 23:59:00");
+        Date start = format.parse("2018/07/06 17:35:00");
+        Date end = format.parse("2018/07/06 21:35:00");
         int defaultQueueSize = 6000 * 2; // one hour;
 
 //        this.moveMetric = 0.02692;
@@ -435,7 +435,7 @@ public class BackTestService {
 //        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
 //        run(start, end, 1.4f, 0.7f, defaultQueueSize * 2, ETH_USDT);
-        run(start, end, 0.032f, 0.027f, defaultQueueSize * 2, ETH_USDT);
+        run(start, end, 0.024f, 0.020f, defaultQueueSize * 2, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
 
