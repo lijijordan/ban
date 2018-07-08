@@ -152,6 +152,7 @@ public class TradeService {
 //                    log.info("+++++++diffPercent:{},move back!", diffPercent);
                 } else {
 //                    log.info("-------diffPercent:{},not deal!", diffPercent);
+                    // TODO:每次搬到平衡的时候就不搬了：需要回测验证下 VS 全部，是否利用了最大的资源；
                     return;
                 }
             } else {
