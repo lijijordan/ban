@@ -30,9 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.jordan.ban.common.Constant.*;
@@ -93,6 +91,10 @@ public class BackTestService {
     private float downPercent;
 
     private Policy policy;
+
+    private int countProfit;
+
+    private double sumProfit;
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -281,6 +283,10 @@ public class BackTestService {
 
         totalCostMoney = totalCostMoney + sellCost + buyCost;
         log.info("Record done!");
+        if (profit > 0) {
+            this.countProfit++;
+            this.sumProfit += profit;
+        }
         return true;
     }
 
@@ -362,6 +368,8 @@ public class BackTestService {
         } else {
             moneyBefore = moneyAfter;
         }
+
+
         increase = moneyAfter - moneyBefore;
         increasePercent = (increase / Math.min(moneyAfter, moneyBefore)) * 100;
         ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
@@ -370,10 +378,17 @@ public class BackTestService {
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);
 
+
+        // 恢复初始币量：
+        double leftCoin = this.getAccount(Dragonex.PLATFORM_NAME, symbol).getVirtualCurrency();
+        double sellMoney = leftCoin * this.sumProfit / this.countProfit;
+        log.info("left money:{}", sellMoney);
+        double profit = this.totalCostMoney * 0.001 + moneyAfter - this.totalMoneyBefore + sellMoney;
+
         BackTestStatistics backTestStatistics = BackTestStatistics.builder().totalCostMoney(totalCostMoney).platformA(platformA)
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
                 .start(start).end(end).tradeCount(this.tradeRecordRepository.countBy())
-                .profit(this.totalCostMoney * 0.001 + moneyAfter - this.totalMoneyBefore).total(totalData)
+                .profit(profit).total(totalData)
                 .queueSize(queueSize).symbol(symbol).upPercent(this.upPercent).downPercent(this.downPercent)
                 .build();
         backTestStatisticsRepository.save(backTestStatistics);
@@ -381,9 +396,9 @@ public class BackTestService {
 
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/07 22:20:00");
-        Date end = format.parse("2018/07/08 10:35:00");
-        int defaultQueueSize = 6000 * 2; // one hour;
+        Date start = format.parse("2018/07/01 00:00:29");
+        Date end = format.parse("2018/07/04 23:59:00");
+        int defaultQueueSize = 6000; // one hour;
 
 //        this.moveMetric = 0.02692;
 //        this.run(start, end, 0.8, defaultQueueSize * 2);
@@ -421,7 +436,24 @@ public class BackTestService {
 //        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
 //        run(start, end, 1.4f, 0.7f, defaultQueueSize * 2, ETH_USDT);
-        run(start, end, 0.025f, -0.018f, defaultQueueSize * 2, ETH_USDT);
+
+
+//        run(start, end, 0.025f, -0.018f, defaultQueueSize * 2, ETH_USDT);
+
+//        run(start, end, 1.02f, 0.98f, defaultQueueSize, ETH_USDT);
+
+//        run(start, end, 1.05f, 0.95f, defaultQueueSize, ETH_USDT);
+//        run(start, end, 1.02f, 0.98f, defaultQueueSize * 2, ETH_USDT);
+//        run(start, end, 1.02f, 0.98f, defaultQueueSize * 4, ETH_USDT);
+
+        //
+//        run(start, end, 1f, 1f, defaultQueueSize, ETH_USDT);
+
+        this.policy = Policy.fix;
+        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
+        this.policy = Policy.max;
+        run(start, end, 1.02f, 0.98f, defaultQueueSize, ETH_USDT);
+
         System.out.println("End at:" + new Date());
     }
 
