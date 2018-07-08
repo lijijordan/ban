@@ -220,41 +220,22 @@ public class BackTestService {
         }
 //        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
 //                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
-        double downPoint = Math.abs(downDiffPercent * this.downPercent);
-        double upPoint = Math.abs(upDiffPercent * this.upPercent);
+        double downPoint = downDiffPercent * this.downPercent;
+        double upPoint = upDiffPercent * this.upPercent;
         log.info("downPoint={},upPoint={}", downPoint, upPoint);
-        if (diffPercent < 0) {  // 亏损
-            if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                if (Math.abs(diffPercent) <= downPoint) {
-                    //往回搬;
-//                    log.info("+++++++diffPercent:{},move back!", diffPercent);
-                    // FIXME:do not use A2B direct
-                    if(tradeResult.getTradeDirect() == TradeDirect.B2A){
-                        log.info("up < 0 , take care!");
-                        return false;
-                    }
-                } else {
-//                    log.info("-------diffPercent:{},not deal!", diffPercent);
-                    return false;
-                }
-            } else {
-//                log.info("--------diffPercent:{},not deal!", diffPercent);
+
+        // Validate
+        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+            if (diffPercent < downPoint) {
                 return false;
             }
         } else {
-            // 有利润
             if (diffPercent < upPoint) {
-                if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                    //往回搬;
-//                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
-//                    FIXME: 往回搬的时机不对，这样会过早的搬回来,暂时return false，再考虑翻转的情况。
-                    return false;
-                } else { // 方向错误, 而且利润太小，不满足搬砖条件
-//                    log.info("+++++diffPercent:{},less than {} .not deal!", diffPercent, avgEatDiffPercent);
-                    return false;
-                }
+                return false;
             }
         }
+
+
         double profit = moneyAfter - moneyBefore;
         log.info("Profit:{}", profit);
         /*if (Context.getUnFilledOrderNum() > 0) {
@@ -440,7 +421,7 @@ public class BackTestService {
 //        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
 //        run(start, end, 1.4f, 0.7f, defaultQueueSize * 2, ETH_USDT);
-        run(start, end, 0.025f, 0.018f, defaultQueueSize * 2, ETH_USDT);
+        run(start, end, 0.025f, -0.018f, defaultQueueSize * 2, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
 
