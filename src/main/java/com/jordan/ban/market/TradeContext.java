@@ -24,7 +24,7 @@ public class TradeContext {
     private double moveBackMetrics = METRICS_BACK_PERCENT;
 
     private volatile float upPoint = 0.028f;
-    private volatile float downPoint = 0.018f;
+    private volatile float downPoint = -0.018f;
 
     public float getUpPoint() {
         return upPoint;
