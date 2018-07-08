@@ -38,8 +38,8 @@ public class TradeController {
     @GetMapping("/greeting")
     public String greetingForm(Model model) {
         model.addAttribute("greeting", Greeting.builder()
-                .moveBackMetrics(tradeContext.getMoveBackMetrics())
-                .moveMetrics(this.tradeCounter.getSuggestDiffPercent()).build());
+                .moveBackMetrics(tradeContext.getDownPoint())
+                .moveMetrics(tradeContext.getUpPoint()).build());
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
 
@@ -71,8 +71,8 @@ public class TradeController {
 
     @PostMapping("/greeting")
     public String greetingSubmit(@ModelAttribute Greeting greeting) {
-        this.tradeContext.setMoveMetrics(greeting.getMoveMetrics());
-        this.tradeContext.setMoveBackMetrics(greeting.getMoveBackMetrics());
+        this.tradeContext.setUpPoint((float) greeting.getMoveMetrics());
+        this.tradeContext.setDownPoint((float) greeting.getMoveBackMetrics());
         return "result";
     }
 

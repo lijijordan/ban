@@ -146,23 +146,30 @@ public class TradeService {
 
         if (diffPercent < 0) {  // 亏损
             if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
-                if (Math.abs(diffPercent) < 0.020) {
+                if (Math.abs(diffPercent) < this.tradeContext.getDownPoint()) {
                     //往回搬;
 //                    log.info("+++++++diffPercent:{},move back!", diffPercent);
+                    // FIXME: Do not use B2A direct
+                    if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
+                        log.info("B2A direct < 0");
+                        return;
+                    }
                 } else {
 //                    log.info("-------diffPercent:{},not deal!", diffPercent);
                     return;
                 }
             } else {
 //                log.info("--------diffPercent:{},not deal!", diffPercent);
+                // TODO: 币的流动方向错误，亏损
+                log.info("Wrong way. no profit? Keep balance, return!");
                 return;
             }
         } else {
             // 有利润
-            if (diffPercent < 0.026) {
+            if (diffPercent < this.tradeContext.getUpPoint()) {
                 if (coinDiffAfter < coinDiffBefore) { // 币的流动方向正确
                     //往回搬;
-                    // TODO:币的翻转情况没有考虑
+                    // TODO:币的翻转情况没有考虑?
                     return;
 //                    log.info("++++++++++++++diffPercent:{},move back!", diffPercent);
                 } else { // 方向错误
@@ -171,7 +178,7 @@ public class TradeService {
                 }
             }
         }
-        double profit = ((moneyAfter - moneyBefore) / moneyBefore) * 100;
+        double profit = moneyAfter - moneyBefore;
 //        log.info("Profit:{}", profit);
         /*if (Context.getUnFilledOrderNum() > 0) {
             log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
@@ -188,14 +195,14 @@ public class TradeService {
         String pair = UUID.randomUUID().toString();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
-            double fees = 1 + FeeUtils.getFee(marketA.getName());
-            buyOrder.setAmount(buyOrder.getAmount() * fees * fees);
+            double fees = 1 - FeeUtils.getFee(marketA.getName());
+            buyOrder.setAmount(buyOrder.getAmount() / fees);
             orderService.createOrder(buyOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(sellOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         } else {  // 市场B买. 市场A卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
-            double fees = 1 + FeeUtils.getFee(marketB.getName());
-            buyOrder.setAmount(buyOrder.getAmount() * fees * fees);
+            double fees = 1 - FeeUtils.getFee(marketB.getName());
+            buyOrder.setAmount(buyOrder.getAmount() / fees);
             orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         }
@@ -225,7 +232,7 @@ public class TradeService {
         double amount = 10;
         double fees = 0.002;
 
-        double addFees = 1 + fees;
-        System.out.println(amount * addFees * addFees);
+        double addFees = 1 - fees;
+        System.out.println(amount / addFees);
     }
 }
