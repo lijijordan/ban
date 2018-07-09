@@ -136,34 +136,59 @@ public class TradeService {
 //            log.info("Coin is not enough！!");
             return;
         }
-        Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
-        double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
+
+        //double upMax = tradeCounter.getMaxDiffPercent(true);
+        //double downMax = tradeCounter.getMaxDiffPercent(false);
+        //
+        //
+        //log.info("downPoint={},upPoint={}", upMax, downMax);
+        //
+        //// Validate
+        //if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+        //    if (diffPercent < this.downPercent) {
+        //        return false;
+        //    } else {
+        //        if (diffPercent < downMax) {
+        //            return false;
+        //        }
+        //    }
+        //} else {
+        //    if (diffPercent < this.upPercent) {
+        //        return false;
+        //    } else {
+        //        if (diffPercent < upMax) {
+        //            return false;
+        //        }
+        //    }
+        //}
+
+//        log.info("============================ VALIDATE ============================");
+        double upMax = tradeCounter.getMaxDiffPercent(true);
+        double downMax = tradeCounter.getMaxDiffPercent(false);
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
-
-//        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
-//                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
-
         // FIXME:Do not use direct A2B;
         // Validate
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
             if (diffPercent < tradeContext.getDownPoint()) {
                 return;
+            } else {
+                if (diffPercent < downMax) {
+                    return;
+                }
             }
         } else {
             if (diffPercent < tradeContext.getUpPoint()) {
                 return;
+            } else {
+                if (diffPercent < upMax) {
+                    return;
+                }
             }
         }
-
-        double profit = moneyAfter - moneyBefore;
-//        log.info("Profit:{}", profit);
-        /*if (Context.getUnFilledOrderNum() > 0) {
-            log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
-            throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!");
-        }*/
         log.info("============================ PLACE ORDER ============================");
         long start = System.currentTimeMillis();
+        double profit = moneyAfter - moneyBefore;
         // 统一精度4
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();

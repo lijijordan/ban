@@ -9,7 +9,7 @@ spring.datasource:
     driverClassName: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ban?autoReconnect=true&useSSL=false
     username: root
-    password: root
+    password: fisher
 
 
 server:

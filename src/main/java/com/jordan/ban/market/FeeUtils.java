@@ -13,7 +13,7 @@ public class FeeUtils {
             case Fcoin.PLATFORM_NAME:
                 return 0.001;
             case Dragonex.PLATFORM_NAME:
-                return 0.001;
+                return 0.002;
         }
         return 0.002;
     }

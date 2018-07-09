@@ -23,8 +23,8 @@ public class TradeContext {
     private double moveMetrics = DEFAULT_METRICS_MAX;
     private double moveBackMetrics = METRICS_BACK_PERCENT;
 
-    private volatile float upPoint = 0.028f;
-    private volatile float downPoint = -0.018f;
+    private volatile float upPoint = 0.02f;
+    private volatile float downPoint = -0.02f;
 
     public float getUpPoint() {
         return upPoint;
