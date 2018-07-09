@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TradeCounter {
 
 
-    public static int QUEUE_SIZE = 60 * 2 * 30; // 30 min data
+    public static int QUEUE_SIZE = 6000; // one hour
 
     LimitQueue<Double> a2bQueue = new LimitQueue<>(QUEUE_SIZE);
     LimitQueue<Double> b2aQueue = new LimitQueue<>(QUEUE_SIZE);
@@ -101,7 +101,7 @@ public class TradeCounter {
         }
         return result;
     }
-    
+
 
     public static void main(String[] args) {
         LimitQueue<Double> queue = new LimitQueue<>(QUEUE_SIZE);
