@@ -7,7 +7,7 @@ import com.jordan.ban.domain.TradeDirect;
 public class TradeHelper {
 
     // 交易手续费
-    public static final double TRADE_FEES = 0.002;
+    public static final double TRADE_FEES = 0.001;
 
     public static MockTradeResult eatA2B(MarketDepth marketDepth) {
         double buyPrice = Math.max(marketDepth.getD1ask(), marketDepth.getD1bid());
@@ -23,6 +23,7 @@ public class TradeHelper {
     public static MockTradeResult eatB2A(MarketDepth marketDepth) {
         double buyPrice = Math.max(marketDepth.getD2ask(), marketDepth.getD2bid());
         double sellPrice = Math.min(marketDepth.getD1ask(), marketDepth.getD1bid());
+
         double tradeDiff = ((sellPrice - buyPrice) - Math.abs(Math.max(buyPrice, sellPrice) * TRADE_FEES * 2));
         double tradeVolume = Math.min(marketDepth.getVolume(buyPrice), marketDepth.getVolume(sellPrice));
         double sellCost = (sellPrice * tradeVolume) - (sellPrice * tradeVolume * TRADE_FEES);
