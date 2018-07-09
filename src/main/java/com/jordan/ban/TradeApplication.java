@@ -1,6 +1,7 @@
 package com.jordan.ban;
 
 import com.jordan.ban.market.TradeApp;
+import com.jordan.ban.market.TradeCounter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -18,6 +19,7 @@ public class TradeApplication {
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         TradeApp tradeApp = context.getBean(TradeApp.class);
         tradeApp.receiveDiff("ETHUSDT");
+        TradeCounter.setQueueSize(6000);
         System.out.println("Listener Started!");
     }
 }
