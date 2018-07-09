@@ -74,17 +74,6 @@ public class BackTestService {
 
     private long totalData;
 
-    private double openPrice;
-
-    private double marketASellPrice;
-    private double marketABuyPrice;
-
-    private double marketBSellPrice;
-    private double marketBBuyPrice;
-
-
-    private double moveMetric;
-
     private double totalMoneyBefore;
 
     private float upPercent;
@@ -103,7 +92,7 @@ public class BackTestService {
     private Map<String, Double> lastTicker = new ConcurrentHashMap<>();
 
 
-    public void beforeTrade(MockTradeResultIndex tradeResult) {
+    public void preTrade(MockTradeResultIndex tradeResult) {
         if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
             log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
             this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
@@ -199,13 +188,6 @@ public class BackTestService {
         }
 //
 //  Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
-        double avgEatDiffPercent;
-        if (this.moveMetric < 0) {
-            avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
-        } else {
-            avgEatDiffPercent = this.moveMetric;
-        }
-
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
@@ -305,7 +287,6 @@ public class BackTestService {
     }
 
     public void init(double price, String symbol) {
-        this.openPrice = price;
         this.tradeRecordRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
 //        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, price);
@@ -495,7 +476,7 @@ public class BackTestService {
                     if (sum == 1) {
                         this.init(index.getBuyPrice(), symbol);
                     }
-                    this.beforeTrade(index);
+                    this.preTrade(index);
                     System.out.println("::::::::::::::::::::::::sum::::::::::::::::::" + sum++);
                     System.out.printf("Percentage In Exam: %.1f%%%n", sum / total * 100);
                 }
