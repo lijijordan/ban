@@ -39,16 +39,16 @@ sum coin: <b th:text="${sumCoin}"/>
 
 <h1>Form</h1>
 
-<p name="textarea" th:text="'A->B ' + ${a2bAvgPercent}"/>
-<p name="textarea" th:text="'B->A ' + ${b2aAvgPercent}"/>
-<p name="textarea" th:text="'Suggest: ' + ${suggest}"/>
-<p name="textarea" th:text="'max up: ' + ${greeting.upMax}"/>
-<p name="textarea" th:text="'max down: ' + ${greeting.downMax}"/>
+<p name="textarea" th:text="'A->B ' + ${a2bAvgPercent} * 100"/>
+<p name="textarea" th:text="'B->A ' + ${b2aAvgPercent} * 100"/>
+<p name="textarea" th:text="'Suggest: ' + ${suggest} * 100"/>
+<p name="textarea" th:text="'max up: ' + ${greeting.upMax} * 100"/>
+<p name="textarea" th:text="'max down: ' + ${greeting.downMax} * 100"/>
 
 
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
-    <p>Move Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/></p>
-    <p>Move Back Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}"/></p>
+    <p>UP Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/></p>
+    <p>DOWN Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}"/></p>
     <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
 </form>
 
