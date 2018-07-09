@@ -56,7 +56,7 @@ public class TradeApp {
             System.out.println("-------------------------------start trade ---------------------------");
             long start = System.currentTimeMillis();
             try {
-                this.tradeService.trade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+                this.tradeService.preTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
             } catch (TradeException e) {
                 e.printStackTrace();
             }

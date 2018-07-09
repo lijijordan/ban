@@ -12,15 +12,28 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TradeCounter {
 
 
-    public static int QUEUE_SIZE = 6000; // one hour
+    private static int QUEUE_SIZE = 6000; // one hour
 
-    LimitQueue<Double> a2bQueue = new LimitQueue<>(QUEUE_SIZE);
-    LimitQueue<Double> b2aQueue = new LimitQueue<>(QUEUE_SIZE);
+    private static LimitQueue<Double> a2bQueue = null;
+    private static LimitQueue<Double> b2aQueue = null;
 
-    private double suggestDiffPercent = 0;
+    private static int queueSize = QUEUE_SIZE;
 
+    public static void setQueueSize(int size) {
+        log.info("Set queue size:{}", size);
+        a2bQueue = new LimitQueue<>(size);
+        b2aQueue = new LimitQueue<>(size);
+    }
 
     public long getA2bTradeCount() {
+        return a2bQueue.size();
+    }
+
+    public boolean isFull() {
+        return a2bQueue.size() >= queueSize;
+    }
+
+    public int getSize() {
         return a2bQueue.size();
     }
 
@@ -62,13 +75,8 @@ public class TradeCounter {
     }
 
     public double getMaxDiffPercent(boolean direct) {
-        double d1 = 0, d2 = 0;
-        try{
-            d1 = this.getMaxDiffPercent(TradeDirect.A2B);
-            d2 = this.getMaxDiffPercent(TradeDirect.B2A);
-        }catch (java.util.NoSuchElementException e){
-            log.info("queue is not ready!");
-        }
+        double d1 = this.getMaxDiffPercent(TradeDirect.A2B);
+        double d2 = this.getMaxDiffPercent(TradeDirect.B2A);
         return parse(direct, d1, d2);
     }
 
@@ -102,19 +110,20 @@ public class TradeCounter {
     public double getSuggestDiffPercent() {
         double result = (Math.abs(this.getAvgDiffPercent(TradeDirect.A2B)) +
                 Math.abs(this.getAvgDiffPercent(TradeDirect.B2A))) / 2;
-        this.suggestDiffPercent = result;
         if (result == 0) {
             return TradeContext.DEFAULT_METRICS_MAX;
         }
         return result;
     }
 
-
     public static void main(String[] args) {
         LimitQueue<Double> queue = new LimitQueue<>(QUEUE_SIZE);
         queue.offer(1d);
         queue.offer(2d);
         queue.offer(2d);
-        System.out.println(queue.stream().mapToDouble(q -> q).sum());
+        queue.offer(11d);
+
+        //        System.out.println(queue.stream().mapToDouble(q -> q).sum());
+        System.out.println(queue.stream().mapToDouble(q -> q).max().getAsDouble());
     }
 }

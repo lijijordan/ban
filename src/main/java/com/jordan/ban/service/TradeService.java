@@ -41,11 +41,21 @@ public class TradeService {
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
 
-    public synchronized void trade(MockTradeResultIndex tradeResult) {
+    public synchronized void preTrade(MockTradeResultIndex tradeResult) {
+        // 过滤交易数小于最小交易量的数据
+        
+        if (!this.tradeCounter.isFull()) { // 池子没有建满，什么都不做
+            log.info("Pool is not ready [{}], do nothing!", this.tradeCounter.getSize());
+            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+        } else {
+            boolean isTrade = this.trade(tradeResult);
+            if (!isTrade) { // 交易的数据不记录到Counter
+                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+            }
+        }
+    }
 
-//        log.info("Data:" + tradeResult.toString());
-
-        this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+    public boolean trade(MockTradeResultIndex tradeResult) {
 
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
@@ -62,21 +72,10 @@ public class TradeService {
         accountB = AccountDto.builder().money(balanceB.get("usdt").getAvailable()).platform(marketB.getName()).symbol(symbol)
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
 
-//        log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
-//        log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
-
-//        log.info("Mock account!");
-//        accountB = AccountDto.builder().money(96.88 * 10).platform(Fcoin.PLATFORM_NAME).symbol(symbol).virtualCurrency(10).build();
-        /*
-        AccountDto accountA = AccountDto.builder().money(96.88 * 10).platform(Huobi.PLATFORM_NAME).symbol(symbol).virtualCurrency(10).build();
-        */
-
         if (accountA == null || accountB == null) {
             throw new TradeException("Load account error！");
         }
-        double coinDiffBefore = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyBefore = accountA.getMoney() + accountB.getMoney();
-
         // 最小交易量
         double minTradeVolume = tradeResult.getEatTradeVolume();
         double buyPrice = tradeResult.getBuyPrice();
@@ -104,11 +103,11 @@ public class TradeService {
         }
         if (minTradeVolume <= 0) {
             log.info("trade volume is 0!");
-            return;
+            return false;
         }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
 //            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-            return;
+            return false;
         }
 
 
@@ -130,44 +129,19 @@ public class TradeService {
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
 //            log.info("Money is not enough！!");
-            return;
+            return false;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
 //            log.info("Coin is not enough！!");
-            return;
+            return false;
         }
-
-        //double upMax = tradeCounter.getMaxDiffPercent(true);
-        //double downMax = tradeCounter.getMaxDiffPercent(false);
-        //
-        //
-        //log.info("downPoint={},upPoint={}", upMax, downMax);
-        //
-        //// Validate
-        //if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
-        //    if (diffPercent < this.downPercent) {
-        //        return false;
-        //    } else {
-        //        if (diffPercent < downMax) {
-        //            return false;
-        //        }
-        //    }
-        //} else {
-        //    if (diffPercent < this.upPercent) {
-        //        return false;
-        //    } else {
-        //        if (diffPercent < upMax) {
-        //            return false;
-        //        }
-        //    }
-        //}
 
 //        log.info("============================ VALIDATE ============================");
         double upMax = tradeCounter.getMaxDiffPercent(true);
         double downMax = tradeCounter.getMaxDiffPercent(false);
         if (upMax == 0 || downMax == 0) {
             log.info("Counter queue is not ready!");
-            return;
+            return false;
         }
 
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
@@ -176,18 +150,18 @@ public class TradeService {
         // Validate
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
             if (diffPercent < tradeContext.getDownPoint()) {
-                return;
+                return false;
             } else {
                 if (diffPercent < downMax) {
-                    return;
+                    return false;
                 }
             }
         } else {
             if (diffPercent < tradeContext.getUpPoint()) {
-                return;
+                return false;
             } else {
                 if (diffPercent < upMax) {
-                    return;
+                    return false;
                 }
             }
         }
@@ -232,15 +206,6 @@ public class TradeService {
         record.setTotalMoney(totalMoney);
         this.tradeRecordRepository.save(record);
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start) * 1000);
-    }
-
-    public static void main(String[] args) {
-//        buyOrder.getAmount() * (1 + FeeUtils.getFee(marketA.getName()
-
-        double amount = 10;
-        double fees = 0.002;
-
-        double addFees = 1 - fees;
-        System.out.println(amount / addFees);
+        return true;
     }
 }
