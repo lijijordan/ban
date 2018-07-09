@@ -100,18 +100,18 @@ public class BackTestService {
     public void preTrade(MockTradeResultIndex tradeResult) {
         // 预设up down level; 每隔一个avgQueueSize周期设置一次
         changeAvgCounter++;
-        if (changeAvgCounter >= avgQueueSize) {
-            log.info("Refine up down point!!");
-            double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
-            if (a2b != 0) {
-                this.downPercent = (float) a2b;
-            }
-            double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
-            if (b2a != 0) {
-                this.upPercent = (float) b2a;
-            }
-            changeAvgCounter = 0;
-        }
+//        if (changeAvgCounter >= avgQueueSize) {
+//            log.info("Refine up down point!!");
+//            double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
+//            if (a2b != 0) {
+//                this.downPercent = (float) a2b;
+//            }
+//            double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
+//            if (b2a != 0) {
+//                this.upPercent = (float) b2a;
+//            }
+//            changeAvgCounter = 0;
+//        }
 
         if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
             log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
@@ -208,8 +208,8 @@ public class BackTestService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
-        double upMax = tradeCounter.getMaxDiffPercent(true);
-        double downMax = tradeCounter.getMaxDiffPercent(false);
+        double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
+        double downMax = tradeCounter.getMaxDiffPercent(TradeDirect.A2B);
 
         log.info("downPoint={},upPoint={}, upPercent={}, downPercent={}", downMax, upMax, upPercent, downPercent);
 
@@ -269,6 +269,10 @@ public class BackTestService {
         record.setVolume(minTradeVolume);
         record.setProfit(profit);
         record.setTotalMoney(totalMoney);
+        record.setUpMax(upMax);
+        record.setDownMax(downMax);
+        record.setUpPercent(upPercent);
+        record.setDownPercent(downPercent);
         this.tradeRecordRepository.save(record);
         this.lastTicker.put(key, tradeResult.getEatTradeVolume());
 
@@ -432,8 +436,8 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/04 00:00:00");
-        Date end = format.parse("2018/07/06 00:00:00");
+        Date start = format.parse("2018/07/07 18:00:00");
+        Date end = format.parse("2018/07/09 18:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -489,7 +493,7 @@ public class BackTestService {
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
 
-        run(start, end, 0.017f, -0.017f, 6000, 14400 * 2, ETH_USDT);
+        run(start, end, 0.012f, -0.012f, 6000, 14400 * 2, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
 }

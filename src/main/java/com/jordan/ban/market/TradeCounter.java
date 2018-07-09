@@ -90,7 +90,7 @@ public class TradeCounter {
         }
     }
 
-    private double getMaxDiffPercent(TradeDirect tradeDirect) {
+    public double getMaxDiffPercent(TradeDirect tradeDirect) {
         if (tradeDirect == TradeDirect.A2B) {
             return a2bQueue.stream().mapToDouble(q -> q).max().getAsDouble();
         } else {
