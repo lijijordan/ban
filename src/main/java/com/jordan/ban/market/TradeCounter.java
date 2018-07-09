@@ -17,21 +17,41 @@ public class TradeCounter {
     private static LimitQueue<Double> a2bQueue = null;
     private static LimitQueue<Double> b2aQueue = null;
 
+    private static LimitQueue<Double> a2bAvgQueue = null;
+    private static LimitQueue<Double> b2aAvgQueue = null;
+
     private static int queueSize;
 
-    public static void setQueueSize(int size) {
-        queueSize = size;
-        log.info("Set queue size:{}", size);
-        a2bQueue = new LimitQueue<>(size);
-        b2aQueue = new LimitQueue<>(size);
+    private static int avgQueueSize;
+
+    public static void init(int size1, int size2) {
+        queueSize = size1;
+        avgQueueSize = size2;
+
+        log.info("Set queue size:{}", queueSize);
+
+        a2bQueue = new LimitQueue<>(queueSize);
+        b2aQueue = new LimitQueue<>(queueSize);
+
+        a2bAvgQueue = new LimitQueue<>(avgQueueSize);
+        b2aAvgQueue = new LimitQueue<>(avgQueueSize);
     }
+
 
     public long getA2bTradeCount() {
         return a2bQueue.size();
     }
 
+    public long getA2bAvgTradeCount() {
+        return a2bAvgQueue.size();
+    }
+
     public boolean isFull() {
         return a2bQueue.size() >= queueSize;
+    }
+
+    public boolean isAvgFull() {
+        return a2bAvgQueue.size() >= avgQueueSize;
     }
 
     public int getSize() {
@@ -46,10 +66,13 @@ public class TradeCounter {
     public void count(TradeDirect direct, double diffPercent) {
         if (direct == TradeDirect.A2B) {
             a2bQueue.offer(diffPercent);
+            a2bAvgQueue.offer(diffPercent);
         } else {
             b2aQueue.offer(diffPercent);
+            b2aAvgQueue.offer(diffPercent);
         }
     }
+
 
     private double sum(LimitQueue<Double> queue) {
         return queue.stream().mapToDouble(q -> q).sum();
@@ -57,13 +80,13 @@ public class TradeCounter {
 
 
     public double getAvgDiffPercent(TradeDirect tradeDirect) {
-        if (this.getA2bTradeCount() == 0 || this.getB2aTradeCount() == 0) {
+        if (this.getA2bAvgTradeCount() == 0 || this.getA2bAvgTradeCount() == 0) {
             return 0;
         }
         if (tradeDirect == TradeDirect.A2B) {
-            return sum(this.a2bQueue) / this.getA2bTradeCount();
+            return sum(this.a2bAvgQueue) / this.getA2bAvgTradeCount();
         } else {
-            return sum(this.b2aQueue) / this.getB2aTradeCount();
+            return sum(this.b2aAvgQueue) / this.getA2bAvgTradeCount();
         }
     }
 
@@ -117,14 +140,21 @@ public class TradeCounter {
         return result;
     }
 
-    public static void main(String[] args) {
-        LimitQueue<Double> queue = new LimitQueue<>(QUEUE_SIZE);
-        queue.offer(1d);
-        queue.offer(2d);
-        queue.offer(2d);
-        queue.offer(11d);
+    public double getSuggestDiffPercent(TradeDirect direct) {
+        if (!isAvgFull()) {
+            log.info("Avg queue is not ready now.");
+            return 0;
+        }
+        double avgA2B = this.getAvgDiffPercent(TradeDirect.A2B);
+        double avgB2A = this.getAvgDiffPercent(TradeDirect.B2A);
 
-//        System.out.println(queue.stream().mapToDouble(q -> q).sum());
-        System.out.println(queue.stream().mapToDouble(q -> q).max().getAsDouble());
+        double avg = (Math.abs(avgA2B) + Math.abs(avgB2A)) / 2;
+
+        if (direct == TradeDirect.A2B) {
+            return avg * -1;
+        } else {
+            return avg;
+        }
     }
+
 }

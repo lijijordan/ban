@@ -85,6 +85,11 @@ public class BackTestService {
 
     private double sumProfit;
 
+    private int maxQueueSize;
+    private int avgQueueSize;
+
+    private int changeAvgCounter;
+
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
     }
@@ -93,6 +98,21 @@ public class BackTestService {
 
 
     public void preTrade(MockTradeResultIndex tradeResult) {
+        // 预设up down level; 每隔一个avgQueueSize周期设置一次
+        changeAvgCounter++;
+        if (changeAvgCounter >= avgQueueSize) {
+            log.info("Refine up down point!!");
+            double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
+            if (a2b != 0) {
+                this.downPercent = (float) a2b;
+            }
+            double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
+            if (b2a != 0) {
+                this.upPercent = (float) b2a;
+            }
+            changeAvgCounter = 0;
+        }
+
         if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
             log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
             this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
@@ -122,9 +142,6 @@ public class BackTestService {
         if (accountA == null || accountB == null) {
             throw new TradeException("Load account error！");
         }
-//        log.info("account A: market={}, money={},coin={}", accountA.getPlatform(), accountA.getMoney(), accountA.getVirtualCurrency());
-//        log.info("account B: market={}, money={},coin={}", accountB.getPlatform(), accountB.getMoney(), accountB.getVirtualCurrency());
-        double coinDiffBefore = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyBefore = accountA.getMoney() + accountB.getMoney();
 
         // 最小交易量
@@ -186,21 +203,15 @@ public class BackTestService {
 //            log.info("Coin is not enough！!");
             return false;
         }
-//
 //  Double avgEatDiffPercent = tradeCounter.getSuggestDiffPercent();
         double coinDiffAfter = Math.abs(accountA.getVirtualCurrency() - accountB.getVirtualCurrency());
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
-//        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
-//                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
-
-
         double upMax = tradeCounter.getMaxDiffPercent(true);
         double downMax = tradeCounter.getMaxDiffPercent(false);
 
-
-        log.info("downPoint={},upPoint={}", upMax, downMax);
+        log.info("downPoint={},upPoint={}, upPercent={}, downPercent={}", downMax, upMax, upPercent, downPercent);
 
         // Validate
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
@@ -224,10 +235,6 @@ public class BackTestService {
 
         double profit = moneyAfter - moneyBefore;
         log.info("Profit:{}", profit);
-        /*if (Context.getUnFilledOrderNum() > 0) {
-            log.info("！！！！！！！Waiting for fill order num:{}.", Context.getUnFilledOrderNum());
-            throw new TradeException("sum[" + Context.getUnFilledOrderNum() + "]wait for deal!!!!");
-        }*/
         log.info("============================ PLACE ORDER ============================");
         // 统一精度4
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -259,7 +266,7 @@ public class BackTestService {
         record.setEatDiffPercent(tradeResult.getEatPercent());
         record.setSymbol(tradeResult.getSymbol());
         record.setTradeTime(tradeResult.getCreateTime());
-        record.setVolume(tradeResult.getEatTradeVolume());
+        record.setVolume(minTradeVolume);
         record.setProfit(profit);
         record.setTotalMoney(totalMoney);
         this.tradeRecordRepository.save(record);
@@ -275,14 +282,6 @@ public class BackTestService {
     }
 
     private void placeOrder(Account account, OrderRequest orderRequest) {
-        // 买币
-        /*if (orderRequest.getType() == OrderType.BUY_LIMIT) {
-            account.setVirtualCurrency(account.getVirtualCurrency() + orderRequest.getAmount());
-            account.setMoney(account.getMoney() - (orderRequest.getAmount() * orderRequest.getPrice() * (1 + TRADE_FEES)));
-        } else {
-            account.setVirtualCurrency(account.getVirtualCurrency() - orderRequest.getAmount());
-            account.setMoney(account.getMoney() + (orderRequest.getAmount() * orderRequest.getPrice() * (1 - TRADE_FEES)));
-        }*/
         this.accountRepository.save(account);
     }
 
@@ -309,7 +308,7 @@ public class BackTestService {
     private void configContext(double backPercent, int queueSize) {
 //        TradeCounter.QUEUE_SIZE = 60 * 2 * 30 * 2;
         this.tradeContext.setMoveBackMetrics(backPercent);
-        TradeCounter.setQueueSize(queueSize);
+        TradeCounter.init(queueSize, avgQueueSize);// avg 2 hour
     }
 
     private void statistic(String platformA, String platformB, String symbol, int queueSize) {
@@ -377,12 +376,66 @@ public class BackTestService {
         backTestStatisticsRepository.save(backTestStatistics);
     }
 
+    private void run(Date start, Date end, float upPercent, float downPercent, int maxQueueSize, int avgQueueSize, String symbol) throws ParseException {
+        this.upPercent = upPercent;
+        this.downPercent = downPercent;
+        this.maxQueueSize = maxQueueSize;
+        this.avgQueueSize = avgQueueSize;
+        this.run(start, end, -1, maxQueueSize, symbol);
+    }
+
+    private void run(Date start, Date end, double percent, int queueSize, String symbol) throws ParseException {
+        this.start = start;
+        this.end = end;
+        this.configContext(percent, queueSize);
+        MatchPhraseQueryBuilder mpq1 = QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin");
+        MatchPhraseQueryBuilder mpq2 = QueryBuilders.matchPhraseQuery("symbol", symbol);
+        QueryBuilder qb2 = QueryBuilders.boolQuery()
+                .must(mpq1)
+                .must(mpq2);
+
+        SearchResponse scrollResp = ElasticSearchClient.getClient().prepareSearch(MOCK_TRADE_INDEX)
+                .addSort("createTime", SortOrder.ASC)
+                .setScroll(new TimeValue(60000))
+                .setPostFilter(QueryBuilders.rangeQuery("createTime").from(start.getTime()).to(end.getTime()))
+                .setQuery(qb2)
+                .setSize(1000).get(); //max of 100 hits will be returned for each scroll
+        int i = 0, sum = 1;
+        //Scroll until no hits are returned
+        float total = scrollResp.getHits().getTotalHits();
+        this.totalData = (long) total;
+        do {
+            log.info("Total={}, i={}", total, i++);
+            for (SearchHit hit : scrollResp.getHits().getHits()) {
+                Map<String, Object> map = hit.getSourceAsMap();
+                ObjectMapper mapper = new ObjectMapper(); // jackson's objectmapper
+                MockTradeResultIndex index = mapper.convertValue(map, MockTradeResultIndex.class);
+                if (index.getSymbol().equals(symbol)) {
+                    if (sum == 1) {
+                        this.init(index.getBuyPrice(), symbol);
+                    }
+                    this.preTrade(index);
+                    System.out.println("::::::::::::::::::::::::sum::::::::::::::::::" + sum++);
+                    System.out.printf("Percentage In Exam: %.1f%%%n", sum / total * 100);
+                }
+            }
+            scrollResp = ElasticSearchClient.getClient().prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+        }
+        while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
+        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, queueSize);
+
+
+    }
+
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date start = format.parse("2018/07/01 00:00:29");
-        Date end = format.parse("2018/07/04 23:59:00");
-        int defaultQueueSize = 6000; // one hour;
 
+        this.policy = Policy.max;
+
+        Date start = format.parse("2018/07/04 00:00:00");
+        Date end = format.parse("2018/07/06 00:00:00");
+//        Date start = format.parse("2018/07/01 00:00:29");
+//        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
 //        this.run(start, end, 0.8, defaultQueueSize * 2);
 //        this.run(start, end, 0.8, defaultQueueSize / 2);
@@ -434,65 +487,12 @@ public class BackTestService {
 
 //        this.policy = Policy.fix;
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
-        this.policy = Policy.max;
-        run(start, end, 0.02f, -0.02f, defaultQueueSize, ETH_USDT);
+//        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
 
+        run(start, end, 0.017f, -0.017f, 6000, 14400 * 2, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
-
-    private void run(Date start, Date end, float upPercent, float downPercent, int queueSize, String symbol) throws ParseException {
-        this.upPercent = upPercent;
-        this.downPercent = downPercent;
-        this.run(start, end, -1, queueSize, symbol);
-    }
-
-    private void run(Date start, Date end, double percent, int queueSize, String symbol) throws ParseException {
-        this.start = start;
-        this.end = end;
-        this.configContext(percent, queueSize);
-        MatchPhraseQueryBuilder mpq1 = QueryBuilders.matchPhraseQuery("diffPlatform", "Dragonex-Fcoin");
-        MatchPhraseQueryBuilder mpq2 = QueryBuilders.matchPhraseQuery("symbol", symbol);
-        QueryBuilder qb2 = QueryBuilders.boolQuery()
-                .must(mpq1)
-                .must(mpq2);
-
-        SearchResponse scrollResp = ElasticSearchClient.getClient().prepareSearch(MOCK_TRADE_INDEX)
-                .addSort("createTime", SortOrder.ASC)
-                .setScroll(new TimeValue(60000))
-                .setPostFilter(QueryBuilders.rangeQuery("createTime").from(start.getTime()).to(end.getTime()))
-                .setQuery(qb2)
-                .setSize(1000).get(); //max of 100 hits will be returned for each scroll
-        int i = 0, sum = 1;
-        //Scroll until no hits are returned
-        float total = scrollResp.getHits().getTotalHits();
-        this.totalData = (long) total;
-        do {
-            log.info("Total={}, i={}", total, i++);
-            for (SearchHit hit : scrollResp.getHits().getHits()) {
-                Map<String, Object> map = hit.getSourceAsMap();
-                ObjectMapper mapper = new ObjectMapper(); // jackson's objectmapper
-                MockTradeResultIndex index = mapper.convertValue(map, MockTradeResultIndex.class);
-                if (index.getSymbol().equals(symbol)) {
-                    if (sum == 1) {
-                        this.init(index.getBuyPrice(), symbol);
-                    }
-                    this.preTrade(index);
-                    System.out.println("::::::::::::::::::::::::sum::::::::::::::::::" + sum++);
-                    System.out.printf("Percentage In Exam: %.1f%%%n", sum / total * 100);
-                }
-            }
-            scrollResp = ElasticSearchClient.getClient().prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-        }
-        while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
-        this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, queueSize);
-
-
-    }
-
-    public static void main(String[] args) {
-        float total = 165006, sum = 165006 / 2;
-        System.out.printf("Percentage In Exam: %.1f%%%n", sum / total * 100);
-    }
 }
+
 
 
