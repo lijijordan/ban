@@ -2,11 +2,13 @@ package com.jordan.ban.market;
 
 import com.jordan.ban.common.LimitQueue;
 import com.jordan.ban.domain.TradeDirect;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
+@Slf4j
 public class TradeCounter {
 
 
@@ -60,8 +62,13 @@ public class TradeCounter {
     }
 
     public double getMaxDiffPercent(boolean direct) {
-        double d1 = this.getMaxDiffPercent(TradeDirect.A2B);
-        double d2 = this.getMaxDiffPercent(TradeDirect.B2A);
+        double d1 = 0, d2 = 0;
+        try{
+            d1 = this.getMaxDiffPercent(TradeDirect.A2B);
+            d2 = this.getMaxDiffPercent(TradeDirect.B2A);
+        }catch (java.util.NoSuchElementException e){
+            log.info("queue is not ready!");
+        }
         return parse(direct, d1, d2);
     }
 

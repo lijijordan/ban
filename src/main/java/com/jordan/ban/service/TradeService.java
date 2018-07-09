@@ -165,6 +165,11 @@ public class TradeService {
 //        log.info("============================ VALIDATE ============================");
         double upMax = tradeCounter.getMaxDiffPercent(true);
         double downMax = tradeCounter.getMaxDiffPercent(false);
+        if (upMax == 0 || downMax == 0) {
+            log.info("Counter queue is not ready!");
+            return;
+        }
+
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
         // FIXME:Do not use direct A2B;
