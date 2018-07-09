@@ -14,4 +14,8 @@ public class Greeting {
     private double moveMetrics;
     private double moveBackMetrics;
 
+    private double upMax;
+
+    private double downMax;
+
 }

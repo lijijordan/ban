@@ -42,6 +42,8 @@ sum coin: <b th:text="${sumCoin}"/>
 <p name="textarea" th:text="'A->B ' + ${a2bAvgPercent}"/>
 <p name="textarea" th:text="'B->A ' + ${b2aAvgPercent}"/>
 <p name="textarea" th:text="'Suggest: ' + ${suggest}"/>
+<p name="textarea" th:text="'max up: ' + ${greeting.upMax}"/>
+<p name="textarea" th:text="'max down: ' + ${greeting.downMax}"/>
 
 
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">

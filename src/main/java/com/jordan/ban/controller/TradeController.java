@@ -39,6 +39,8 @@ public class TradeController {
     public String greetingForm(Model model) {
         model.addAttribute("greeting", Greeting.builder()
                 .moveBackMetrics(tradeContext.getDownPoint())
+                .upMax(tradeCounter.getMaxDiffPercent(true))
+                .downMax(tradeCounter.getMaxDiffPercent(false))
                 .moveMetrics(tradeContext.getUpPoint()).build());
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
