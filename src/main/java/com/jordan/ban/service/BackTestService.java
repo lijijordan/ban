@@ -210,30 +210,32 @@ public class BackTestService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
-        double upDiffPercent = 1;
-        double downDiffPercent = 1;
-
-        if (policy == Policy.max) {
-            // 上区间的平均值
-            upDiffPercent = tradeCounter.getMaxDiffPercent(true);
-            // 下区间的平均值
-            downDiffPercent = tradeCounter.getMaxDiffPercent(false);
-
-        }
 //        log.info("tradeVolume={}, diffPercent={}, moveMetrics={}, moveBackMetrics={}",
 //                minTradeVolume, diffPercent, this.tradeContext.getMoveMetrics(), this.tradeContext.getMoveBackMetrics());
-        double downPoint = downDiffPercent * this.downPercent;
-        double upPoint = upDiffPercent * this.upPercent;
-        log.info("downPoint={},upPoint={}", downPoint, upPoint);
+
+
+        double upMax = tradeCounter.getMaxDiffPercent(true);
+        double downMax = tradeCounter.getMaxDiffPercent(false);
+
+
+        log.info("downPoint={},upPoint={}", upMax, downMax);
 
         // Validate
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
-            if (diffPercent < downPoint) {
+            if (diffPercent < this.downPercent) {
                 return false;
+            } else {
+                if (diffPercent < downMax) {
+                    return false;
+                }
             }
         } else {
-            if (diffPercent < upPoint) {
+            if (diffPercent < this.upPercent) {
                 return false;
+            } else {
+                if (diffPercent < upMax) {
+                    return false;
+                }
             }
         }
 
@@ -449,10 +451,10 @@ public class BackTestService {
         //
 //        run(start, end, 1f, 1f, defaultQueueSize, ETH_USDT);
 
-        this.policy = Policy.fix;
-        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
+//        this.policy = Policy.fix;
+//        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
         this.policy = Policy.max;
-        run(start, end, 1.02f, 0.98f, defaultQueueSize, ETH_USDT);
+        run(start, end, 0.02f, -0.02f, defaultQueueSize, ETH_USDT);
 
         System.out.println("End at:" + new Date());
     }
