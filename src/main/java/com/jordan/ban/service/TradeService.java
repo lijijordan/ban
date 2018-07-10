@@ -43,7 +43,11 @@ public class TradeService {
 
     public synchronized void preTrade(MockTradeResultIndex tradeResult) {
         // 过滤交易数小于最小交易量的数据
-        
+        if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
+            log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
+            return;
+        }
+
         if (!this.tradeCounter.isFull()) { // 池子没有建满，什么都不做
             log.info("Pool is not ready [{}], do nothing!", this.tradeCounter.getSize());
             this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
