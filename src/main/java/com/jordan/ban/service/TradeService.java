@@ -208,6 +208,10 @@ public class TradeService {
         record.setProfit(profit);
         record.setTradeCostMoney(buyCost + sellCost);
         record.setTotalMoney(totalMoney);
+        record.setUpMax(upMax);
+        record.setDownMax(downMax);
+        record.setDownPercent(tradeContext.getDownPoint());
+        record.setUpPercent(tradeContext.getUpPoint());
         this.tradeRecordRepository.save(record);
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start) * 1000);
         return true;
