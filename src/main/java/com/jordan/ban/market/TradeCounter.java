@@ -27,7 +27,6 @@ public class TradeCounter {
     public static void init(int size1, int size2) {
         queueSize = size1;
         avgQueueSize = size2;
-
         log.info("Set queue size:{}", queueSize);
 
         a2bQueue = new LimitQueue<>(queueSize);
