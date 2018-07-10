@@ -41,11 +41,33 @@ public class TradeService {
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
 
+    private int changeAvgCounter;
+
+    private float avgFloatPercent = 0.05f;
+    private int avgQueueSize = 6000 * 2;
+
     public synchronized void preTrade(MockTradeResultIndex tradeResult) {
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
             log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
             return;
+        }
+
+        // 预设up down level; 每隔一个avgQueueSize周期设置一次
+        changeAvgCounter++;
+        if (changeAvgCounter >= avgQueueSize) {
+            log.info("Refine up down point!!");
+            double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
+            if (a2b != 0) {
+                float downPercent = (float) (a2b * (1 - avgFloatPercent));
+                tradeContext.setDownPoint(downPercent);
+            }
+            double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
+            if (b2a != 0) {
+                float upPercent = (float) (b2a * (1 + avgFloatPercent));
+                tradeContext.setUpPoint(upPercent);
+            }
+            changeAvgCounter = 0;
         }
 
         if (!this.tradeCounter.isFull()) { // 池子没有建满，什么都不做

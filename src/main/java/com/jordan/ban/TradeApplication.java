@@ -19,7 +19,7 @@ public class TradeApplication {
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         TradeApp tradeApp = context.getBean(TradeApp.class);
         tradeApp.receiveDiff("ETHUSDT");
-        TradeCounter.setQueueSize(6000);
+        TradeCounter.init(6000, 12000);
         System.out.println("Listener Started!");
     }
 }
