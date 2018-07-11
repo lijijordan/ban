@@ -33,14 +33,25 @@ public class ConsumerApplication {
 //            log.info(topic + ":" + message);
             JSONObject jsonObject = new JSONObject(message);
 //            log.info(message);
-            this.doDepthDiff(jsonObject.getString("a2b"));
-            this.doDepthDiff(jsonObject.getString("b2a"));
+            String a2bJson = jsonObject.getString("a2b");
+            String b2aJson = jsonObject.getString("b2a");
+            if (this.validateMinTradeVolume(a2bJson)) {
+                this.doDepthDiff(a2bJson);
+            }
+            if (this.validateMinTradeVolume(b2aJson)) {
+                this.doDepthDiff(b2aJson);
+            }
         });
         try {
             receiver.onReceived(topic);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean validateMinTradeVolume(String json) {
+        MockTradeResultIndex data = JSONUtil.getEntity(json, MockTradeResultIndex.class);
+        return data.getTradeVolume() > TradeService.MIN_TRADE_AMOUNT;
     }
 
     private void doDepthDiff(String json) {
