@@ -459,8 +459,8 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/01 18:00:00");
-        Date end = format.parse("2018/07/05 18:00:00");
+        Date start = format.parse("2018/07/04 18:00:00");
+        Date end = format.parse("2018/07/07 18:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -515,8 +515,7 @@ public class BackTestService {
 //        this.policy = Policy.fix;
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
-
-        run(start, end, 0.020f, -0.020f, 6000, 3000, 1, 0.3f, ETH_USDT);
+        run(start, end, 0.020f, -0.020f, 6000, 3000, 1, 0.2f, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
 }
