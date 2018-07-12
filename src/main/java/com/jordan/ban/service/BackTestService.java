@@ -90,7 +90,9 @@ public class BackTestService {
 
     private int changeAvgCounter;
 
-    private float avgFloatPercent = 0.05f;
+    private float avgFloatPercent = 0.1f;
+
+    private int split = 4;
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -105,19 +107,11 @@ public class BackTestService {
             return;
         }
         // 预设up down level; 每隔一个avgQueueSize周期设置一次
-        changeAvgCounter++;
+        /*changeAvgCounter++;
         if (changeAvgCounter >= avgQueueSize) {
-            log.info("Refine up down point!!");
-            double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
-            if (a2b != 0) {
-                this.downPercent = (float) (a2b * (1 - avgFloatPercent));
-            }
-            double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
-            if (b2a != 0) {
-                this.upPercent = (float) (b2a * (1 + avgFloatPercent));
-            }
+            this.setUpAndDown();
             changeAvgCounter = 0;
-        }
+        }*/
 
         if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
             log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
@@ -127,6 +121,18 @@ public class BackTestService {
             if (!isTrade) { // 交易的数据不记录到Counter
                 this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
             }
+        }
+    }
+
+    private void setUpAndDown() {
+        log.info("Refine up down point!!");
+        double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
+        if (a2b != 0) {
+            this.downPercent = (float) (a2b * (1 - avgFloatPercent));
+        }
+        double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
+        if (b2a != 0) {
+            this.upPercent = (float) (b2a * (1 + avgFloatPercent));
         }
     }
 
@@ -143,6 +149,12 @@ public class BackTestService {
 
         Account accountA = this.getAccount(marketA.getName(), symbol);
         Account accountB = this.getAccount(marketB.getName(), symbol);
+
+
+        // 每个交易周期调整一次up down
+        if (accountA.getVirtualCurrency() < MIN_TRADE_AMOUNT) {
+            this.setUpAndDown();
+        }
 
 
         if (accountA == null || accountB == null) {
@@ -184,6 +196,10 @@ public class BackTestService {
             return false;
         }
 
+        //- [ ] 【策略】为了能捕获到更多的“高点”，而不是一次就梭哈了，导致后面有行情也做不了事情了——采用分批次搬的策略：每次搬可搬总量的1/4
+        if ((minTradeVolume / split) > MIN_TRADE_AMOUNT) {
+            minTradeVolume = minTradeVolume / split;
+        }
 
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
@@ -242,7 +258,6 @@ public class BackTestService {
         double profit = moneyAfter - moneyBefore;
         log.info("Profit:{}", profit);
         log.info("============================ PLACE ORDER ============================");
-        // 统一精度4
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
         OrderRequest sellOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -386,11 +401,13 @@ public class BackTestService {
         backTestStatisticsRepository.save(backTestStatistics);
     }
 
-    private void run(Date start, Date end, float upPercent, float downPercent, int maxQueueSize, int avgQueueSize, String symbol) throws ParseException {
+    private void run(Date start, Date end, float upPercent, float downPercent, int maxQueueSize, int avgQueueSize, int split, float avgFloat, String symbol) throws ParseException {
         this.upPercent = upPercent;
         this.downPercent = downPercent;
         this.maxQueueSize = maxQueueSize;
         this.avgQueueSize = avgQueueSize;
+        this.split = split;
+        this.avgFloatPercent = avgFloat;
         this.run(start, end, -1, maxQueueSize, symbol);
     }
 
@@ -443,7 +460,7 @@ public class BackTestService {
         this.policy = Policy.max;
 
         Date start = format.parse("2018/07/01 18:00:00");
-        Date end = format.parse("2018/07/04 18:00:00");
+        Date end = format.parse("2018/07/05 18:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -499,7 +516,7 @@ public class BackTestService {
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
 
-        run(start, end, 0.020f, -0.020f, 6000, 6000 * 2, ETH_USDT);
+        run(start, end, 0.020f, -0.020f, 6000, 3000, 1, 0.3f, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
 }
