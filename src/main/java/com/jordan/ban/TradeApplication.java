@@ -27,7 +27,7 @@ public class TradeApplication {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         TradeApp tradeApp = context.getBean(TradeApp.class);
-//        tradeApp.receiveDiff("ETHUSDT");
+        tradeApp.receiveDiff("ETHUSDT");
         TradeCounter.init(6000, 12000);
         System.out.println("Listener Started!");
         System.out.println(new Date());
