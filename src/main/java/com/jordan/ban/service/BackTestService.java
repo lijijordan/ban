@@ -85,12 +85,9 @@ public class BackTestService {
 
     private double sumProfit;
 
-    private int maxQueueSize;
     private int avgQueueSize;
 
-    private int changeAvgCounter;
-
-    private float avgFloatPercent = 0.1f;
+    private float avgFloatPercent = 0.2f;
 
     private int split = 4;
 
@@ -106,13 +103,6 @@ public class BackTestService {
             log.info("Trade volume:[{}] less than min trade amount.", tradeResult.getTradeVolume());
             return;
         }
-        // 预设up down level; 每隔一个avgQueueSize周期设置一次
-        /*changeAvgCounter++;
-        if (changeAvgCounter >= avgQueueSize) {
-            this.setUpAndDown();
-            changeAvgCounter = 0;
-        }*/
-
         if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
             log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
             this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
@@ -150,13 +140,10 @@ public class BackTestService {
         Account accountA = this.getAccount(marketA.getName(), symbol);
         Account accountB = this.getAccount(marketB.getName(), symbol);
 
-
         // 每个交易周期调整一次up down
         if (accountA.getVirtualCurrency() < MIN_TRADE_AMOUNT) {
             this.setUpAndDown();
         }
-
-
         if (accountA == null || accountB == null) {
             throw new TradeException("Load account error！");
         }
@@ -404,7 +391,6 @@ public class BackTestService {
     private void run(Date start, Date end, float upPercent, float downPercent, int maxQueueSize, int avgQueueSize, int split, float avgFloat, String symbol) throws ParseException {
         this.upPercent = upPercent;
         this.downPercent = downPercent;
-        this.maxQueueSize = maxQueueSize;
         this.avgQueueSize = avgQueueSize;
         this.split = split;
         this.avgFloatPercent = avgFloat;
@@ -459,8 +445,8 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/04 18:00:00");
-        Date end = format.parse("2018/07/07 18:00:00");
+        Date start = format.parse("2018/07/11 00:00:00");
+        Date end = format.parse("2018/07/12 00:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -515,7 +501,7 @@ public class BackTestService {
 //        this.policy = Policy.fix;
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
-        run(start, end, 0.020f, -0.020f, 6000, 3000, 1, 0.2f, ETH_USDT);
+        run(start, end, 0.020f, -0.020f, 3000, 6000, 1, 0.1f, ETH_USDT);
         System.out.println("End at:" + new Date());
     }
 }
