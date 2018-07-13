@@ -14,7 +14,7 @@ public interface TradeRecordRepository extends CrudRepository<TradeRecord, Long>
     Double avgEatDiffPercent(long accountA, long accountB, String symbol);
 
 
-    @Query(value = "select * from trade_record where create_time>?1 order by create_time desc;", nativeQuery = true)
+    @Query(value = "select * from trade_record where create_time>=?1 order by create_time desc;", nativeQuery = true)
     List<TradeRecord> findAllByCreateTime(Date createTime);
 
     int countBy();

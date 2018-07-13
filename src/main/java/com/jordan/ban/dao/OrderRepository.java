@@ -4,6 +4,7 @@ import com.jordan.ban.entity.Order;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.Date;
 import java.util.List;
 
 public interface OrderRepository extends CrudRepository<Order, Long> {
@@ -18,5 +19,9 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
 
     List<Order> findAllBySymbolOrderByCreateTimeAsc(String symbol);
 
+
     List<Order> findAllByOrderByCreateTime();
+
+    @Query(value = "select * from trade_order where create_time>=? order by create_time desc", nativeQuery = true)
+    List<Order> findAllByCreateTime(Date createTime);
 }

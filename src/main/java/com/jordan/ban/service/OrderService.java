@@ -47,8 +47,8 @@ public class OrderService {
     @Autowired
     private ProfitStatisticsRepository profitStatisticsRepository;
 
-    public List<Order> queryOrder(String symbol) {
-        return this.orderRepository.findAllByOrderByCreateTime();
+    public List<Order> queryOrder(String symbol, Date date) {
+        return this.orderRepository.findAllByCreateTime(date);
     }
 
     /**

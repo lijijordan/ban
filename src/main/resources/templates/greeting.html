@@ -53,8 +53,68 @@ sum coin: <b th:text="${sumCoin}"/>
 </form>
 
 
+<!--private float upPercent;-->
+<!--private float downPercent;-->
+
+<!--private double upMax;-->
+<!--private double downMax;-->
+
+<h2>Trade Record</h2>
+<span style="color:blue">
+sum cost=<b th:text="${recordList.getSumCostMoney()}"/>
+sum profit=<b th:text="${recordList.getSumProfit()}"/>
+
+<table border="1">
+    <tr>
+        <td></td>
+        <td>A-B</td>
+        <td>B-A</td>
+    </tr>
+    <tr>
+        <td>sum profit</td>
+        <td><b th:text="${recordList.getSumA2BProfit()}"/></td>
+        <td><b th:text="${recordList.getSumB2AProfit()}"/></td>
+    </tr>
+
+    <tr>
+        <td>avg diff</td>
+        <td><b th:text="${recordList.getAvgA2BDiffPercent()}"/></td>
+        <td><b th:text="${recordList.getAvgB2ADiffPercent()}"/></td>
+    </tr>
+</table>
+</span>
+<br>
+
+<table th:object="${recordList}" id="recordTable" border="1">
+    <tr>
+        <td>create time</td>
+        <td>volume</td>
+        <td>profit</td>
+        <td>direct</td>
+        <td>diff percent</td>
+        <td>cost</td>
+        <td>upPercent</td>
+        <td>downPercent</td>
+        <td>upMax</td>
+        <td>downMax</td>
+    </tr>
+
+    <tr th:each="record :${recordList.getRecordList()}">
+        <td th:text="${record.createTime}"></td>
+        <td th:text="${record.volume}"></td>
+        <td th:text="${record.profit}"></td>
+        <td th:text="${record.direct}"></td>
+        <td th:text="${record.eatDiffPercent}"></td>
+        <td th:text="${record.tradeCostMoney}"></td>
+        <td th:text="${record.upPercent}"></td>
+        <td th:text="${record.downPercent}"></td>
+        <td th:text="${record.upMax}"></td>
+        <td th:text="${record.downMax}"></td>
+    </tr>
+</table>
+
 <h2>Order</h2>
-<table th:object="${orderList}" id="userTable" border="1">
+<table th:object="${orderList}" id="orderTable" border="1">
     <tr>
         <td>create time</td>
         <td>platform</td>
@@ -109,9 +169,42 @@ sum coin: <b th:text="${sumCoin}"/>
 </body>
 </html>
 <script type="text/javascript">
-    $('textarea').bind('input propertychange', function () {
-        alert(11);
-        alert("#moveMetrics").val();
-    });
+
+    function colorRecordTable() {
+        var tab = document.getElementById("recordTable");
+        var rows = tab.rows;
+        for (var i = 1; i < rows.length; i++) {
+            // for (var j = 0; j < rows[i].cells.length; j++) {
+            //     console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
+            // }
+            if (rows[i].cells[2].innerHTML < 0) {
+                rows[i].style.color = "red";
+            } else {
+                rows[i].style.color = "green";
+            }
+        }
+    }
+
+    function colorOrderTable() {
+        var tab = document.getElementById("orderTable");
+        var rows = tab.rows;
+        for (var i = 1; i < rows.length; i++) {
+            for (var j = 0; j < rows[i].cells.length; j++) {
+                console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
+            }
+            if (rows[i].cells[9].innerHTML < 0) {
+                rows[i].style.color = "red";
+            } else {
+                rows[i].style.color = "green";
+            }
+
+            if (rows[i].cells[6].innerHTML != 'filled') {
+                rows[i].style.color = "blue";
+            }
+        }
+    }
+
+    colorOrderTable();
+    colorRecordTable();
 
 </script>
