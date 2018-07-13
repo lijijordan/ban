@@ -5,7 +5,7 @@
     <title>Getting Started: Handling Form Submission</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
-<>
+<body>
 
 <h2>Account</h2>
 <table border="1">
@@ -39,18 +39,18 @@ sum coin: <b th:text="${sumCoin}"/>
 
 <h1>Form</h1>
 
-A-B: <b th:text="${a2bAvgPercent}"/>
-B-A: <b th:text="${b2aAvgPercent}"/>
-
-
-<p name="textarea" th:text="'max up: ' + ${greeting.upMax} "/>
-<p name="textarea" th:text="'max down: ' + ${greeting.downMax} "/>
+<span name="textarea" th:text="'A->B ' + ${a2bAvgPercent} "/>
+<span name="textarea" th:text="'B->A ' + ${b2aAvgPercent} "/>
+<p name="textarea" th:text="'Suggest: ' + ${suggest} "/>
+<span name="textarea" th:text="'max up: ' + ${greeting.upMax} "/>
+<span name="textarea" th:text="'max down: ' + ${greeting.downMax} "/>
 
 
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
-    <p>UP Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/></p>
-    <p>DOWN Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}"/></p>
-    <p>AVG Float Percent: <input id="avgFloatPercent" name="textarea" type="text" th:field="${greeting.avgFloatPercent}"/></p>
+    <p>UP Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/>
+        DOWN Metrics: <input id="moveBackMetrics" name="textarea" type="text" th:field="*{moveBackMetrics}"/></p>
+    <p>avg float Metrics: <input id="avgFloatPercent" name="textarea" type="text"
+                                 th:field="${greeting.avgFloatPercent}"/></p>
     <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
 </form>
 

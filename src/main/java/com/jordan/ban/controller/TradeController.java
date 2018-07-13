@@ -77,6 +77,8 @@ public class TradeController {
                 .frozen(balanceB.get(coinName).getFrozen())
                 .money(balanceB.get("usdt").getAvailable()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
+
+
         String suggestText = this.tradeCounter.getSuggestDiffPercent() + "["
                 + this.tradeCounter.getA2bTradeCount()
                 + "]";
