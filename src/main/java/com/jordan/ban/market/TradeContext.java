@@ -20,6 +20,16 @@ public class TradeContext {
     public final static double DEFAULT_METRICS_MAX = 0.022; // 2.2%
     public final static double METRICS_BACK_PERCENT = 0.85;
 
+    private float avgFloatPercent = 0.1f;
+
+    public float getAvgFloatPercent() {
+        return avgFloatPercent;
+    }
+
+    public void setAvgFloatPercent(float avgFloatPercent) {
+        this.avgFloatPercent = avgFloatPercent;
+    }
+
     private double moveMetrics = DEFAULT_METRICS_MAX;
     private double moveBackMetrics = METRICS_BACK_PERCENT;
 

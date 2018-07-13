@@ -18,4 +18,6 @@ public class Greeting {
 
     private double downMax;
 
+    private float avgFloatPercent;
+
 }
