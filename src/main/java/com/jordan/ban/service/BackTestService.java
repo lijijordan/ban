@@ -91,6 +91,8 @@ public class BackTestService {
 
     private int split = 4;
 
+    private int countCycle = 0;
+
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
     }
@@ -103,15 +105,17 @@ public class BackTestService {
             log.info("Trade volume:[{}] less than min trade amount.", tradeResult.getTradeVolume());
             return;
         }
-        if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
-            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
-            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-        } else {
-            boolean isTrade = this.trade(tradeResult);
-            if (!isTrade) { // 交易的数据不记录到Counter
-                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-            }
-        }
+//        if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
+//            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
+//            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+//        } else {
+//            boolean isTrade = this.trade(tradeResult);
+//            if (!isTrade) { // 交易的数据不记录到Counter
+//                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+//            }
+//        }
+        this.trade(tradeResult);
+        this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
     }
 
     private void setUpAndDown() {
@@ -124,6 +128,7 @@ public class BackTestService {
         if (b2a != 0) {
             this.upPercent = (float) (b2a * (1 + avgFloatPercent));
         }
+        countCycle++;
     }
 
     private boolean trade(MockTradeResultIndex tradeResult) {
@@ -217,33 +222,43 @@ public class BackTestService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
-        double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
-        double downMax = tradeCounter.getMaxDiffPercent(TradeDirect.A2B);
+//        double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
+//        double downMax = tradeCounter.getMaxDiffPercent(TradeDirect.A2B);
 
-        log.info("downPoint={},upPoint={}, upPercent={}, downPercent={}", downMax, upMax, upPercent, downPercent);
+//        log.info("downPoint={},upPoint={}, upPercent={}, downPercent={}", downMax, upMax, upPercent, downPercent);
 
+//        // Validate
+//        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+//            if (diffPercent < this.downPercent) {
+//                return false;
+//            } else {
+//                if (diffPercent < downMax) {
+//                    return false;
+//                }
+//            }
+//        } else {
+//            if (diffPercent < this.upPercent) {
+//                return false;
+//            } else {
+//                if (diffPercent < upMax) {
+//                    return false;
+//                }
+//            }
+//        }
         // Validate
+        log.info("upPercent={},downPercent={}", this.upPercent, this.downPercent);
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
             if (diffPercent < this.downPercent) {
                 return false;
-            } else {
-                if (diffPercent < downMax) {
-                    return false;
-                }
             }
         } else {
             if (diffPercent < this.upPercent) {
                 return false;
-            } else {
-                if (diffPercent < upMax) {
-                    return false;
-                }
             }
         }
 
 
         double profit = moneyAfter - moneyBefore;
-        log.info("Profit:{}", profit);
         log.info("============================ PLACE ORDER ============================");
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
@@ -277,8 +292,8 @@ public class BackTestService {
         record.setVolume(minTradeVolume);
         record.setProfit(profit);
         record.setTotalMoney(totalMoney);
-        record.setUpMax(upMax);
-        record.setDownMax(downMax);
+//        record.setUpMax(upMax);
+//        record.setDownMax(downMax);
         record.setUpPercent(upPercent);
         record.setDownPercent(downPercent);
         this.tradeRecordRepository.save(record);
@@ -445,7 +460,7 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/11 00:00:00");
+        Date start = format.parse("2018/07/01 00:00:00");
         Date end = format.parse("2018/07/12 00:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
@@ -501,7 +516,8 @@ public class BackTestService {
 //        this.policy = Policy.fix;
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
-        run(start, end, 0.020f, -0.020f, 3000, 6000, 1, 0.1f, ETH_USDT);
+        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
+        System.out.println("cycle times:" + this.countCycle);
         System.out.println("End at:" + new Date());
     }
 }
