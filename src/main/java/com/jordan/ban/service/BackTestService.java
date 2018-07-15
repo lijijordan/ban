@@ -2,15 +2,10 @@ package com.jordan.ban.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jordan.ban.dao.AccountRepository;
-import com.jordan.ban.dao.BackTestStatisticsRepository;
-import com.jordan.ban.dao.ProfitStatisticsRepository;
-import com.jordan.ban.dao.TradeRecordRepository;
+import com.jordan.ban.dao.*;
 import com.jordan.ban.domain.*;
-import com.jordan.ban.entity.Account;
-import com.jordan.ban.entity.BackTestStatistics;
-import com.jordan.ban.entity.ProfitStatistics;
-import com.jordan.ban.entity.TradeRecord;
+import com.jordan.ban.domain.Policy;
+import com.jordan.ban.entity.*;
 import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
@@ -63,6 +58,9 @@ public class BackTestService {
     @Autowired
     private BackTestStatisticsRepository backTestStatisticsRepository;
 
+    @Autowired
+    private WareHouseRepository wareHouseRepository;
+
     // unit USDt
     private final static double START_MONEY = 1000;
 
@@ -89,9 +87,11 @@ public class BackTestService {
 
     private float avgFloatPercent = 0.2f;
 
-    private int split = 4;
+    private int split = 1;
 
     private int countCycle = 0;
+
+    private double wareHouseDiff = 0.006;
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -105,17 +105,15 @@ public class BackTestService {
             log.info("Trade volume:[{}] less than min trade amount.", tradeResult.getTradeVolume());
             return;
         }
-//        if (this.policy == Policy.max && !this.tradeCounter.isFull()) {
-//            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
-//            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-//        } else {
-//            boolean isTrade = this.trade(tradeResult);
-//            if (!isTrade) { // 交易的数据不记录到Counter
-//                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-//            }
-//        }
-        this.trade(tradeResult);
-        this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+        if (!this.tradeCounter.isFull()) {
+            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
+            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+        } else {
+            boolean isTrade = this.trade(tradeResult);
+            if (!isTrade) { // 交易的数据不记录到Counter
+                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+            }
+        }
     }
 
     private void setUpAndDown() {
@@ -146,9 +144,9 @@ public class BackTestService {
         Account accountB = this.getAccount(marketB.getName(), symbol);
 
         // 每个交易周期调整一次up down
-        if (accountA.getVirtualCurrency() < MIN_TRADE_AMOUNT) {
+        /*if (accountA.getVirtualCurrency() < MIN_TRADE_AMOUNT) {
             this.setUpAndDown();
-        }
+        }*/
         if (accountA == null || accountB == null) {
             throw new TradeException("Load account error！");
         }
@@ -222,7 +220,7 @@ public class BackTestService {
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double diffPercent = tradeResult.getEatPercent();
 
-//        double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
+        double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
 //        double downMax = tradeCounter.getMaxDiffPercent(TradeDirect.A2B);
 
 //        log.info("downPoint={},upPoint={}, upPercent={}, downPercent={}", downMax, upMax, upPercent, downPercent);
@@ -245,18 +243,33 @@ public class BackTestService {
 //                }
 //            }
 //        }
+
         // Validate
-        log.info("upPercent={},downPercent={}", this.upPercent, this.downPercent);
+//        log.info("upPercent={},downPercent={}", this.upPercent, this.downPercent);
+//        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+//            if (diffPercent < this.downPercent) {
+//                return false;
+//            }
+//        } else {
+//            if (diffPercent < this.upPercent) {
+//                return false;
+//            }
+//        }
+
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
-            if (diffPercent < this.downPercent) {
+            // 检查仓位，准备出库
+            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            if (minTradeVolume == 0) {
+                log.info("Not any assets!");
                 return false;
+            } else {
+                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
             }
         } else {
-            if (diffPercent < this.upPercent) {
+            if (diffPercent < upMax) {
                 return false;
             }
         }
-
 
         double profit = moneyAfter - moneyBefore;
         log.info("============================ PLACE ORDER ============================");
@@ -297,15 +310,77 @@ public class BackTestService {
         record.setUpPercent(upPercent);
         record.setDownPercent(downPercent);
         this.tradeRecordRepository.save(record);
+
+        //warehouse
+        if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
+            // 建仓
+            this.buildWareHouse(record);
+        }
+
         this.lastTicker.put(key, tradeResult.getEatTradeVolume());
 
         totalCostMoney = totalCostMoney + sellCost + buyCost;
         log.info("Record done!");
-        if (profit > 0) {
+        if (profit < 0) {
             this.countProfit++;
             this.sumProfit += profit;
         }
         return true;
+    }
+
+    private void buildWareHouse(TradeRecord tradeRecord) {
+        double diffOut = (tradeRecord.getEatDiffPercent() * -1) + this.wareHouseDiff;
+        wareHouseRepository.save(WareHouse.builder().diffPercentIn(tradeRecord.getEatDiffPercent())
+                .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume())
+                .diffPercentOut(diffOut)
+                .build());
+    }
+
+    public double checkAndOutWareHouse(double comeDiffPercent, double comeVolume) {
+        double volume = 0;
+        List<WareHouse> wareHouses = this.wareHouseRepository.findAllByStateIsNot(WareHouseState.out);
+        wareHouses.sort((o1, o2) -> {
+            if (o1.getDiffPercentOut() >= o2.getDiffPercentOut()) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+        if (wareHouses != null && wareHouses.size() > 0) {
+            for (int i = 0; i < wareHouses.size(); i++) {
+                WareHouse wareHouse = wareHouses.get(i);
+                // 进入购买位置
+                if (comeDiffPercent > wareHouse.getDiffPercentOut()) {
+                    double out = this.outWareHouse(comeVolume, wareHouse);
+                    volume += out;
+                    comeVolume = comeVolume - out;
+                    if (comeVolume <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        return volume;
+    }
+
+    private double outWareHouse(double comeVolume, WareHouse wareHouse) {
+        double result = 0;
+        // 可出库数量
+        double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
+        if (comeVolume >= leftVolume) {  // 剩余库存全部出去
+            wareHouse.setState(WareHouseState.out);
+            wareHouse.setVolumeOut(leftVolume + wareHouse.getVolumeOut());
+            result += leftVolume;
+            wareHouse.setTimeOut(new Date());
+            this.wareHouseRepository.save(wareHouse);
+        } else { // 部分出库
+            wareHouse.setState(WareHouseState.partOut);
+            wareHouse.setVolumeOut(comeVolume + wareHouse.getVolumeOut());
+            result += comeVolume;
+            wareHouse.setTimeOut(new Date());
+            this.wareHouseRepository.save(wareHouse);
+        }
+        return result;
     }
 
     private void placeOrder(Account account, OrderRequest orderRequest) {
@@ -316,7 +391,8 @@ public class BackTestService {
         this.tradeRecordRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
 //        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, price);
-        this.initAccountAsAPoor(price, symbol);
+//        this.initAccountAsAPoor(price, symbol);
+        this.initAccountAsARicher(price, symbol);
         Account accountA = this.getAccount(Dragonex.PLATFORM_NAME, symbol);
         Account accountB = this.getAccount(Fcoin.PLATFORM_NAME, symbol);
         this.totalMoneyBefore = accountA.getMoney() + accountB.getMoney();
@@ -331,6 +407,14 @@ public class BackTestService {
         this.accountRepository.save(b);
     }
 
+    private void initAccountAsARicher(double price, String symbol) {
+        this.accountService.emptyAccount();
+        Account a = Account.builder().platform(Dragonex.PLATFORM_NAME).symbol(symbol).money(0).virtualCurrency(START_MONEY / price).build();
+        Account b = Account.builder().platform(Fcoin.PLATFORM_NAME).symbol(symbol).money(START_MONEY).virtualCurrency(0).build();
+        this.accountRepository.save(a);
+        this.accountRepository.save(b);
+    }
+
 
     private void configContext(double backPercent, int queueSize) {
 //        TradeCounter.QUEUE_SIZE = 60 * 2 * 30 * 2;
@@ -341,44 +425,17 @@ public class BackTestService {
     private void statistic(String platformA, String platformB, String symbol, int queueSize) {
         Account accountA = this.getAccount(platformA, symbol);
         Account accountB = this.getAccount(platformB, symbol);
-
         //Balance coin
         log.info("Balance coin again!");
-        /*double coinA = accountA.getVirtualCurrency();
-        double moneyA = accountA.getMoney();
-        double totalCoin = accountA.getVirtualCurrency() + accountB.getVirtualCurrency();
-        if (coinA > totalCoin / 2) { // sell coin
-            double diffCoin = coinA - (totalCoin / 2);
-            accountA.setMoney(moneyA + diffCoin * marketABuyPrice);
-        } else { // buy
-            double diffCoin = (totalCoin / 2) - coinA;
-            accountA.setMoney(moneyA - diffCoin * marketASellPrice);
-        }
-        accountA.setVirtualCurrency(totalCoin / 2);
-
-        double coinB = accountB.getVirtualCurrency();
-        double moneyB = accountB.getMoney();
-        if (coinB > totalCoin / 2) { // sell coin
-            double diffCoin = coinB - (totalCoin / 2);
-            accountB.setMoney(moneyB + diffCoin * marketBBuyPrice);
-        } else { // buy
-            double diffCoin = (totalCoin / 2) - coinB;
-            accountB.setMoney(moneyB - diffCoin * marketBSellPrice);
-        }
-        accountB.setVirtualCurrency(totalCoin / 2);*/
-
         ProfitStatistics before = profitStatisticsRepository.findTopBySymbolAndAndPlatformAAndAndPlatformBOrderByCreateTimeDesc(symbol, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME);
         double moneyBefore, increase, increasePercent, moneyAfter, coinAfter;
         moneyAfter = accountA.getMoney() + accountB.getMoney();
         coinAfter = accountA.getVirtualCurrency() + accountB.getVirtualCurrency();
-
         if (before != null) {
             moneyBefore = before.getSumMoney();
         } else {
             moneyBefore = moneyAfter;
         }
-
-
         increase = moneyAfter - moneyBefore;
         increasePercent = (increase / Math.min(moneyAfter, moneyBefore)) * 100;
         ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
@@ -386,10 +443,8 @@ public class BackTestService {
                 .increasePercent(increasePercent).platformA(accountA.getPlatform())
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);
-
-
         // 恢复初始币量：
-        double leftCoin = this.getAccount(Dragonex.PLATFORM_NAME, symbol).getVirtualCurrency();
+        double leftCoin = this.getAccount(Fcoin.PLATFORM_NAME, symbol).getVirtualCurrency();
         double sellMoney = leftCoin * this.sumProfit / this.countProfit;
         log.info("left money:{}", sellMoney);
         double profit = this.totalCostMoney * 0.001 + moneyAfter - this.totalMoneyBefore + sellMoney;
@@ -409,6 +464,10 @@ public class BackTestService {
         this.avgQueueSize = avgQueueSize;
         this.split = split;
         this.avgFloatPercent = avgFloat;
+        this.run(start, end, -1, maxQueueSize, symbol);
+    }
+
+    private void run(Date start, Date end, int maxQueueSize, String symbol) throws ParseException {
         this.run(start, end, -1, maxQueueSize, symbol);
     }
 
@@ -460,7 +519,7 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/01 00:00:00");
+        Date start = format.parse("2018/07/11 00:00:00");
         Date end = format.parse("2018/07/12 00:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
@@ -516,7 +575,9 @@ public class BackTestService {
 //        this.policy = Policy.fix;
 //        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
-        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
+//        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
+
+        run(start, end, 6000, ETH_USDT);
         System.out.println("cycle times:" + this.countCycle);
         System.out.println("End at:" + new Date());
     }
