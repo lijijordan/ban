@@ -4,12 +4,14 @@ import com.jordan.ban.dao.ProfitStatisticsRepository;
 import com.jordan.ban.domain.AccountDto;
 import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.domain.CycleType;
+import com.jordan.ban.domain.StatisticRecordDto;
 import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Map;
 
 import static com.jordan.ban.common.Constant.USDT;
@@ -23,6 +25,10 @@ public class StatisticService {
 
     @Autowired
     private ProfitStatisticsRepository profitStatisticsRepository;
+
+
+    @Autowired
+    private TradeRecordService tradeRecordService;
 
     @Autowired
     private SlackService slackService;
@@ -46,9 +52,21 @@ public class StatisticService {
         }
         increase = moneyAfter - moneyBefore;
         increasePercent = (increase / Math.min(moneyAfter, moneyBefore)) * 100;
+        // Last 24 hours
+        Date date = new Date(System.currentTimeMillis() - 3600 * 24 * 1000);
+        StatisticRecordDto statisticRecordDto = tradeRecordService.queryAndStatisticTradeRecord(date);
+
         ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
                 .increase(increase).sumCoin(coinAfter).sumMoney(moneyAfter)
                 .increasePercent(increasePercent).platformA(accountA.getPlatform())
+                .sumCostMoney(statisticRecordDto.getSumCostMoney())
+                .sumProfit(statisticRecordDto.getSumProfit())
+                .avgA2BDiffPercent(statisticRecordDto.getAvgA2BDiffPercent())
+                .avgB2ADiffPercent(statisticRecordDto.getAvgB2ADiffPercent())
+                .sumA2BProfit(statisticRecordDto.getSumA2BProfit())
+                .sumB2AProfit(statisticRecordDto.getSumB2AProfit())
+                .avgA2BProfit(statisticRecordDto.getAvgA2BProfit())
+                .avgB2AProfit(statisticRecordDto.getAvgB2AProfit())
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);
         slackService.sendMessage("Statistic Profit", after.toString());
