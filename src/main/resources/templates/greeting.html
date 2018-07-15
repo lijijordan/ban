@@ -83,6 +83,12 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td><b th:text="${recordList.getAvgA2BDiffPercent()}"/></td>
         <td><b th:text="${recordList.getAvgB2ADiffPercent()}"/></td>
     </tr>
+
+    <tr>
+        <td>avg profit</td>
+        <td><b th:text="${recordList.getAvgA2BProfit()}"/></td>
+        <td><b th:text="${recordList.getAvgB2AProfit()}"/></td>
+    </tr>
 </table>
 </span>
 <br>

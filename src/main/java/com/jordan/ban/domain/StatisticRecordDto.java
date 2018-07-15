@@ -28,4 +28,7 @@ public class StatisticRecordDto {
     private double sumA2BProfit;
 
     private double sumB2AProfit;
+
+    private double avgA2BProfit;
+    private double avgB2AProfit;
 }
