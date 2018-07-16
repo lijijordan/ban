@@ -45,4 +45,19 @@ public class ProfitStatistics extends BaseEntity {
      */
     private double increasePercent;
 
+    private double sumCostMoney;
+
+    private double sumProfit;
+
+    private double avgA2BDiffPercent;
+
+    private double avgB2ADiffPercent;
+
+    private double sumA2BProfit;
+
+    private double sumB2AProfit;
+
+    private double avgA2BProfit;
+    private double avgB2AProfit;
+
 }

@@ -5,6 +5,8 @@ import com.jordan.ban.entity.TradeRecord;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
+
 public interface TradeRecordRepository extends CrudRepository<TradeRecord, Long> {
 
     @Query(value = "SELECT AVG(eat_diff_percent) FROM trade_record WHERE eat_diff_percent>0 AND accountA=?1 AND accountB=?2 AND symbol=?3",
@@ -12,4 +14,6 @@ public interface TradeRecordRepository extends CrudRepository<TradeRecord, Long>
     Double avgEatDiffPercent(long accountA, long accountB, String symbol);
 
     int countBy();
+
+    List<TradeRecord> findAllBy();
 }

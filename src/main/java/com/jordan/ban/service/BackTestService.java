@@ -61,6 +61,9 @@ public class BackTestService {
     @Autowired
     private WareHouseRepository wareHouseRepository;
 
+    @Autowired
+    private TradeRecordService tradeRecordService;
+
     // unit USDt
     private final static double START_MONEY = 1000;
 
@@ -110,9 +113,11 @@ public class BackTestService {
             this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
         } else {
             boolean isTrade = this.trade(tradeResult);
-            if (!isTrade) { // 交易的数据不记录到Counter
-                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-            }
+//            if (!isTrade) { // 交易的数据不记录到Counter
+            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+//            }
+
+
         }
     }
 
@@ -266,6 +271,10 @@ public class BackTestService {
                 log.info("Asserts:[{}] ready to come out!", minTradeVolume);
             }
         } else {
+            if (diffPercent < 0.01) {
+                log.info("Not enough diff!");
+                return false;
+            }
             if (diffPercent < upMax) {
                 return false;
             }
@@ -438,10 +447,23 @@ public class BackTestService {
         }
         increase = moneyAfter - moneyBefore;
         increasePercent = (increase / Math.min(moneyAfter, moneyBefore)) * 100;
+
+        StatisticRecordDto statisticRecordDto = this.tradeRecordService.queryAndStatisticTradeRecord();
+
         ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
                 .increase(increase).sumCoin(coinAfter).sumMoney(moneyAfter)
                 .increasePercent(increasePercent).platformA(accountA.getPlatform())
+                .sumCostMoney(statisticRecordDto.getSumCostMoney())
+                .sumProfit(statisticRecordDto.getSumProfit())
+                .avgA2BDiffPercent(statisticRecordDto.getAvgA2BDiffPercent())
+                .avgB2ADiffPercent(statisticRecordDto.getAvgB2ADiffPercent())
+                .sumA2BProfit(statisticRecordDto.getSumA2BProfit())
+                .sumB2AProfit(statisticRecordDto.getSumB2AProfit())
+                .avgA2BProfit(statisticRecordDto.getAvgA2BProfit())
+                .avgB2AProfit(statisticRecordDto.getAvgB2AProfit())
                 .platformB(accountB.getPlatform()).build();
+
+
         this.profitStatisticsRepository.save(after);
         // 恢复初始币量：
         double leftCoin = this.getAccount(Fcoin.PLATFORM_NAME, symbol).getVirtualCurrency();
@@ -519,8 +541,8 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/11 00:00:00");
-        Date end = format.parse("2018/07/12 00:00:00");
+        Date start = format.parse("2018/07/01 00:00:00");
+        Date end = format.parse("2018/07/14 00:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -577,11 +599,14 @@ public class BackTestService {
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
 //        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
 
+        run(start, end, 12000, ETH_USDT);
         run(start, end, 6000, ETH_USDT);
         System.out.println("cycle times:" + this.countCycle);
         System.out.println("End at:" + new Date());
+
     }
 }
+
 
 
 
