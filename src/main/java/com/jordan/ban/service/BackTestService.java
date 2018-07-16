@@ -96,6 +96,8 @@ public class BackTestService {
 
     private double wareHouseDiff = 0.006;
 
+    private float minTradeFloat = 0.025f;
+
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
     }
@@ -271,7 +273,7 @@ public class BackTestService {
                 log.info("Asserts:[{}] ready to come out!", minTradeVolume);
             }
         } else {
-            if (diffPercent < 0.01) {
+            if (diffPercent < minTradeFloat) {
                 log.info("Not enough diff!");
                 return false;
             }
@@ -541,8 +543,8 @@ public class BackTestService {
 
         this.policy = Policy.max;
 
-        Date start = format.parse("2018/07/01 00:00:00");
-        Date end = format.parse("2018/07/14 00:00:00");
+        Date start = format.parse("2018/07/14 00:00:00");
+        Date end = format.parse("2018/07/15 00:00:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -599,7 +601,7 @@ public class BackTestService {
 //        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
 //        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
 
-        run(start, end, 12000, ETH_USDT);
+//        run(start, end, 12000, ETH_USDT);
         run(start, end, 6000, ETH_USDT);
         System.out.println("cycle times:" + this.countCycle);
         System.out.println("End at:" + new Date());
