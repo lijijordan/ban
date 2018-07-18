@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleBinaryOperator;
 
@@ -52,14 +52,10 @@ public class Dragonex extends BaseMarket implements MarketParser {
     private String accessKeyId;
     private String accessKeySecret;
 
-    private CompletionService<FutureDepth> completionServcie;
-
     public Dragonex() {
         this.balanceCache = new ConcurrentHashMap();
         this.symbolCache = new ConcurrentHashMap();
         this.symbolIdCache = new ConcurrentHashMap();
-        ExecutorService pool = Executors.newFixedThreadPool(2);
-        completionServcie = new ExecutorCompletionService<FutureDepth>(pool);
         this.initSymbol();
     }
 
@@ -157,25 +153,9 @@ public class Dragonex extends BaseMarket implements MarketParser {
         depth.setSymbol(symbol);
         depth.setPlatform(PLATFORM_NAME);
         try {
-            completionServcie.submit(() -> getBids(symbol));
-            completionServcie.submit(() -> getAsks(symbol));
-            FutureDepth tickers1 = completionServcie.take().get();
-//            System.out.println(tickers1);
-            FutureDepth tickers2 = completionServcie.take().get();
-//            System.out.println(tickers2);
-            if (tickers1.getType().equals("ask")) {
-                depth.setAsks(tickers1.getTickers());
-            } else {
-                depth.setBids(tickers1.getTickers());
-            }
-            if (tickers2.getType().equals("ask")) {
-                depth.setAsks(tickers2.getTickers());
-            } else {
-                depth.setBids(tickers2.getTickers());
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+            depth.setBids(getBids(symbol));
+            depth.setAsks(getAsks(symbol));
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         return depth;
@@ -310,12 +290,13 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
 
-    private FutureDepth getBids(String symbol) throws JSONException {
-        return FutureDepth.builder().tickers(getOrders(symbol, BIDS_DEPTH_URL_TEMPLATE)).type("bid").build();
+    private List<Ticker> getBids(String symbol) throws JSONException {
+        return getOrders(symbol, BIDS_DEPTH_URL_TEMPLATE);
     }
 
-    private FutureDepth getAsks(String symbol) throws JSONException {
-        return FutureDepth.builder().tickers(getOrders(symbol, ASKS_DEPTH_URL_TEMPLATE)).type("ask").build();
+
+    private List<Ticker> getAsks(String symbol) throws JSONException {
+        return getOrders(symbol, ASKS_DEPTH_URL_TEMPLATE);
     }
 
     private List<Ticker> getOrders(String symbol, String asksDepthUrlTemplate) throws JSONException {
@@ -365,18 +346,17 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
 
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
-        String symbol = "ethusdt";
-//        dragonex.validateToken();
-
+        dragonex.validateToken();
 //        dragonex.setToken();
 
         /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
                 .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
         String orderId = dragonex.placeOrder(orderRequest);*/
 //        List<BalanceDto> balanceDtos = dragonex.getBalances();
+        System.out.println("done!");
 
         // get symbol
 //        System.out.println(dragonex.getSymbolId("ethusdt"));
@@ -390,15 +370,6 @@ public class Dragonex extends BaseMarket implements MarketParser {
         System.out.println("order id:" + orderId);
 
         System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));*/
-
-
-        while (true) {
-            long start = System.currentTimeMillis();
-            System.out.println(JSONUtil.toJsonString(dragonex.getDepth(symbol)));
-            System.out.println("cost time:" + (System.currentTimeMillis() - start));
-            Thread.sleep(1000);
-        }
-
 
     }
 
@@ -524,11 +495,3 @@ class DragonexOrderDetailResponse {
     String tradeVolume;
     String volume;
 }
-
-@Data
-@Builder
-class FutureDepth {
-    private String type;
-    private List<Ticker> tickers;
-}
-
