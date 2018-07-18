@@ -55,6 +55,9 @@ public class StatisticService {
         // Last 24 hours
         Date date = new Date(System.currentTimeMillis() - 3600 * 24 * 1000);
         StatisticRecordDto statisticRecordDto = tradeRecordService.queryAndStatisticTradeRecord(date);
+        if (statisticRecordDto == null) {
+            statisticRecordDto = StatisticRecordDto.builder().build();
+        }
 
         ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
                 .increase(increase).sumCoin(coinAfter).sumMoney(moneyAfter)

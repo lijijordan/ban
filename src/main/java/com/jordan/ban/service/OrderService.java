@@ -7,6 +7,7 @@ import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.Order;
 import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.entity.TradeStatistics;
+import com.jordan.ban.exception.ApiException;
 import com.jordan.ban.exception.StatisticException;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.TradeContext;
@@ -174,6 +175,26 @@ public class OrderService {
         }
     }
 
+    private String placeOrder(OrderRequest orderRequest, MarketParser market, int times) {
+        String orderId = "";
+        int i = 0;
+        while (i < times) {
+            try {
+                orderId = market.placeOrder(orderRequest);
+                return orderId;
+            } catch (ApiException e) {
+                try {
+                    log.info("After 2 seconds, try to place order again.");
+                    Thread.sleep(2000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                e.printStackTrace();
+            }
+        }
+        return orderId;
+    }
+
 
     /**
      * 创建订单
@@ -188,7 +209,7 @@ public class OrderService {
         // debug
         /*log.info("market:{},request:{}", market.getName(), orderRequest.toString());
         return null;*/
-        String orderAid = market.placeOrder(orderRequest);
+        String orderAid = this.placeOrder(orderRequest, market, tradeContext.getOrderTryTimes());
         if (StringUtils.isEmpty(orderAid)) {
             slackService.sendMessage("Order", "Create Order failed！");
             throw new TradeException("Create Order failed！");

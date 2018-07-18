@@ -61,6 +61,8 @@ public class TradeController {
         System.out.println("query date:" + date);
         model.addAttribute("greeting", Greeting.builder()
                 .avgFloatPercent(this.tradeContext.getAvgFloatPercent())
+                .wareHouseDiff(tradeContext.getWareHouseDiff())
+                .minTradeFloat(tradeContext.getMinTradeFloat())
                 .moveBackMetrics(tradeContext.getDownPoint())
                 .upMax(tradeCounter.getMaxDiffPercent(true))
                 .downMax(tradeCounter.getMaxDiffPercent(false))
@@ -100,6 +102,8 @@ public class TradeController {
         this.tradeContext.setUpPoint((float) greeting.getMoveMetrics());
         this.tradeContext.setDownPoint((float) greeting.getMoveBackMetrics());
         this.tradeContext.setAvgFloatPercent(greeting.getAvgFloatPercent());
+        this.tradeContext.setMinTradeFloat(greeting.getMinTradeFloat());
+        this.tradeContext.setWareHouseDiff(greeting.getWareHouseDiff());
         return "result";
     }
 

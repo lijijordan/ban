@@ -20,4 +20,7 @@ public class Greeting {
 
     private float avgFloatPercent;
 
+    private double wareHouseDiff;
+    private float minTradeFloat;
+
 }

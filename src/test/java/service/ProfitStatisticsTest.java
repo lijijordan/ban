@@ -6,6 +6,7 @@ import com.jordan.ban.dao.OrderRepository;
 import com.jordan.ban.dao.ProfitStatisticsRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.CycleType;
+import com.jordan.ban.domain.StatisticRecordDto;
 import com.jordan.ban.entity.Order;
 import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.entity.TradeRecord;
@@ -27,7 +28,6 @@ public class ProfitStatisticsTest {
 
     @Autowired
     private ProfitStatisticsRepository profitStatisticsRepository;
-
 
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
@@ -63,5 +63,5 @@ public class ProfitStatisticsTest {
         log.info(list.toString());
         System.out.println(new Date());
     }
-
+    
 }

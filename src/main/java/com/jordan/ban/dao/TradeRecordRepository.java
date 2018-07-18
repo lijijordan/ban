@@ -18,4 +18,6 @@ public interface TradeRecordRepository extends CrudRepository<TradeRecord, Long>
     List<TradeRecord> findAllByCreateTime(Date createTime);
 
     int countBy();
+
+    List<TradeRecord> findAllBy();
 }

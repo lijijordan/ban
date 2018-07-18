@@ -1,8 +1,10 @@
 package com.jordan.ban.service;
 
 import com.jordan.ban.dao.TradeRecordRepository;
+import com.jordan.ban.dao.WareHouseRepository;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.TradeRecord;
+import com.jordan.ban.entity.WareHouse;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
 import com.jordan.ban.market.TradeContext;
@@ -13,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,6 +45,9 @@ public class TradeService {
     @Autowired
     private TradeRecordRepository tradeRecordRepository;
 
+    @Autowired
+    private WareHouseRepository wareHouseRepository;
+
     public synchronized void preTrade(MockTradeResultIndex tradeResult) {
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
@@ -55,20 +62,6 @@ public class TradeService {
             if (!isTrade) { // 交易的数据不记录到Counter
                 this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
             }
-        }
-    }
-
-    private void refineFixUpAndDown() {
-        log.info("Refine up down point!!");
-        double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
-        if (a2b != 0) {
-            float downPercent = (float) (a2b * (1 - tradeContext.getAvgFloatPercent()));
-            tradeContext.setDownPoint(downPercent);
-        }
-        double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
-        if (b2a != 0) {
-            float upPercent = (float) (b2a * (1 + tradeContext.getAvgFloatPercent()));
-            tradeContext.setUpPoint(upPercent);
         }
     }
 
@@ -119,17 +112,12 @@ public class TradeService {
             minTradeVolume = canBuyCoin;
         }
 
-        // 每次账户A的币全部交易完成，标志一个周期结束，重新计算avg level.
-        if (accountA.getVirtualCurrency() < MIN_TRADE_AMOUNT) {
-            refineFixUpAndDown();
-        }
-
         if (minTradeVolume <= 0) {
             log.info("trade volume is 0!");
             return false;
         }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
-//            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
+            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
             return false;
         }
 
@@ -171,20 +159,17 @@ public class TradeService {
         // FIXME:Do not use direct A2B;
         // Validate
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
-            if (diffPercent < tradeContext.getDownPoint()) {
+            // 检查仓位，准备出库
+            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            if (minTradeVolume == 0) {
+                log.info("Not any assets!");
                 return false;
             } else {
-                if (diffPercent < downMax) {
-                    return false;
-                }
+                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
             }
         } else {
-            if (diffPercent < tradeContext.getUpPoint()) {
+            if (diffPercent < this.tradeContext.getMinTradeFloat() || diffPercent < upMax) {
                 return false;
-            } else {
-                if (diffPercent < upMax) {
-                    return false;
-                }
             }
         }
         log.info("============================ PLACE ORDER ============================");
@@ -231,7 +216,66 @@ public class TradeService {
         record.setDownPercent(tradeContext.getDownPoint());
         record.setUpPercent(tradeContext.getUpPoint());
         this.tradeRecordRepository.save(record);
-        log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start) * 1000);
+        // build warehouse
+        if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
+            this.buildWareHouse(record);
+        }
+        log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start));
         return true;
+    }
+
+    private void buildWareHouse(TradeRecord tradeRecord) {
+        double diffOut = (tradeRecord.getEatDiffPercent() * -1) + this.tradeContext.getWareHouseDiff();
+        wareHouseRepository.save(WareHouse.builder().diffPercentIn(tradeRecord.getEatDiffPercent())
+                .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume())
+                .diffPercentOut(diffOut)
+                .build());
+    }
+
+    public double checkAndOutWareHouse(double comeDiffPercent, double comeVolume) {
+        double volume = 0;
+        List<WareHouse> wareHouses = this.wareHouseRepository.findAllByStateIsNot(WareHouseState.out);
+        wareHouses.sort((o1, o2) -> {
+            if (o1.getDiffPercentOut() >= o2.getDiffPercentOut()) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+        if (wareHouses != null && wareHouses.size() > 0) {
+            for (int i = 0; i < wareHouses.size(); i++) {
+                WareHouse wareHouse = wareHouses.get(i);
+                // 进入购买位置
+                if (comeDiffPercent > wareHouse.getDiffPercentOut()) {
+                    double out = this.outWareHouse(comeVolume, wareHouse);
+                    volume += out;
+                    comeVolume = comeVolume - out;
+                    if (comeVolume <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        return volume;
+    }
+
+    private double outWareHouse(double comeVolume, WareHouse wareHouse) {
+        double result = 0;
+        // 可出库数量
+        double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
+        if (comeVolume >= leftVolume) {  // 剩余库存全部出去
+            wareHouse.setState(WareHouseState.out);
+            wareHouse.setVolumeOut(leftVolume + wareHouse.getVolumeOut());
+            result += leftVolume;
+            wareHouse.setTimeOut(new Date());
+            this.wareHouseRepository.save(wareHouse);
+        } else { // 部分出库
+            wareHouse.setState(WareHouseState.partOut);
+            wareHouse.setVolumeOut(comeVolume + wareHouse.getVolumeOut());
+            result += comeVolume;
+            wareHouse.setTimeOut(new Date());
+            this.wareHouseRepository.save(wareHouse);
+        }
+        return result;
     }
 }

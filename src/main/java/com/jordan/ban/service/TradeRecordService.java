@@ -1,30 +1,15 @@
 package com.jordan.ban.service;
 
-import com.jordan.ban.dao.OrderRepository;
-import com.jordan.ban.dao.ProfitStatisticsRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
-import com.jordan.ban.dao.TradeStatisticsRepository;
-import com.jordan.ban.domain.*;
-import com.jordan.ban.entity.Order;
-import com.jordan.ban.entity.ProfitStatistics;
+import com.jordan.ban.domain.StatisticRecordDto;
+import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.entity.TradeRecord;
-import com.jordan.ban.entity.TradeStatistics;
-import com.jordan.ban.exception.StatisticException;
-import com.jordan.ban.exception.TradeException;
-import com.jordan.ban.market.TradeContext;
-import com.jordan.ban.market.parser.MarketFactory;
-import com.jordan.ban.market.parser.MarketParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-
-import static com.jordan.ban.common.Constant.USDT;
 
 @Slf4j
 @Service

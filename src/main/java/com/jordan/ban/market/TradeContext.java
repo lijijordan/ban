@@ -22,6 +22,35 @@ public class TradeContext {
 
     private float avgFloatPercent = 0.1f;
 
+    private double wareHouseDiff = 0.006;
+    private float minTradeFloat = 0.025f;
+
+    private int orderTryTimes = 5;
+
+    public int getOrderTryTimes() {
+        return orderTryTimes;
+    }
+
+    public void setOrderTryTimes(int orderTryTimes) {
+        this.orderTryTimes = orderTryTimes;
+    }
+
+    public float getMinTradeFloat() {
+        return minTradeFloat;
+    }
+
+    public void setMinTradeFloat(float minTradeFloat) {
+        this.minTradeFloat = minTradeFloat;
+    }
+
+    public double getWareHouseDiff() {
+        return wareHouseDiff;
+    }
+
+    public void setWareHouseDiff(double wareHouseDiff) {
+        this.wareHouseDiff = wareHouseDiff;
+    }
+
     public float getAvgFloatPercent() {
         return avgFloatPercent;
     }

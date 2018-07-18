@@ -3,6 +3,7 @@ package com.jordan.ban.service;
 import com.jordan.ban.dao.AccountRepository;
 import com.jordan.ban.dao.BalanceRepository;
 import com.jordan.ban.dao.TradeRecordRepository;
+import com.jordan.ban.dao.WareHouseRepository;
 import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.entity.Account;
 import com.jordan.ban.market.parser.*;
@@ -31,6 +32,9 @@ public class AccountService {
 
     @Autowired
     private BalanceRepository balanceRepository;
+
+    @Autowired
+    private WareHouseRepository wareHouseRepository;
 
     /**
      * // huobi vs dragonex
@@ -87,6 +91,7 @@ public class AccountService {
     public void emptyAccount() {
         this.tradeRecordRepository.deleteAll();
         this.accountRepository.deleteAll();
+        this.wareHouseRepository.deleteAll();
     }
 
     public void initAccount(String market1, String market2, String symbol, double price) {
