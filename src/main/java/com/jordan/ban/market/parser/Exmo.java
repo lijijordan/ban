@@ -94,7 +94,12 @@ public class Exmo extends BaseMarket implements MarketParser {
     }
 
 
-    public static void main(String[] args) {
-        System.out.println(JSONUtil.toJsonString(new Exmo().getDepth("EOSUSDT")));
+    public static void main(String[] args) throws InterruptedException {
+        while (true) {
+            long start = System.currentTimeMillis();
+            System.out.println(JSONUtil.toJsonString(new Exmo().getDepth("EOSUSDT")));
+            System.out.println("cost time:" + (System.currentTimeMillis() - start));
+            Thread.sleep(1000);
+        }
     }
 }
