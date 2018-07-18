@@ -346,10 +346,10 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
-        dragonex.validateToken();
+//        dragonex.validateToken();
 //        dragonex.setToken();
 
         /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
@@ -371,6 +371,13 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
         System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));*/
 
+
+        while (true) {
+            long start = System.currentTimeMillis();
+            System.out.println(JSONUtil.toJsonString(dragonex.getDepth("ethusdt")));
+            System.out.println("cost time:" + (System.currentTimeMillis() - start));
+            Thread.sleep(1000);
+        }
     }
 
 
