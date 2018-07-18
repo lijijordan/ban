@@ -44,8 +44,6 @@ sum coin: <b th:text="${sumCoin}"/>
 <p name="textarea" th:text="'Suggest: ' + ${suggest} "/>
 <span name="textarea" th:text="'max up: ' + ${greeting.upMax} "/>
 <span name="textarea" th:text="'max down: ' + ${greeting.downMax} "/>
-<span name="textarea" th:text="'warehouse diff: ' + ${greeting.getWareHouseDiff()} "/>
-
 
 <form action="#" th:action="@{/greeting}" th:object="${greeting}" method="post">
     <p>UP Metrics: <input id="moveMetrics" name="textarea" type="text" th:field="*{moveMetrics}"/>
@@ -53,9 +51,9 @@ sum coin: <b th:text="${sumCoin}"/>
     <p>avg float Metrics: <input id="avgFloatPercent" name="textarea" type="text"
                                  th:field="${greeting.avgFloatPercent}"/></p>
     <p>Min trade float: <input id="minTradeFloat" name="textarea" type="text"
-                               th:field="${greeting.getMinTradeFloat()}"/>
+                               th:field="${greeting.minTradeFloat}"/>
         Warehouse diff: <input id="wareHouseDiff" name="textarea" type="text"
-                               th:field="${greeting.getWareHouseDiff()}"/>
+                               th:field="${greeting.wareHouseDiff}"/>
     </p>
     <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
 </form>
