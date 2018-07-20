@@ -90,6 +90,7 @@ public class TradeService {
         double minTradeVolume = tradeResult.getEatTradeVolume();
         double buyPrice = tradeResult.getBuyPrice();
         double sellPrice = tradeResult.getSellPrice();
+        double diffPercent = tradeResult.getEatPercent();
         double canBuyCoin;
         //计算最小量
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
@@ -120,6 +121,27 @@ public class TradeService {
             log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
             return false;
         }
+        double upMax = tradeCounter.getMaxDiffPercent(true);
+        double downMax = tradeCounter.getMaxDiffPercent(false);
+        if (upMax == 0 || downMax == 0) {
+            log.info("Counter queue is not ready!");
+            return false;
+        }
+        // Validate
+        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+            // 检查仓位，准备出库
+            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            if (minTradeVolume == 0) {
+                log.info("Not any assets!");
+                return false;
+            } else {
+                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
+            }
+        } else {
+            if (diffPercent < this.tradeContext.getMinTradeFloat() || diffPercent < upMax) {
+                return false;
+            }
+        }
 
 
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
@@ -139,39 +161,19 @@ public class TradeService {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-//            log.info("Money is not enough！!");
+            log.info("Money is not enough！!");
             return false;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-//            log.info("Coin is not enough！!");
+            log.info("Coin is not enough！!");
             return false;
         }
 //        log.info("============================ VALIDATE ============================");
-        double upMax = tradeCounter.getMaxDiffPercent(true);
-        double downMax = tradeCounter.getMaxDiffPercent(false);
-        if (upMax == 0 || downMax == 0) {
-            log.info("Counter queue is not ready!");
-            return false;
-        }
+
 
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
-        double diffPercent = tradeResult.getEatPercent();
         // FIXME:Do not use direct A2B;
-        // Validate
-        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
-            // 检查仓位，准备出库
-            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
-            if (minTradeVolume == 0) {
-                log.info("Not any assets!");
-                return false;
-            } else {
-                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
-            }
-        } else {
-            if (diffPercent < this.tradeContext.getMinTradeFloat() || diffPercent < upMax) {
-                return false;
-            }
-        }
+
         log.info("============================ PLACE ORDER ============================");
         long start = System.currentTimeMillis();
         double profit = moneyAfter - moneyBefore;
