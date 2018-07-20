@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+import static com.jordan.ban.common.Constant.ETH_USDT;
+
 @Slf4j
 @Service
 public class ConsumerApplication {
@@ -51,7 +53,10 @@ public class ConsumerApplication {
 
     private boolean validateMinTradeVolume(String json) {
         MockTradeResultIndex data = JSONUtil.getEntity(json, MockTradeResultIndex.class);
-        return data.getTradeVolume() > TradeService.MIN_TRADE_AMOUNT;
+        if (data.getSymbol().equals(ETH_USDT)) {
+            return data.getTradeVolume() > TradeService.MIN_TRADE_AMOUNT;
+        }
+        return true;
     }
 
     private void doDepthDiff(String json) {
