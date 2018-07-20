@@ -36,6 +36,8 @@ public class TradeServiceTest {
     @Autowired
     private AccountService accountService;
 
+
+
     @Before
     public void createAccount() {
 //        System.setProperty("http.proxyHost", "localhost");
@@ -108,4 +110,6 @@ public class TradeServiceTest {
                 .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getBalance() : 0).build();
         Assert.assertNotNull(accountA);
     }
+
+
 }
