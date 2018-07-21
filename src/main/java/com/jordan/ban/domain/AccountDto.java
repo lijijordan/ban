@@ -32,4 +32,6 @@ public class AccountDto {
 
     private String symbol;
 
+    private double frozenMoney;
+
 }

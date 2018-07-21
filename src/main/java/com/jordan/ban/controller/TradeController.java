@@ -73,12 +73,14 @@ public class TradeController {
         String coinName = "eth";
         AccountDto accountA = AccountDto.builder()
                 .frozen(balanceA.get(coinName).getFrozen())
-                .money(balanceA.get("usdt").getAvailable()).platform(Fcoin.PLATFORM_NAME).symbol("ethusdt")
-                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getAvailable() : 0).build();
+                .money(balanceA.get("usdt").getBalance()).platform(Fcoin.PLATFORM_NAME).symbol("ethusdt")
+                .frozenMoney(balanceA.get("usdt").getFrozen())
+                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getBalance() : 0).build();
         AccountDto accountB = AccountDto.builder()
                 .frozen(balanceB.get(coinName).getFrozen())
-                .money(balanceB.get("usdt").getAvailable()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
-                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
+                .money(balanceB.get("usdt").getBalance()).platform(Dragonex.PLATFORM_NAME).symbol("ethusdt")
+                .frozenMoney(balanceB.get("usdt").getFrozen())
+                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getBalance() : 0).build();
 
 
         String suggestText = this.tradeCounter.getSuggestDiffPercent() + "["

@@ -12,8 +12,9 @@
     <tr>
         <td>platform</td>
         <td>symbol</td>
-        <td>money</td>
-        <td>coin</td>
+        <td>USDT</td>
+        <td>frozen</td>
+        <td>ETH</td>
         <td>frozen</td>
     </tr>
 
@@ -21,6 +22,7 @@
         <td th:text="${accountA.platform}"></td>
         <td th:text="${accountA.symbol}"></td>
         <td th:text="${accountA.money}"></td>
+        <td th:text="${accountA.frozenMoney}"></td>
         <td th:text="${accountA.virtualCurrency}"></td>
         <td th:text="${accountA.frozen}"></td>
     </tr>
@@ -29,6 +31,7 @@
         <td th:text="${accountB.platform}"></td>
         <td th:text="${accountB.symbol}"></td>
         <td th:text="${accountB.money}"></td>
+        <td th:text="${accountA.frozenMoney}"></td>
         <td th:text="${accountB.virtualCurrency}"></td>
         <td th:text="${accountB.frozen}"></td>
     </tr>
