@@ -41,8 +41,4 @@ public class BackTestServiceTest {
         System.out.println(grid.getHigh());
     }
 
-    @Test
-    public void testMatch() {
-        System.out.println(this.backTestService.matchGrid(0.021, 0.1));;
-    }
 }

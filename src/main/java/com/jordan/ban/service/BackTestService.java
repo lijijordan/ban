@@ -95,9 +95,11 @@ public class BackTestService {
 
     private int countCycle = 0;
 
-    private double wareHouseDiff = 0.006;
+    private double wareHouseDiff = 0.008;
 
     private float minTradeFloat = 0.007f;
+
+    private Grid grid;
 
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
@@ -111,20 +113,15 @@ public class BackTestService {
             log.info("Trade volume:[{}] less than min trade amount.", tradeResult.getTradeVolume());
             return;
         }
-        this.trade(tradeResult);
-    }
-
-    private void setUpAndDown() {
-        log.info("Refine up down point!!");
-        double a2b = this.tradeCounter.getSuggestDiffPercent(TradeDirect.A2B);
-        if (a2b != 0) {
-            this.downPercent = (float) (a2b * (1 - avgFloatPercent));
+        if (!this.tradeCounter.isFull()) {
+            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
+            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+        } else {
+            boolean isTrade = this.trade(tradeResult);
+            if (!isTrade) { // 交易的数据不记录到Counter
+                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+            }
         }
-        double b2a = this.tradeCounter.getSuggestDiffPercent(TradeDirect.B2A);
-        if (b2a != 0) {
-            this.upPercent = (float) (b2a * (1 + avgFloatPercent));
-        }
-        countCycle++;
     }
 
     private boolean trade(MockTradeResultIndex tradeResult) {
@@ -183,13 +180,30 @@ public class BackTestService {
 
         // 正向匹配网格
         if (TradeDirect.B2A == tradeResult.getTradeDirect()) {
-            minTradeVolume = this.matchGrid(diffPercent, minTradeVolume);
+            double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
+            grid = this.gridRepository.find(diffPercent, ETH_USDT);
+            minTradeVolume = this.matchGrid(grid, minTradeVolume);
             log.info("match grid volume:{}", minTradeVolume);
             if (minTradeVolume <= MIN_TRADE_AMOUNT) {
 //            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
                 return false;
             }
+            if (diffPercent < upMax) {
+                return false;
+            }
         }
+        // 逆向出仓
+        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+            // 检查仓位，准备出库
+            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            if (minTradeVolume == 0) {
+                log.info("Not any assets!");
+                return false;
+            } else {
+                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
+            }
+        }
+
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
@@ -206,26 +220,17 @@ public class BackTestService {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-//            log.info("Money is not enough！!");
+            log.info("Money is not enough！!");
+//            throw new TradeException("Not enough money.");
             return false;
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-//            log.info("Coin is not enough！!");
+            log.info("Coin is not enough！!");
+//            throw new TradeException("Not enough coin.");
             return false;
         }
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
 
-
-        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
-            // 检查仓位，准备出库
-            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
-            if (minTradeVolume == 0) {
-                log.info("Not any assets!");
-                return false;
-            } else {
-                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
-            }
-        }
         double profit = moneyAfter - moneyBefore;
         log.info("============================ PLACE ORDER ============================");
         OrderRequest buyOrder = OrderRequest.builder().amount(minTradeVolume)
@@ -277,7 +282,7 @@ public class BackTestService {
         totalCostMoney = totalCostMoney + sellCost + buyCost;
         log.info("Record done!");
         if (profit < 0) {
-            this.countProfit++;
+            this.countProfit += minTradeVolume;
             this.sumProfit += profit;
         }
         return true;
@@ -286,7 +291,7 @@ public class BackTestService {
     private void buildWareHouse(TradeRecord tradeRecord) {
         double diffOut = (tradeRecord.getEatDiffPercent() * -1) + this.wareHouseDiff;
         wareHouseRepository.save(WareHouse.builder().diffPercentIn(tradeRecord.getEatDiffPercent())
-                .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume())
+                .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume()).gridId(this.grid.getID())
                 .diffPercentOut(diffOut)
                 .build());
     }
@@ -336,7 +341,7 @@ public class BackTestService {
             this.wareHouseRepository.save(wareHouse);
         }
         // 恢复网格数据
-        Grid grid = this.gridRepository.find((comeDiffPercent * -1) + wareHouseDiff, ETH_USDT);
+        Grid grid = this.gridRepository.findById(wareHouse.getGridId()).get();
         if (grid == null) {
             throw new RuntimeException("Can not find any grid!");
         }
@@ -501,15 +506,15 @@ public class BackTestService {
     }
 
     public void initGrid(double totalCoin) {
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.005).high(0.01).quota(0.05f).volume(totalCoin * 0.05).lastVolume(totalCoin * 0.05).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.01).high(0.02).quota(0.1f).volume(totalCoin * 0.1).lastVolume(totalCoin * 0.1).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.02).high(0.03).quota(0.6f).volume(totalCoin * 0.6).lastVolume(totalCoin * 0.6).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(0.04).quota(0.2f).volume(totalCoin * 0.2).lastVolume(totalCoin * 0.2).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.04).high(1).quota(0.05f).volume(totalCoin * 0.05).lastVolume(totalCoin * 0.05).build());
+
+        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0).high(0.03).quota(0.5f).volume(totalCoin * 0.5).lastVolume(totalCoin * 0.5).build());
+        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(1).quota(0.5f).volume(totalCoin * 0.5).lastVolume(totalCoin * 0.5).build());
+//        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.02).high(0.03).quota(0.6f).volume(totalCoin * 0.6).lastVolume(totalCoin * 0.6).build());
+//        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(0.04).quota(0.2f).volume(totalCoin * 0.2).lastVolume(totalCoin * 0.2).build());
+//        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.04).high(1).quota(0.05f).volume(totalCoin * 0.05).lastVolume(totalCoin * 0.05).build());
     }
 
-    public double matchGrid(double diffPercent, double tradeVolume) {
-        Grid grid = this.gridRepository.find(diffPercent, ETH_USDT);
+    public double matchGrid(Grid grid, double tradeVolume) {
         if (grid == null) {
             return 0;
         }
@@ -587,7 +592,7 @@ public class BackTestService {
 //        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
 
 //        run(start, end, 12000, ETH_USDT);
-        run(start, end, -1, ETH_USDT);
+        run(start, end, 6000, ETH_USDT);
         System.out.println("End at:" + new Date());
 
     }

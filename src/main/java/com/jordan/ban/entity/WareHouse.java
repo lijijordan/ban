@@ -37,4 +37,6 @@ public class WareHouse {
 
     private Date timeOut;
 
+    private Long gridId;
+
 }
