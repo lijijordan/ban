@@ -89,15 +89,9 @@ public class BackTestService {
 
     private int avgQueueSize;
 
-    private float avgFloatPercent = 0.2f;
-
     private int split = 1;
 
-    private int countCycle = 0;
-
-    private double wareHouseDiff = 0.008;
-
-    private float minTradeFloat = 0.007f;
+    private double wareHouseDiff = 0.006;
 
     private Grid grid;
 
@@ -113,15 +107,17 @@ public class BackTestService {
             log.info("Trade volume:[{}] less than min trade amount.", tradeResult.getTradeVolume());
             return;
         }
-        if (!this.tradeCounter.isFull()) {
-            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
-            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-        } else {
-            boolean isTrade = this.trade(tradeResult);
-            if (!isTrade) { // 交易的数据不记录到Counter
-                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
-            }
-        }
+
+        this.trade(tradeResult);
+//        if (!this.tradeCounter.isFull()) {
+//            log.info("Pool is not ready [{}]", this.tradeCounter.getSize());
+//            this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+//        } else {
+//            boolean isTrade = this.trade(tradeResult);
+//            if (!isTrade) { // 交易的数据不记录到Counter
+//                this.tradeCounter.count(tradeResult.getTradeDirect(), tradeResult.getEatPercent());
+//            }
+//        }
     }
 
     private boolean trade(MockTradeResultIndex tradeResult) {
@@ -180,15 +176,10 @@ public class BackTestService {
 
         // 正向匹配网格
         if (TradeDirect.B2A == tradeResult.getTradeDirect()) {
-            double upMax = tradeCounter.getMaxDiffPercent(TradeDirect.B2A);
-            grid = this.gridRepository.find(diffPercent, ETH_USDT);
-            minTradeVolume = this.matchGrid(grid, minTradeVolume);
+            minTradeVolume = this.matchGrid(diffPercent, minTradeVolume);
             log.info("match grid volume:{}", minTradeVolume);
             if (minTradeVolume <= MIN_TRADE_AMOUNT) {
-//            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-                return false;
-            }
-            if (diffPercent < upMax) {
+                log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
                 return false;
             }
         }
@@ -346,6 +337,7 @@ public class BackTestService {
             throw new RuntimeException("Can not find any grid!");
         }
         grid.setLastVolume(grid.getLastVolume() + result);
+        log.info("fill back grid data:{}", grid);
         this.gridRepository.save(grid);
         return result;
     }
@@ -436,9 +428,9 @@ public class BackTestService {
         this.profitStatisticsRepository.save(after);
         // 恢复初始币量：
         double leftCoin = this.getAccount(Fcoin.PLATFORM_NAME, symbol).getVirtualCurrency();
-        double sellMoney = leftCoin * this.sumProfit / this.countProfit;
+        double sellMoney = leftCoin * statisticRecordDto.getAvgA2BProfit();
         log.info("left money:{}", sellMoney);
-        double profit = this.totalCostMoney * 0.001 + moneyAfter - this.totalMoneyBefore + sellMoney;
+        double profit = this.totalCostMoney * 0.001 + (moneyAfter - this.totalMoneyBefore) + sellMoney;
 
         BackTestStatistics backTestStatistics = BackTestStatistics.builder().totalCostMoney(totalCostMoney).platformA(platformA)
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
@@ -454,7 +446,6 @@ public class BackTestService {
         this.downPercent = downPercent;
         this.avgQueueSize = avgQueueSize;
         this.split = split;
-        this.avgFloatPercent = avgFloat;
         this.run(start, end, -1, maxQueueSize, symbol);
     }
 
@@ -507,15 +498,18 @@ public class BackTestService {
 
     public void initGrid(double totalCoin) {
 
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0).high(0.03).quota(0.5f).volume(totalCoin * 0.5).lastVolume(totalCoin * 0.5).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(1).quota(0.5f).volume(totalCoin * 0.5).lastVolume(totalCoin * 0.5).build());
+        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.02).high(0.03).quota(0.1f).volume(totalCoin * 0.1).lastVolume(totalCoin * 0.1).build());
+        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(0.04).quota(0.5f).volume(totalCoin * 0.5).lastVolume(totalCoin * 0.5).build());
+        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.04).high(1).quota(0.4f).volume(totalCoin * 0.4).lastVolume(totalCoin * 0.4).build());
 //        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.02).high(0.03).quota(0.6f).volume(totalCoin * 0.6).lastVolume(totalCoin * 0.6).build());
 //        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(0.04).quota(0.2f).volume(totalCoin * 0.2).lastVolume(totalCoin * 0.2).build());
 //        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.04).high(1).quota(0.05f).volume(totalCoin * 0.05).lastVolume(totalCoin * 0.05).build());
     }
 
-    public double matchGrid(Grid grid, double tradeVolume) {
+    public double matchGrid(double diffPercent, double tradeVolume) {
+        grid = this.gridRepository.find(diffPercent, ETH_USDT);
         if (grid == null) {
+            log.info("no grid");
             return 0;
         }
         double val = grid.getLastVolume(), result;
@@ -533,8 +527,8 @@ public class BackTestService {
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-        Date start = format.parse("2018/07/19 00:00:00");
-        Date end = format.parse("2018/07/20 00:00:00");
+        Date start = format.parse("2018/07/29 07:00:00");
+        Date end = format.parse("2018/07/30 08:50:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;

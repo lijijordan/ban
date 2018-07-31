@@ -69,8 +69,8 @@ public class TradeRecordService {
         avgB2ADiffPercent = sumB2ADiffPercent / countB2A;
         avgA2BDiffPercent = sumA2BDiffPercent / countA2B;
 
-        avgA2BProfit = sumA2BVolume / countA2B;
-        avgB2AProfit = sumB2AVolume / countB2A;
+        avgA2BProfit = sumA2BProfit / sumA2BVolume;
+        avgB2AProfit = sumB2AProfit / sumB2AVolume;
         return StatisticRecordDto.builder().recordList(list).sumA2BProfit(sumA2BProfit).sumB2AProfit(sumB2AProfit)
                 .sumCostMoney(sumCostMoney).sumProfit(sumProfit).avgA2BProfit(avgA2BProfit).avgB2AProfit(avgB2AProfit)
                 .avgA2BDiffPercent(avgA2BDiffPercent).avgB2ADiffPercent(avgB2ADiffPercent).build();
