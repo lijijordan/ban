@@ -54,6 +54,8 @@ public class ElasticSearchClient {
             .build();
     private static TransportClient client;
 
+    private static final String ES_HOST = "localhost";
+
 
     private static ExecutorService executor = Executors.newFixedThreadPool(5);
 
@@ -73,7 +75,7 @@ public class ElasticSearchClient {
      */
     public static void initClient() throws UnknownHostException {
         client = new PreBuiltTransportClient(Settings.EMPTY)
-                .addTransportAddress(new TransportAddress(InetAddress.getByName("localhost"), 9300));
+                .addTransportAddress(new TransportAddress(InetAddress.getByName(ES_HOST), 9300));
 
     }
 
