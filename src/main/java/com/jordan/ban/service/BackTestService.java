@@ -498,13 +498,18 @@ public class BackTestService {
 
     public void initGrid(double totalCoin) {
 
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.02).high(0.03).quota(0.1f).volume(totalCoin * 0.1).lastVolume(totalCoin * 0.1).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(0.04).quota(0.5f).volume(totalCoin * 0.5).lastVolume(totalCoin * 0.5).build());
-        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.04).high(1).quota(0.4f).volume(totalCoin * 0.4).lastVolume(totalCoin * 0.4).build());
-//        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.02).high(0.03).quota(0.6f).volume(totalCoin * 0.6).lastVolume(totalCoin * 0.6).build());
-//        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.03).high(0.04).quota(0.2f).volume(totalCoin * 0.2).lastVolume(totalCoin * 0.2).build());
-//        this.gridRepository.save(Grid.builder().symbol(ETH_USDT).low(0.04).high(1).quota(0.05f).volume(totalCoin * 0.05).lastVolume(totalCoin * 0.05).build());
+        this.initGrid(ETH_USDT, 0.02f, 0.03f, 0.05f, totalCoin);
+        this.initGrid(ETH_USDT, 0.03f, 0.04f, 0.2f, totalCoin);
+        this.initGrid(ETH_USDT, 0.04f, 0.05f, 0.3f, totalCoin);
+        this.initGrid(ETH_USDT, 0.05f, 0.06f, 0.3f, totalCoin);
+        this.initGrid(ETH_USDT, 0.06f, 1f, 0.15f, totalCoin);
     }
+
+    private void initGrid(String symbol, float low, float high, float quota, double totalCoin) {
+        this.gridRepository.save(Grid.builder().symbol(symbol).low(low).high(high).quota(quota).volume(totalCoin * quota)
+                .lastVolume(totalCoin * quota).build());
+    }
+
 
     public double matchGrid(double diffPercent, double tradeVolume) {
         grid = this.gridRepository.find(diffPercent, ETH_USDT);
@@ -527,8 +532,8 @@ public class BackTestService {
     public void run() throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-        Date start = format.parse("2018/07/29 07:00:00");
-        Date end = format.parse("2018/07/30 08:50:00");
+        Date start = format.parse("2018/07/25 23:00:00");
+        Date end = format.parse("2018/07/31 23:50:00");
 //        Date start = format.parse("2018/07/01 00:00:29");
 //        Date end = format.parse("2018/07/04 23:59:00");
 //        this.moveMetric = 0.02692;
@@ -586,7 +591,11 @@ public class BackTestService {
 //        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
 
 //        run(start, end, 12000, ETH_USDT);
+        run(start, end, 6000, LTC_USDT);
+        run(start, end, 6000, BCH_USDT);
         run(start, end, 6000, ETH_USDT);
+        run(start, end, 6000, BTC_USDT);
+        run(start, end, 6000, XRP_USDT);
         System.out.println("End at:" + new Date());
 
     }
