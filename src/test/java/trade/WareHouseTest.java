@@ -26,8 +26,6 @@ public class WareHouseTest {
     @Autowired
     private WareHouseRepository wareHouseRepository;
 
-    @Autowired
-    private BackTestService backTestService;
 
 
     @Test
@@ -58,10 +56,5 @@ public class WareHouseTest {
         });
     }
 
-    @Test
-    public void testCheckWareHouse() {
-        double volume = this.backTestService.checkAndOutWareHouse(0.01, 0.28);
-        System.out.println("volume:" + volume);
-        org.junit.Assert.assertTrue(volume == 0.28);
-    }
+
 }

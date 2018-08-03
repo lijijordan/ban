@@ -1,21 +1,16 @@
 package com.jordan.ban.market.parser;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.deser.DataFormatReaders;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.exception.ApiException;
 import com.jordan.ban.http.HttpClientFactory;
-
 import com.jordan.ban.utils.JSONUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -28,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -419,7 +413,8 @@ public class Huobi extends BaseMarket implements MarketParser {
         md.update(this.assetPassword.getBytes(StandardCharsets.UTF_8));
         md.update("hello, moto".getBytes(StandardCharsets.UTF_8));
         Map<String, String> map = new HashMap<>();
-        map.put("assetPwd", DatatypeConverter.printHexBinary(md.digest()).toLowerCase());
+        // FIXME : not work at jdk 1.9
+//        map.put("assetPwd", DatatypeConverter.printHexBinary(md.digest()).toLowerCase());
         try {
             return ApiSignature.urlEncode(JSONUtil.writeValue(map));
         } catch (IOException e) {

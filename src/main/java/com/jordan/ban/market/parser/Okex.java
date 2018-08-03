@@ -1,19 +1,10 @@
 package com.jordan.ban.market.parser;
 
 import com.jordan.ban.domain.*;
-import com.jordan.ban.http.HttpClientFactory;
-import com.jordan.ban.utils.JSONUtil;
-import com.sun.net.ssl.internal.www.protocol.https.HttpsURLConnectionOldImpl;
 import lombok.extern.java.Log;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;

@@ -59,13 +59,16 @@ public class BackTestService {
     private BackTestStatisticsRepository backTestStatisticsRepository;
 
     @Autowired
-    private WareHouseRepository wareHouseRepository;
-
-    @Autowired
     private TradeRecordService tradeRecordService;
 
     @Autowired
     private GridRepository gridRepository;
+
+    @Autowired
+    private WarehouseService warehouseService;
+
+    @Autowired
+    private GridService gridService;
 
     // unit USDt
     private final static double START_MONEY = 1000;
@@ -136,10 +139,6 @@ public class BackTestService {
         Account accountA = this.getAccount(marketA.getName(), symbol);
         Account accountB = this.getAccount(marketB.getName(), symbol);
 
-        // 每个交易周期调整一次up down
-        /*if (accountA.getVirtualCurrency() < MIN_TRADE_AMOUNT) {
-            this.setUpAndDown();
-        }*/
         if (accountA == null || accountB == null) {
             throw new TradeException("Load account error！");
         }
@@ -178,9 +177,9 @@ public class BackTestService {
 
         // 正向匹配网格
         if (TradeDirect.B2A == tradeResult.getTradeDirect()) {
-            minTradeVolume = this.matchGrid(diffPercent, minTradeVolume);
+            minTradeVolume = this.gridService.matchGrid(diffPercent, minTradeVolume, this.grid, this.symbol);
             log.info("match grid volume:{}", minTradeVolume);
-            if (minTradeVolume <= MIN_TRADE_AMOUNT) {
+            if (minTradeVolume == 0) {
                 log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
                 return false;
             }
@@ -188,7 +187,7 @@ public class BackTestService {
         // 逆向出仓
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
             // 检查仓位，准备出库
-            minTradeVolume = this.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            minTradeVolume = this.warehouseService.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
             if (minTradeVolume == 0) {
                 log.info("Not any assets!");
                 return false;
@@ -258,8 +257,6 @@ public class BackTestService {
         record.setVolume(minTradeVolume);
         record.setProfit(profit);
         record.setTotalMoney(totalMoney);
-//        record.setUpMax(upMax);
-//        record.setDownMax(downMax);
         record.setUpPercent(upPercent);
         record.setDownPercent(downPercent);
         this.tradeRecordRepository.save(record);
@@ -267,7 +264,7 @@ public class BackTestService {
         //warehouse
         if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
             // 建仓
-            this.buildWareHouse(record);
+            this.warehouseService.buildWareHouse(record, this.wareHouseDiff, this.grid.getID());
         }
 
         this.lastTicker.put(key, tradeResult.getEatTradeVolume());
@@ -281,68 +278,6 @@ public class BackTestService {
         return true;
     }
 
-    private void buildWareHouse(TradeRecord tradeRecord) {
-        double diffOut = (tradeRecord.getEatDiffPercent() * -1) + this.wareHouseDiff;
-        wareHouseRepository.save(WareHouse.builder().diffPercentIn(tradeRecord.getEatDiffPercent())
-                .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume()).gridId(this.grid.getID())
-                .diffPercentOut(diffOut)
-                .build());
-    }
-
-    public double checkAndOutWareHouse(double comeDiffPercent, double comeVolume) {
-        double volume = 0;
-        List<WareHouse> wareHouses = this.wareHouseRepository.findAllByStateIsNot(WareHouseState.out);
-        wareHouses.sort((o1, o2) -> {
-            if (o1.getDiffPercentOut() >= o2.getDiffPercentOut()) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-        if (wareHouses != null && wareHouses.size() > 0) {
-            for (int i = 0; i < wareHouses.size(); i++) {
-                WareHouse wareHouse = wareHouses.get(i);
-                // 进入购买位置
-                if (comeDiffPercent > wareHouse.getDiffPercentOut()) {
-                    double out = this.outWareHouse(comeVolume, wareHouse, comeDiffPercent);
-                    volume += out;
-                    comeVolume = comeVolume - out;
-                    if (comeVolume <= 0) {
-                        break;
-                    }
-                }
-            }
-        }
-        return volume;
-    }
-
-    private double outWareHouse(double comeVolume, WareHouse wareHouse, double comeDiffPercent) {
-        double result = 0;
-        // 可出库数量
-        double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
-        if (comeVolume >= leftVolume) {  // 剩余库存全部出去
-            wareHouse.setState(WareHouseState.out);
-            wareHouse.setVolumeOut(leftVolume + wareHouse.getVolumeOut());
-            result += leftVolume;
-            wareHouse.setTimeOut(new Date());
-            this.wareHouseRepository.save(wareHouse);
-        } else { // 部分出库
-            wareHouse.setState(WareHouseState.partOut);
-            wareHouse.setVolumeOut(comeVolume + wareHouse.getVolumeOut());
-            result += comeVolume;
-            wareHouse.setTimeOut(new Date());
-            this.wareHouseRepository.save(wareHouse);
-        }
-        // 恢复网格数据
-        Grid grid = this.gridRepository.findById(wareHouse.getGridId()).get();
-        if (grid == null) {
-            throw new RuntimeException("Can not find any grid!");
-        }
-        grid.setLastVolume(grid.getLastVolume() + result);
-        log.info("fill back grid data:{}", grid);
-        this.gridRepository.save(grid);
-        return result;
-    }
 
     private void placeOrder(Account account, OrderRequest orderRequest) {
         this.accountRepository.save(account);
@@ -352,23 +287,12 @@ public class BackTestService {
         this.tradeRecordRepository.deleteAll();
         this.gridRepository.deleteAll();
         this.profitStatisticsRepository.deleteAll();
-//        accountService.initAccount(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, price);
-//        this.initAccountAsAPoor(price, symbol);
         this.initAccountAsARicher(price, symbol);
         Account accountA = this.getAccount(Dragonex.PLATFORM_NAME, symbol);
         Account accountB = this.getAccount(Fcoin.PLATFORM_NAME, symbol);
         this.totalMoneyBefore = accountA.getMoney() + accountB.getMoney();
 
         this.initGrid(accountA.getVirtualCurrency() + accountB.getVirtualCurrency(), symbol);
-    }
-
-    // 以一个被动的形势开具
-    private void initAccountAsAPoor(double price, String symbol) {
-        this.accountService.emptyAccount();
-        Account a = Account.builder().platform(Fcoin.PLATFORM_NAME).symbol(symbol).money(0).virtualCurrency(START_MONEY / price).build();
-        Account b = Account.builder().platform(Dragonex.PLATFORM_NAME).symbol(symbol).money(START_MONEY).virtualCurrency(0).build();
-        this.accountRepository.save(a);
-        this.accountRepository.save(b);
     }
 
     private void initAccountAsARicher(double price, String symbol) {
@@ -425,8 +349,6 @@ public class BackTestService {
                     .increasePercent(increasePercent).platformA(accountA.getPlatform())
                     .platformB(accountB.getPlatform()).build();
         }
-
-
         this.profitStatisticsRepository.save(after);
         // 恢复初始币量：
         double leftCoin = this.getAccount(Fcoin.PLATFORM_NAME, symbol).getVirtualCurrency();
@@ -443,16 +365,9 @@ public class BackTestService {
         backTestStatisticsRepository.save(backTestStatistics);
     }
 
-    private void run(Date start, Date end, float upPercent, float downPercent, int maxQueueSize, int avgQueueSize, int split, float avgFloat, String symbol) throws ParseException {
-        this.upPercent = upPercent;
-        this.downPercent = downPercent;
-        this.avgQueueSize = avgQueueSize;
-        this.split = split;
-        this.run(start, end, -1, maxQueueSize, symbol);
-    }
-
-    private void run(Date start, Date end, int maxQueueSize, String symbol) throws ParseException {
-        this.run(start, end, -1, maxQueueSize, symbol);
+    public void run(String start, String end, int maxQueueSize, String symbol) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        this.run(format.parse(start), format.parse(end), -1, maxQueueSize, symbol);
     }
 
     private void run(Date start, Date end, double percent, int queueSize, String symbol) throws ParseException {
@@ -494,113 +409,20 @@ public class BackTestService {
         }
         while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
         this.statistic(Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, symbol, queueSize);
-
-
     }
 
     public void initGrid(double totalCoin, String symbol) {
         this.symbol = symbol;
-        this.initGrid(symbol, 0.02f, 0.03f, 0.05f, totalCoin);
-        this.initGrid(symbol, 0.03f, 0.04f, 0.2f, totalCoin);
-        this.initGrid(symbol, 0.04f, 0.05f, 0.3f, totalCoin);
-        this.initGrid(symbol, 0.05f, 0.06f, 0.3f, totalCoin);
-        this.initGrid(symbol, 0.06f, 1f, 0.15f, totalCoin);
-    }
-
-    private void initGrid(String symbol, float low, float high, float quota, double totalCoin) {
-        this.gridRepository.save(Grid.builder().symbol(symbol).low(low).high(high).quota(quota).volume(totalCoin * quota)
-                .lastVolume(totalCoin * quota).build());
+        gridService.initGrid(symbol, 0.02f, 0.03f, 0.05f, totalCoin);
+        gridService.initGrid(symbol, 0.03f, 0.04f, 0.2f, totalCoin);
+        gridService.initGrid(symbol, 0.04f, 0.05f, 0.3f, totalCoin);
+        gridService.initGrid(symbol, 0.05f, 0.06f, 0.3f, totalCoin);
+        gridService.initGrid(symbol, 0.06f, 1f, 0.15f, totalCoin);
     }
 
 
-    public double matchGrid(double diffPercent, double tradeVolume) {
-        grid = this.gridRepository.find(diffPercent, this.symbol);
-        if (grid == null) {
-            log.info("no grid");
-            return 0;
-        }
-        double val = grid.getLastVolume(), result;
-        if (tradeVolume < val) {
-            result = tradeVolume;
-            grid.setLastVolume(val - tradeVolume);
-        } else {
-            result = val;
-            grid.setLastVolume(0);
-        }
-        this.gridRepository.save(grid);
-        return result;
-    }
-
-    public void run() throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-
-        Date start = format.parse("2018/07/25 23:00:00");
-        Date end = format.parse("2018/07/31 23:50:00");
-//        Date start = format.parse("2018/07/01 00:00:29");
-//        Date end = format.parse("2018/07/04 23:59:00");
-//        this.moveMetric = 0.02692;
-//        this.run(start, end, 0.8, defaultQueueSize * 2);
-//        this.run(start, end, 0.8, defaultQueueSize / 2);
-//        this.run(start, end, 0.8, defaultQueueSize * 4);
-//        this.run(start, end, 0.8, defaultQueueSize * 8);
-//        this.run(start, end, 0.9, defaultQueueSize);
-
-//        this.run(start, end, 0.7, defaultQueueSize, BCH_USDT);
-//        this.run(start, end, 0.81, defaultQueueSize, BCH_USDT);
-//        this.run(start, end, 0.9, defaultQueueSize, BCH_USDT);
-//        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
-//        run(start, end, 1, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
 
 
-//        this.moveMetric = 0.0358;
-//        run(start, end, 1, defaultQueueSize, BCH_USDT);
-//        run(start, end, 0.9, defaultQueueSize, BCH_USDT);
-//        this.moveMetric = -1;
-//        run(start, end, 0.81, defaultQueueSize, BCH_USDT);
-//
-//        this.moveMetric = 0.02944;
-//        run(start, end, 1, defaultQueueSize, BTC_USDT);
-//        this.moveMetric = -1;
-//        run(start, end, 0.81, defaultQueueSize, BTC_USDT);
-
-//        this.moveMetric = -1;
-//        run(start, end, 0.9, defaultQueueSize, BTC_USDT);
-//        run(start, end, 0.81, defaultQueueSize * 4, BTC_USDT);
-//        run(start, end, 0.9, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.85, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.8, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.75, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.7, defaultQueueSize, ETH_USDT);
-//        run(start, end, 1.4f, 0.7f, defaultQueueSize * 2, ETH_USDT);
-
-
-//        run(start, end, 0.025f, -0.018f, defaultQueueSize * 2, ETH_USDT);
-
-//        run(start, end, 1.02f, 0.98f, defaultQueueSize, ETH_USDT);
-
-//        run(start, end, 1.05f, 0.95f, defaultQueueSize, ETH_USDT);
-//        run(start, end, 1.02f, 0.98f, defaultQueueSize * 2, ETH_USDT);
-//        run(start, end, 1.02f, 0.98f, defaultQueueSize * 4, ETH_USDT);
-
-        //
-//        run(start, end, 1f, 1f, defaultQueueSize, ETH_USDT);
-
-//        this.policy = Policy.fix;
-//        run(start, end, 0.028f, -0.018f, defaultQueueSize, ETH_USDT);
-//        run(start, end, 0.02f, -0.02f, 6000, ETH_USDT);
-//        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
-
-//        run(start, end, 12000, ETH_USDT);
-//        run(start, end, 6000, LTC_USDT);
-        run(start, end, 6000, BCH_USDT);
-        run(start, end, 6000, ETH_USDT);
-        run(start, end, 6000, BTC_USDT);
-        run(start, end, 6000, XRP_USDT);
-        System.out.println("End at:" + new Date());
-
-    }
 
 }
 
