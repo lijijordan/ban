@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
+import static com.jordan.ban.common.Constant.ETH_USDT;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = BackTestApplication.class)
 @Slf4j
@@ -30,7 +32,7 @@ public class BackTestServiceTest {
 
     @Test
     public void initGrid() {
-        backTestService.initGrid(2);
+        backTestService.initGrid(2,ETH_USDT);
         Assert.notNull(gridRepository.findAll());
     }
 

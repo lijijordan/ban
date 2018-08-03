@@ -95,6 +95,8 @@ public class BackTestService {
 
     private Grid grid;
 
+    private String symbol;
+
     public Account getAccount(String platform, String symbol) {
         return this.accountRepository.findBySymbolAndPlatform(symbol, platform);
     }
@@ -357,7 +359,7 @@ public class BackTestService {
         Account accountB = this.getAccount(Fcoin.PLATFORM_NAME, symbol);
         this.totalMoneyBefore = accountA.getMoney() + accountB.getMoney();
 
-        this.initGrid(accountA.getVirtualCurrency() + accountB.getVirtualCurrency());
+        this.initGrid(accountA.getVirtualCurrency() + accountB.getVirtualCurrency(), symbol);
     }
 
     // 以一个被动的形势开具
@@ -496,13 +498,13 @@ public class BackTestService {
 
     }
 
-    public void initGrid(double totalCoin) {
-
-        this.initGrid(ETH_USDT, 0.02f, 0.03f, 0.05f, totalCoin);
-        this.initGrid(ETH_USDT, 0.03f, 0.04f, 0.2f, totalCoin);
-        this.initGrid(ETH_USDT, 0.04f, 0.05f, 0.3f, totalCoin);
-        this.initGrid(ETH_USDT, 0.05f, 0.06f, 0.3f, totalCoin);
-        this.initGrid(ETH_USDT, 0.06f, 1f, 0.15f, totalCoin);
+    public void initGrid(double totalCoin, String symbol) {
+        this.symbol = symbol;
+        this.initGrid(symbol, 0.02f, 0.03f, 0.05f, totalCoin);
+        this.initGrid(symbol, 0.03f, 0.04f, 0.2f, totalCoin);
+        this.initGrid(symbol, 0.04f, 0.05f, 0.3f, totalCoin);
+        this.initGrid(symbol, 0.05f, 0.06f, 0.3f, totalCoin);
+        this.initGrid(symbol, 0.06f, 1f, 0.15f, totalCoin);
     }
 
     private void initGrid(String symbol, float low, float high, float quota, double totalCoin) {
@@ -512,7 +514,7 @@ public class BackTestService {
 
 
     public double matchGrid(double diffPercent, double tradeVolume) {
-        grid = this.gridRepository.find(diffPercent, ETH_USDT);
+        grid = this.gridRepository.find(diffPercent, this.symbol);
         if (grid == null) {
             log.info("no grid");
             return 0;
@@ -591,7 +593,7 @@ public class BackTestService {
 //        run(start, end, 0.026f, -0.02f, 6000, 6000, 1, 0.1f, ETH_USDT);
 
 //        run(start, end, 12000, ETH_USDT);
-        run(start, end, 6000, LTC_USDT);
+//        run(start, end, 6000, LTC_USDT);
         run(start, end, 6000, BCH_USDT);
         run(start, end, 6000, ETH_USDT);
         run(start, end, 6000, BTC_USDT);
