@@ -1,6 +1,5 @@
 package com.jordan.ban.entity;
 
-import com.jordan.ban.domain.WareHouseState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,33 +9,32 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Date;
 
 @Data
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WareHouse {
-
+public class Grid {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long ID;
 
-    private double diffPercentIn;
+    /**
+     * 网格区间
+     */
+    private double low;
+    private double high;
 
-    private double diffPercentOut;
+    private String symbol;
 
-    private double volumeIn;
+    // 配额累计币量
+    private double volume;
 
-    private double volumeOut;
+    // 当前剩余的币量
+    private double lastVolume;
 
-    private WareHouseState state;
-
-    private Date timeIn;
-
-    private Date timeOut;
-
-    private Long gridId;
-
+    //区间的配额
+    private float quota;
 }

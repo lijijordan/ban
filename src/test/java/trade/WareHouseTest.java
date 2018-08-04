@@ -5,7 +5,6 @@ import com.jordan.ban.TradeApplication;
 import com.jordan.ban.dao.WareHouseRepository;
 import com.jordan.ban.domain.WareHouseState;
 import com.jordan.ban.entity.WareHouse;
-import com.jordan.ban.service.BackTestService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,10 +23,6 @@ public class WareHouseTest {
 
     @Autowired
     private WareHouseRepository wareHouseRepository;
-
-    @Autowired
-    private BackTestService backTestService;
-
 
     @Test
     public void testSave() {
@@ -57,10 +52,4 @@ public class WareHouseTest {
         });
     }
 
-    @Test
-    public void testCheckWareHouse() {
-        double volume = this.backTestService.checkAndOutWareHouse(0.01, 0.28);
-        System.out.println("volume:" + volume);
-        org.junit.Assert.assertTrue(volume == 0.28);
-    }
 }
