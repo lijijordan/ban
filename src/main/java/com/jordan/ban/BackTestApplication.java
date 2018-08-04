@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.jordan.ban.common.Constant.BTC_USDT;
+import static com.jordan.ban.common.Constant.ETH_USDT;
+import static com.jordan.ban.common.Constant.XRP_USDT;
 
 
 @ComponentScan("com.jordan.ban")
@@ -31,16 +33,16 @@ public class BackTestApplication {
 
         BackTestService backTestService = context.getBean(BackTestService.class);
 
-        String start = "2018/07/25 23:00:00";
-        String end = "2018/07/31 23:00:00";
+        String start = "2018/07/31 23:00:00";
+        String end = "2018/08/03 17:00:00";
 
         System.out.println("------- Ready to go! -------");
 //        run(start, end, 12000, ETH_USDT);
 //        run(start, end, 6000, LTC_USDT);
 //        run(start, end, 6000, BCH_USDT);
-//        run(start, end, 6000, ETH_USDT);
-        backTestService.run(start, end, 6000, BTC_USDT);
-//        run(start, end, 6000, XRP_USDT);
+        backTestService.run(start, end, 6000, ETH_USDT);
+//        backTestService.run(start, end, 6000, BTC_USDT);
+//        backTestService.run(start, end, 6000, XRP_USDT);
         System.out.println("End at:" + new Date());
         System.out.println("Back Test Done!");
     }

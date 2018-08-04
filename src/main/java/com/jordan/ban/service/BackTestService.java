@@ -40,9 +40,6 @@ public class BackTestService {
     private AccountService accountService;
 
     @Autowired
-    private TradeCounter tradeCounter;
-
-    @Autowired
     private TradeContext tradeContext;
 
     @Autowired
@@ -82,15 +79,6 @@ public class BackTestService {
     private long totalData;
 
     private double totalMoneyBefore;
-
-    private float upPercent;
-    private float downPercent;
-
-    private int countProfit;
-
-    private double sumProfit;
-
-    private int avgQueueSize;
 
     private int split = 1;
 
@@ -177,7 +165,9 @@ public class BackTestService {
 
         // 正向匹配网格
         if (TradeDirect.B2A == tradeResult.getTradeDirect()) {
-            minTradeVolume = this.gridService.matchGrid(diffPercent, minTradeVolume, this.grid, this.symbol);
+            GridMatch gridMatch = this.gridService.matchGrid(diffPercent, minTradeVolume, this.symbol);
+            minTradeVolume = gridMatch.getMatchResult();
+            this.grid = gridMatch.getGrid();
             log.info("match grid volume:{}", minTradeVolume);
             if (minTradeVolume == 0) {
                 log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
@@ -257,8 +247,6 @@ public class BackTestService {
         record.setVolume(minTradeVolume);
         record.setProfit(profit);
         record.setTotalMoney(totalMoney);
-        record.setUpPercent(upPercent);
-        record.setDownPercent(downPercent);
         this.tradeRecordRepository.save(record);
 
         //warehouse
@@ -271,10 +259,6 @@ public class BackTestService {
 
         totalCostMoney = totalCostMoney + sellCost + buyCost;
         log.info("Record done!");
-        if (profit < 0) {
-            this.countProfit += minTradeVolume;
-            this.sumProfit += profit;
-        }
         return true;
     }
 
@@ -308,7 +292,6 @@ public class BackTestService {
     private void configContext(double backPercent, int queueSize) {
 //        TradeCounter.QUEUE_SIZE = 60 * 2 * 30 * 2;
         this.tradeContext.setMoveBackMetrics(backPercent);
-        TradeCounter.init(queueSize, avgQueueSize);// avg 2 hour
     }
 
     private void statistic(String platformA, String platformB, String symbol, int queueSize) {
@@ -360,7 +343,7 @@ public class BackTestService {
                 .platformB(platformB).sumCoin(coinAfter).sumMoney(moneyAfter).metricsBackPercent(this.tradeContext.getMoveBackMetrics())
                 .start(start).end(end).tradeCount(this.tradeRecordRepository.countBy())
                 .profit(profit).total(totalData)
-                .queueSize(queueSize).symbol(symbol).upPercent(this.upPercent).downPercent(this.downPercent)
+                .queueSize(queueSize).symbol(symbol)
                 .build();
         backTestStatisticsRepository.save(backTestStatistics);
     }
@@ -413,15 +396,12 @@ public class BackTestService {
 
     public void initGrid(double totalCoin, String symbol) {
         this.symbol = symbol;
-        gridService.initGrid(symbol, 0.02f, 0.03f, 0.05f, totalCoin);
-        gridService.initGrid(symbol, 0.03f, 0.04f, 0.2f, totalCoin);
+        gridService.initGrid(symbol, 0.02f, 0.03f, 0.01f, totalCoin);
+        gridService.initGrid(symbol, 0.03f, 0.04f, 0.1f, totalCoin);
         gridService.initGrid(symbol, 0.04f, 0.05f, 0.3f, totalCoin);
-        gridService.initGrid(symbol, 0.05f, 0.06f, 0.3f, totalCoin);
-        gridService.initGrid(symbol, 0.06f, 1f, 0.15f, totalCoin);
+        gridService.initGrid(symbol, 0.05f, 0.06f, 0.4f, totalCoin);
+        gridService.initGrid(symbol, 0.06f, 1f, 0.19f, totalCoin);
     }
-
-
-
 
 
 }
