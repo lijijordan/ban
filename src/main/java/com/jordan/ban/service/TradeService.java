@@ -262,6 +262,7 @@ public class TradeService {
     }
 
     private double outWareHouse(double comeVolume, WareHouse wareHouse) {
+        log.info("out warehouse:[{}],[{}]", comeVolume, wareHouse.getID());
         double result = 0;
         // 可出库数量
         double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
