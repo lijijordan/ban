@@ -258,6 +258,7 @@ public class TradeService {
                 }
             }
         }
+        log.info("out total volume:{}", volume);
         return volume;
     }
 
@@ -267,18 +268,21 @@ public class TradeService {
         // 可出库数量
         double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
         if (comeVolume >= leftVolume) {  // 剩余库存全部出去
+            log.info("out all.");
             wareHouse.setState(WareHouseState.out);
             wareHouse.setVolumeOut(leftVolume + wareHouse.getVolumeOut());
             result += leftVolume;
             wareHouse.setTimeOut(new Date());
             this.wareHouseRepository.save(wareHouse);
         } else { // 部分出库
+            log.info("out part.");
             wareHouse.setState(WareHouseState.partOut);
             wareHouse.setVolumeOut(comeVolume + wareHouse.getVolumeOut());
             result += comeVolume;
             wareHouse.setTimeOut(new Date());
             this.wareHouseRepository.save(wareHouse);
         }
+        log.info("out warehouse volume:{}", result);
         return result;
     }
 }
