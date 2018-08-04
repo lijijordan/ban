@@ -20,7 +20,7 @@ public class HealthChecker {
     private static final int MAX_ERROR_COUNT = 10;
 
     public void check() {
-        double d = tradeCounter.getSuggestDiffPercent();
+        double d = tradeCounter.getCurrentDiffPercent();
         if (d == lastDiffPercent) {
             errorCount++;
         }

@@ -64,8 +64,8 @@ public class TradeController {
                 .wareHouseDiff(tradeContext.getWareHouseDiff())
                 .minTradeFloat(tradeContext.getMinTradeFloat())
                 .moveBackMetrics(tradeContext.getDownPoint())
-                .upMax(tradeCounter.getMaxDiffPercent(true))
-                .downMax(tradeCounter.getMaxDiffPercent(false))
+                .upMax(0)
+                .downMax(0)
                 .moveMetrics(tradeContext.getUpPoint()).build());
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(Fcoin.PLATFORM_NAME);
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(Dragonex.PLATFORM_NAME);
@@ -83,18 +83,15 @@ public class TradeController {
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getBalance() : 0).build();
 
 
-        String suggestText = this.tradeCounter.getSuggestDiffPercent() + "["
-                + this.tradeCounter.getA2bTradeCount()
-                + "]";
         model.addAttribute("orderList", this.orderService.queryOrder("ethusdt", date));
         model.addAttribute("recordList", this.tradeRecordService.queryAndStatisticTradeRecord(date));
         model.addAttribute("accountA", accountA);
         model.addAttribute("accountB", accountB);
         model.addAttribute("sumMoney", (accountA.getMoney() + accountB.getMoney()));
         model.addAttribute("sumCoin", (accountA.getVirtualCurrency() + accountB.getVirtualCurrency()));
-        model.addAttribute("a2bAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.A2B));
-        model.addAttribute("b2aAvgPercent", this.tradeCounter.getAvgDiffPercent(TradeDirect.B2A));
-        model.addAttribute("suggest", suggestText);
+        model.addAttribute("a2bAvgPercent", 0);
+        model.addAttribute("b2aAvgPercent", 0);
+        model.addAttribute("suggest", "none");
         model.addAttribute("profitStatistics", this.orderService.queryProfitStatistics());
         return "greeting";
     }
