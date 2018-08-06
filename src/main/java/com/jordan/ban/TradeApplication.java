@@ -28,6 +28,7 @@ public class TradeApplication {
     }
 
     public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         final String symbol = ETH_USDT;
 
