@@ -198,15 +198,15 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         var tab = document.getElementById("recordTable");
         var rows = tab.rows;
         for (var i = 1; i < rows.length; i++) {
-            for (var j = 1; j < rows[i].cells.length; j++) {
-                console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
-            }
-            rows[i].cells[4].innerHTML = (rows[i].cells[4].innerHTML * 100).toFixed(2) + '%';
-            if (rows[i].cells[2].innerHTML < 0) {
+            // for (var j = 1; j < rows[i].cells.length; j++) {
+            //     console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
+            // }
+            if (rows[i].cells[1].innerHTML < 0) {
                 rows[i].style.color = "red";
             } else {
                 rows[i].style.color = "green";
             }
+            rows[i].cells[3].innerHTML = (rows[i].cells[3].innerHTML * 100).toFixed(2) + '%';
         }
     }
 
