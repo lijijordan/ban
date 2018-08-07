@@ -7,7 +7,7 @@ import com.jordan.ban.domain.OrderRequest;
 import com.jordan.ban.domain.OrderType;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
-import com.jordan.ban.service.TradeService;
+import com.jordan.ban.service.TradeServiceETH;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -22,11 +22,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TradeApplication.class)
 @Slf4j
-public class TradeServiceTest {
+public class TradeServiceETHTest {
 
 
     @Autowired
-    private TradeService tradeService;
+    private TradeServiceETH tradeService;
 
     private Huobi huobi;
 

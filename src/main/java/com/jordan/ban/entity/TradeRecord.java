@@ -2,6 +2,7 @@ package com.jordan.ban.entity;
 
 import com.jordan.ban.domain.TradeDirect;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;

@@ -210,7 +210,7 @@ public class OrderService {
         // debug
         /*log.info("market:{},request:{}", market.getName(), orderRequest.toString());
         return null;*/
-        if (orderRequest.getAmount() <= TradeService.MIN_TRADE_AMOUNT) {
+        if (orderRequest.getAmount() <= TradeServiceETH.MIN_TRADE_AMOUNT) {
             throw new TradeException("trade amount is to small");
         }
         String orderAid = this.placeOrder(orderRequest, market, tradeContext.getOrderTryTimes());

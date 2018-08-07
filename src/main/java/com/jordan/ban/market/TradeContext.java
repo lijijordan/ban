@@ -25,6 +25,35 @@ public class TradeContext {
     private double wareHouseDiff = 0.006;
     private float minTradeFloat = 0.025f;
 
+    private double a2bCurrentPercent;
+    private double a2bCurrentVolume;
+
+    private double b2aCurrentPercent;
+    private double b2aCurrentVolume;
+    public double getA2bCurrentVolume() {
+        return a2bCurrentVolume;
+    }
+    public void setA2bCurrentVolume(double a2bCurrentVolume) {
+        this.a2bCurrentVolume = a2bCurrentVolume;
+    }
+    public double getB2aCurrentVolume() {
+        return b2aCurrentVolume;
+    }
+    public void setB2aCurrentVolume(double b2aCurrentVolume) {
+        this.b2aCurrentVolume = b2aCurrentVolume;
+    }
+    public double getA2bCurrentPercent() {
+        return a2bCurrentPercent;
+    }
+    public void setA2bCurrentPercent(double a2bCurrentPercent) {
+        this.a2bCurrentPercent = a2bCurrentPercent;
+    }
+    public double getB2aCurrentPercent() {
+        return b2aCurrentPercent;
+    }
+    public void setB2aCurrentPercent(double b2aCurrentPercent) {
+        this.b2aCurrentPercent = b2aCurrentPercent;
+    }
     private int orderTryTimes = 5;
 
     public int getOrderTryTimes() {

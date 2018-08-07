@@ -21,11 +21,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+
+import static com.jordan.ban.utils.MathUtil.formatPercent;
 
 @Controller
 public class TradeController {
@@ -89,8 +92,8 @@ public class TradeController {
         model.addAttribute("accountB", accountB);
         model.addAttribute("sumMoney", (accountA.getMoney() + accountB.getMoney()));
         model.addAttribute("sumCoin", (accountA.getVirtualCurrency() + accountB.getVirtualCurrency()));
-        model.addAttribute("a2bAvgPercent", 0);
-        model.addAttribute("b2aAvgPercent", 0);
+        model.addAttribute("a2bAvgPercent", formatPercent(this.tradeContext.getA2bCurrentPercent(), 3) + "__" + this.tradeContext.getA2bCurrentVolume());
+        model.addAttribute("b2aAvgPercent", formatPercent(this.tradeContext.getB2aCurrentPercent(), 3) + "__" + this.tradeContext.getB2aCurrentVolume());
         model.addAttribute("suggest", "none");
         model.addAttribute("profitStatistics", this.orderService.queryProfitStatistics());
         return "greeting";
@@ -105,6 +108,7 @@ public class TradeController {
         this.tradeContext.setWareHouseDiff(greeting.getWareHouseDiff());
         return "result";
     }
+
 
 
 }

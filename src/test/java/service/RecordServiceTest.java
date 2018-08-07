@@ -2,17 +2,8 @@ package service;
 
 
 import com.jordan.ban.TradeApplication;
-import com.jordan.ban.domain.MockTradeResultIndex;
-import com.jordan.ban.domain.OrderState;
-import com.jordan.ban.domain.OrderType;
 import com.jordan.ban.domain.StatisticRecordDto;
-import com.jordan.ban.entity.Order;
-import com.jordan.ban.market.parser.Huobi;
-import com.jordan.ban.market.parser.MarketFactory;
-import com.jordan.ban.service.OrderService;
 import com.jordan.ban.service.TradeRecordService;
-import com.jordan.ban.service.TradeService;
-import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;

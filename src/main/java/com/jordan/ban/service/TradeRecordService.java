@@ -4,6 +4,7 @@ import com.jordan.ban.dao.TradeRecordRepository;
 import com.jordan.ban.domain.StatisticRecordDto;
 import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.entity.TradeRecord;
+import com.jordan.ban.utils.MathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

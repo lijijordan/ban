@@ -103,28 +103,20 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
 <table th:object="${recordList}" id="recordTable" border="1">
     <tr>
         <td>create time</td>
-        <td>volume</td>
         <td>profit</td>
         <td>direct</td>
         <td>diff percent</td>
         <td>cost</td>
-        <td>upPercent</td>
-        <td>downPercent</td>
-        <td>upMax</td>
-        <td>downMax</td>
+        <td>volume</td>
     </tr>
 
     <tr th:each="record :${recordList.getRecordList()}">
         <td th:text="${record.createTime}"></td>
-        <td th:text="${record.volume}"></td>
         <td th:text="${record.profit}"></td>
         <td th:text="${record.direct}"></td>
         <td th:text="${record.eatDiffPercent}"></td>
         <td th:text="${record.tradeCostMoney}"></td>
-        <td th:text="${record.upPercent}"></td>
-        <td th:text="${record.downPercent}"></td>
-        <td th:text="${record.upMax}"></td>
-        <td th:text="${record.downMax}"></td>
+        <td th:text="${record.volume}"></td>
     </tr>
 </table>
 
@@ -206,9 +198,10 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         var tab = document.getElementById("recordTable");
         var rows = tab.rows;
         for (var i = 1; i < rows.length; i++) {
-            // for (var j = 0; j < rows[i].cells.length; j++) {
-            //     console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
-            // }
+            for (var j = 1; j < rows[i].cells.length; j++) {
+                console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
+            }
+            rows[i].cells[4].innerHTML = (rows[i].cells[4].innerHTML * 100).toFixed(2) + '%';
             if (rows[i].cells[2].innerHTML < 0) {
                 rows[i].style.color = "red";
             } else {

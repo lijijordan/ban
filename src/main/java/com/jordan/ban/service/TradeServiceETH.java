@@ -27,7 +27,7 @@ import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 
 @Service
 @Slf4j
-public class TradeService {
+public class TradeServiceETH {
 
     //min limit order amount 0.01
     public static final double MIN_TRADE_AMOUNT = 0.01;
@@ -56,12 +56,20 @@ public class TradeService {
 
     private TradeCounter tradeCounter;
 
+
     public synchronized void preTrade(MockTradeResultIndex tradeResult) {
         this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
             log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
             return;
+        }
+        if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
+            tradeContext.setA2bCurrentPercent(tradeResult.getEatPercent());
+            tradeContext.setA2bCurrentVolume(tradeResult.getEatTradeVolume());
+        } else {
+            tradeContext.setB2aCurrentPercent(tradeResult.getEatPercent());
+            tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
         }
         this.trade(tradeResult);
     }

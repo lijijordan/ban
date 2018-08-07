@@ -5,7 +5,7 @@ import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.mq.MessageReceiver;
 import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
-import com.jordan.ban.service.TradeService;
+import com.jordan.ban.service.TradeServiceETH;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -26,7 +26,7 @@ public class TradeApp {
     private Sender sender;
 
     @Autowired
-    private TradeService tradeService;
+    private TradeServiceETH tradeService;
 
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {

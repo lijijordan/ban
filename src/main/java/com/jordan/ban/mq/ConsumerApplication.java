@@ -1,12 +1,10 @@
 package com.jordan.ban.mq;
 
 import com.jordan.ban.common.Constant;
-import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
-import com.jordan.ban.service.TradeService;
-import com.jordan.ban.utils.JSONUtil;
+import com.jordan.ban.service.TradeServiceETH;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,7 @@ public class ConsumerApplication {
     private Sender sender;
 
     @Autowired
-    private TradeService tradeService;
+    private TradeServiceETH tradeService;
 
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
