@@ -30,8 +30,6 @@ public class TradeApp {
     @Autowired
     private TradeServiceBTC tradeServiceBTC;
 
-    private String symbol;
-
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
 //            log.info(topic + ":" + message);
@@ -60,12 +58,14 @@ public class TradeApp {
             long start = System.currentTimeMillis();
             try {
 //                System.out.println(json);
+                MockTradeResultIndex tradeResult = JSONUtil.getEntity(json, MockTradeResultIndex.class);
+                String symbol = tradeResult.getSymbol();
                 // fixme:do not use hard code
-                if (this.symbol.equals(BTC_USDT)) {
-                    this.tradeServiceBTC.preTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+                if (symbol.equals(BTC_USDT)) {
+                    this.tradeServiceBTC.preTrade(tradeResult);
                 }
-                if (this.symbol.equals(ETH_USDT)) {
-                    this.tradeServiceETH.preTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+                if (symbol.equals(ETH_USDT)) {
+                    this.tradeServiceETH.preTrade(tradeResult);
                 }
             } catch (TradeException e) {
                 e.printStackTrace();
@@ -77,7 +77,6 @@ public class TradeApp {
 
 
     public void receiveDiff(String symbol) {
-        this.symbol = symbol;
         String topic = symbol + TRADE_TOPIC_SUFFIX;
         log.info("Listening Topic:" + topic);
         this.receiveDepthDiff(topic);
