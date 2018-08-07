@@ -23,9 +23,9 @@ public class WarehouseService {
     @Autowired
     private GridRepository gridRepository;
 
-    public double checkAndOutWareHouse(double comeDiffPercent, double comeVolume) {
+    public double checkAndOutWareHouse(double comeDiffPercent, double comeVolume, String symbol) {
         double volume = 0;
-        List<WareHouse> wareHouses = this.wareHouseRepository.findAllByStateIsNot(WareHouseState.out);
+        List<WareHouse> wareHouses = this.wareHouseRepository.findAllByStateIsNotAndSymbol(WareHouseState.out, symbol);
         wareHouses.sort((o1, o2) -> {
             if (o1.getDiffPercentOut() >= o2.getDiffPercentOut()) {
                 return 1;
@@ -79,37 +79,12 @@ public class WarehouseService {
         return result;
     }
 
-    private double outWareHouse(double comeVolume, WareHouse wareHouse) {
 
-        double result = 0;
-        // 可出库数量
-        double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
-        if (comeVolume >= leftVolume) {  // 剩余库存全部出去
-            log.info("out all.");
-            wareHouse.setState(WareHouseState.out);
-            wareHouse.setVolumeOut(leftVolume + wareHouse.getVolumeOut());
-            result += leftVolume;
-            wareHouse.setTimeOut(new Date());
-            this.wareHouseRepository.save(wareHouse);
-        } else { // 部分出库
-            log.info("out part.");
-            wareHouse.setState(WareHouseState.partOut);
-            wareHouse.setVolumeOut(comeVolume + wareHouse.getVolumeOut());
-            result += comeVolume;
-            wareHouse.setTimeOut(new Date());
-            this.wareHouseRepository.save(wareHouse);
-        }
-        log.info("out warehouse volume:{}", result);
-        return result;
-    }
-
-
-
-    public void buildWareHouse(TradeRecord tradeRecord, double diff, long gridId) {
+    public void buildWareHouse(TradeRecord tradeRecord, double diff, long gridId, String symbol) {
         double diffOut = (tradeRecord.getEatDiffPercent() * -1) + diff;
         wareHouseRepository.save(WareHouse.builder().diffPercentIn(tradeRecord.getEatDiffPercent())
                 .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume()).gridId(gridId)
-                .diffPercentOut(diffOut)
+                .diffPercentOut(diffOut).symbol(symbol)
                 .build());
     }
 

@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static com.jordan.ban.service.TradeServiceETH.MIN_TRADE_AMOUNT;
 
 @Service
@@ -44,8 +46,13 @@ public class GridService {
             isMatch = false;
         }
         if (isMatch) {
+            log.info("match grid update grid:{}", grid);
             this.gridRepository.save(grid);
         }
         return GridMatch.builder().grid(grid).matchResult(result).isMatch(isMatch).build();
+    }
+
+    public List<Grid> findGridsBySymbol(String symbol) {
+        return this.gridRepository.findAllBySymbol(symbol);
     }
 }

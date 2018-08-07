@@ -106,7 +106,6 @@ public class TradeServiceETH {
 
     @Transactional
     public boolean trade(MockTradeResultIndex tradeResult) {
-
         this.symbol = tradeResult.getSymbol();
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
@@ -149,7 +148,7 @@ public class TradeServiceETH {
         // 逆向出仓
         if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
             // 检查仓位，准备出库
-            minTradeVolume = this.warehouseService.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            minTradeVolume = this.warehouseService.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume, symbol);
             if (minTradeVolume == 0) {
                 log.info("Not any assets!");
                 return false;
@@ -228,7 +227,7 @@ public class TradeServiceETH {
         // build warehouse
         if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
             this.warehouseService.buildWareHouse(record,
-                    this.tradeContext.getWareHouseDiff(), this.grid.getID());
+                    this.tradeContext.getWareHouseDiff(), this.grid.getID(), symbol);
         }
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start));
         return true;

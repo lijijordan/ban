@@ -30,26 +30,4 @@ public class WareHouseTest {
                 .timeIn(new Date()).diffPercentIn(0.0021).diffPercentOut(-0.06).build());
     }
 
-    @Test
-    public void testQuery() {
-        List<WareHouse> list = this.wareHouseRepository.findAllByStateIsNot(WareHouseState.out);
-        Assert.notEmpty(list);
-        System.out.println(list);
-    }
-
-    @Test
-    public void testSort() {
-        List<WareHouse> wareHouses = this.wareHouseRepository.findAllByStateIsNot(WareHouseState.out);
-        wareHouses.sort((o1, o2) -> {
-            if (o1.getDiffPercentOut() >= o2.getDiffPercentOut()) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-        wareHouses.forEach(wareHouse -> {
-            System.out.println(wareHouse.getDiffPercentOut());
-        });
-    }
-
 }

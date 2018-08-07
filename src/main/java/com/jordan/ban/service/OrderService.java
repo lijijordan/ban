@@ -87,7 +87,7 @@ public class OrderService {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
+                this.accountService.refreshBalancesCache(order.getPlatform());
             }
             order.setState(orderResponse.getOrderState());
             order.setFillFees(orderResponse.getFillFees());
@@ -101,7 +101,7 @@ public class OrderService {
 
             // 交易完成：统计交易信息
             if (orderResponse.getOrderState() == OrderState.filled) {
-//                this.accountService.queryAndUpdateBalancesCache(order.getPlatform());
+//                this.accountService.refreshBalancesCache(order.getPlatform());
                 this.statisticTrade(order);
             }
         }
@@ -207,12 +207,6 @@ public class OrderService {
      */
 //    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算yue
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
-        // debug
-        /*log.info("market:{},request:{}", market.getName(), orderRequest.toString());
-        return null;*/
-        if (orderRequest.getAmount() <= TradeServiceETH.MIN_TRADE_AMOUNT) {
-            throw new TradeException("trade amount is to small");
-        }
         String orderAid = this.placeOrder(orderRequest, market, tradeContext.getOrderTryTimes());
         if (StringUtils.isEmpty(orderAid)) {
             slackService.sendMessage("Order", "Create Order failed！");
@@ -220,7 +214,7 @@ public class OrderService {
         }
         slackService.sendMessage("Order", "Place order:" + orderRequest.toString());
         // update account;
-        accountService.queryAndUpdateBalancesCache(market.getName());
+        accountService.refreshBalancesCache(market.getName());
         // record order
         return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair).diffPercent(diffPercent).tradeDirect(direct)

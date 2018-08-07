@@ -9,5 +9,5 @@ import java.util.List;
 public interface WareHouseRepository extends CrudRepository<WareHouse, Long> {
 
 
-    List<WareHouse> findAllByStateIsNot(WareHouseState wareHouseState);
+    List<WareHouse> findAllByStateIsNotAndSymbol(WareHouseState wareHouseState, String symbol);
 }

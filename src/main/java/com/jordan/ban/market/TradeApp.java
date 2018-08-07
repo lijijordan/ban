@@ -5,6 +5,7 @@ import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.mq.MessageReceiver;
 import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
+import com.jordan.ban.service.TradeServiceBTC;
 import com.jordan.ban.service.TradeServiceETH;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -14,19 +15,22 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+import static com.jordan.ban.common.Constant.BTC_USDT;
+import static com.jordan.ban.common.Constant.ETH_USDT;
+
 @Slf4j
 @Service
 public class TradeApp {
 
+    private static final String TRADE_TOPIC_SUFFIX = "-depth-trade";
 
     @Autowired
-    private MockTradeService mockTradeService;
+    private TradeServiceETH tradeServiceETH;
 
     @Autowired
-    private Sender sender;
+    private TradeServiceBTC tradeServiceBTC;
 
-    @Autowired
-    private TradeServiceETH tradeService;
+    private String symbol;
 
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
@@ -45,7 +49,6 @@ public class TradeApp {
 
     //TODO： 异步？
     private void doDepthDiff(String json) {
-
         MockTradeResultIndex mockTradeResultIndex = JSONUtil.getEntity(json, MockTradeResultIndex.class);
         if (mockTradeResultIndex.getDiffPlatform().equals("Dragonex-Fcoin")) {
             long costTime = System.currentTimeMillis() - mockTradeResultIndex.getCreateTime().getTime();
@@ -56,7 +59,14 @@ public class TradeApp {
             System.out.println("-------------------------------start trade ---------------------------");
             long start = System.currentTimeMillis();
             try {
-                this.tradeService.preTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+//                System.out.println(json);
+                // fixme:do not use hard code
+                if (this.symbol.equals(BTC_USDT)) {
+                    this.tradeServiceBTC.preTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+                }
+                if (this.symbol.equals(ETH_USDT)) {
+                    this.tradeServiceETH.preTrade(JSONUtil.getEntity(json, MockTradeResultIndex.class));
+                }
             } catch (TradeException e) {
                 e.printStackTrace();
             }
@@ -66,9 +76,13 @@ public class TradeApp {
     }
 
 
-    public void receiveDiff(String topic) {
-        log.info("Topic:" + topic + "-depth-trade");
-        this.receiveDepthDiff(topic + "-depth-trade");
+    public void receiveDiff(String symbol) {
+        this.symbol = symbol;
+        String topic = symbol + TRADE_TOPIC_SUFFIX;
+        log.info("Listening Topic:" + topic);
+        this.receiveDepthDiff(topic);
     }
+
+
 }
 

@@ -68,10 +68,16 @@ public class TradeServiceBTC {
                 .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getAvailable() : 0).build();
         return accountA;
     }
+
+    //Fixme mock account for test
+    private AccountDto mockAccount(String platName, String symbol) {
+        return AccountDto.builder().platform(platName).symbol(symbol).money(1000).virtualCurrency(1000f / 7000).build();
+    }
+
     private double reduceMinTradeVolume(TradeDirect direct, AccountDto accountA, AccountDto accountB, double eatTradeVolume, double buyPrice) {
         //计算最小量
         double canBuyCoin;
-        if (direct == TradeDirect.A2B) { // 市场A买. 市场B卖
+        if (direct == TradeDirect.B2A) { // 市场A买. 市场B卖
             // B市场卖出币量
             if (accountB.getVirtualCurrency() < eatTradeVolume) {
                 eatTradeVolume = accountB.getVirtualCurrency();
@@ -94,11 +100,14 @@ public class TradeServiceBTC {
     @Transactional
     public boolean trade(MockTradeResultIndex tradeResult) {
 
+        //print
+        log.info("D:{}, Percent:{}", tradeResult.getTradeDirect(), tradeResult.getEatPercent());
         this.symbol = tradeResult.getSymbol();
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
         String symbol = tradeResult.getSymbol().toLowerCase();
         String coinName = symbol.replace("usdt", "");
+        log.info("Trade Coin name：{}", coinName);
         AccountDto accountA = this.initAccount(tradeResult.getPlatformA(), symbol, coinName);
         AccountDto accountB = this.initAccount(tradeResult.getPlatformB(), symbol, coinName);
 
@@ -111,44 +120,38 @@ public class TradeServiceBTC {
         double diffPercent = tradeResult.getEatPercent();
         double eatTradeVolume = tradeResult.getEatTradeVolume();
         // reduce trade volume
-        double minTradeVolume = this.reduceMinTradeVolume(tradeResult.getTradeDirect(), accountA, accountB,
-                eatTradeVolume, buyPrice);
+        double minTradeVolume = this.reduceMinTradeVolume(tradeResult.getTradeDirect()
+                , accountA, accountB, eatTradeVolume, buyPrice);
 
-        if (minTradeVolume <= 0) {
-            log.info("trade volume is 0!");
-            return false;
-        }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
             log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
             return false;
         }
         // // FIXME:Do not use direct A2B; 正向匹配网格
-        if (TradeDirect.B2A == tradeResult.getTradeDirect()) {
+        if (TradeDirect.B2A != tradeResult.getTradeDirect()) {
             GridMatch gridMatch = this.gridService.matchGrid(diffPercent, minTradeVolume, this.symbol);
             minTradeVolume = gridMatch.getMatchResult();
             this.grid = gridMatch.getGrid();
-            log.info("match grid volume:{}", minTradeVolume);
+            log.info("++match grid volume:{}", minTradeVolume);
             if (minTradeVolume == 0) {
-                log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
+                log.info("++trade volume：{} less than min trade volume，not deal！", minTradeVolume);
                 return false;
             }
-        }
-        // 逆向出仓
-        if (TradeDirect.A2B == tradeResult.getTradeDirect()) {
+        } else {// 逆向出仓
             // 检查仓位，准备出库
-            minTradeVolume = this.warehouseService.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume);
+            minTradeVolume = this.warehouseService.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume, symbol);
             if (minTradeVolume == 0) {
-                log.info("Not any assets!");
+                log.info("--Not any assets!");
                 return false;
             } else {
-                log.info("Asserts:[{}] ready to come out!", minTradeVolume);
+                log.info("--Asserts:[{}] ready to come out!", minTradeVolume);
             }
         }
 
         double sellCost = (sellPrice * minTradeVolume) - (sellPrice * minTradeVolume * TRADE_FEES);
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
 
-        if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
+        if (tradeResult.getTradeDirect() == TradeDirect.B2A) { // 市场A买. 市场B卖
             // TODO:计算交易数量
             accountA.setVirtualCurrency(accountA.getVirtualCurrency() + minTradeVolume);
             accountA.setMoney(accountA.getMoney() - buyCost);
@@ -180,10 +183,11 @@ public class TradeServiceBTC {
                 .price(sellPrice).symbol(symbol).type(OrderType.SELL_LIMIT).build();
         log.info("Place order, buy:" + buyOrder + "sell:" + sellOrder);
         String pair = UUID.randomUUID().toString();
-        if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
+        if (tradeResult.getTradeDirect() == TradeDirect.B2A) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             double fees = 1 - FeeUtils.getFee(marketA.getName());
             buyOrder.setAmount(buyOrder.getAmount() / fees);
+            // fixme :mock order for test
             orderService.createOrder(buyOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(sellOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         } else {  // 市场B买. 市场A卖
@@ -213,12 +217,11 @@ public class TradeServiceBTC {
         record.setUpPercent(tradeContext.getUpPoint());
         this.tradeRecordRepository.save(record);
         // build warehouse
-        if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
+        if (tradeResult.getTradeDirect() != TradeDirect.B2A) {
             this.warehouseService.buildWareHouse(record,
-                    this.tradeContext.getWareHouseDiff(), this.grid.getID());
+                    this.tradeContext.getWareHouseDiff(), this.grid.getID(), symbol);
         }
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start));
         return true;
     }
-
 }

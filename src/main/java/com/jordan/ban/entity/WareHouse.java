@@ -39,4 +39,6 @@ public class WareHouse {
 
     private Long gridId;
 
+    private String symbol;
+
 }
