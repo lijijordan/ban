@@ -4,7 +4,9 @@ import com.jordan.ban.domain.AccountDto;
 import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.domain.TradeDirect;
 import com.jordan.ban.domain.in.Greeting;
+import com.jordan.ban.domain.in.ReplaceOrderRequest;
 import com.jordan.ban.entity.Account;
+import com.jordan.ban.entity.Order;
 import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.TradeCounter;
 import com.jordan.ban.market.parser.Dragonex;
@@ -15,11 +17,11 @@ import com.jordan.ban.service.TradeRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -110,5 +112,9 @@ public class TradeController {
     }
 
 
-
+    @PostMapping("/replace")
+    @ResponseBody
+    public Order replaceOrder(@RequestBody ReplaceOrderRequest request) {
+        return this.orderService.replaceOrder(request.getOrderId(), request.getPrice());
+    }
 }

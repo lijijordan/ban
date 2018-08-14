@@ -8,6 +8,7 @@ import com.jordan.ban.entity.Order;
 import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.entity.TradeStatistics;
 import com.jordan.ban.exception.ApiException;
+import com.jordan.ban.exception.ResourceException;
 import com.jordan.ban.exception.StatisticException;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.TradeContext;
@@ -19,6 +20,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +187,7 @@ public class OrderService {
             } catch (ApiException e) {
                 try {
                     log.info("After 2 seconds, try to place order again.");
-                    Thread.sleep(2000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
@@ -198,8 +200,6 @@ public class OrderService {
 
 
     /**
-     * 创建订单
-     *
      * @param orderRequest
      * @param market
      * @param pair
@@ -229,5 +229,25 @@ public class OrderService {
 
     public List<ProfitStatistics> queryProfitStatistics() {
         return this.profitStatisticsRepository.findAllByOrderByCreateTimeDesc();
+    }
+
+
+    @Transactional
+    public Order replaceOrder(String orderId, double price) {
+        Order origin = this.orderRepository.findByOrderId(orderId);
+        if (orderId == null) {
+            throw new ResourceException("not found order.");
+        }
+        // place order again.
+        Order order = this.createOrder(OrderRequest.builder().amount(origin.getAmount() - origin.getFilledAmount())
+                        .type(origin.getType())
+                        .price(price).symbol(origin.getSymbol()).build(),
+                MarketFactory.getMarket(origin.getPlatform())
+                , origin.getOrderPairKey(), origin.getTradeDirect(), origin.getDiffPercent());
+
+        if (order != null) {
+            this.orderRepository.delete(origin);
+        }
+        return order;
     }
 }
