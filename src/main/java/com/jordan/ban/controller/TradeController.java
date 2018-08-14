@@ -86,7 +86,7 @@ public class TradeController {
                 .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getBalance() : 0).build();
 
 
-        model.addAttribute("orderList", this.orderService.queryOrder("ethusdt", date));
+        model.addAttribute("orderList", this.orderService.getUnfilledOrders());
         model.addAttribute("recordList", this.tradeRecordService.queryAndStatisticTradeRecord(date));
         model.addAttribute("accountA", accountA);
         model.addAttribute("accountB", accountB);
