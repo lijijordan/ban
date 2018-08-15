@@ -35,7 +35,7 @@ public class TradeApplication {
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
 
         GridService gridService = context.getBean(GridService.class);
-        initETHGrid(gridService);
+//        initETHGrid(gridService);
 //        initBTCGrid(gridService);
 
         TradeApp tradeApp = context.getBean(TradeApp.class);
@@ -47,6 +47,17 @@ public class TradeApplication {
     }
 
 
+    /**
+     * ================== init grid ================
+     * 2018-08-15 23:00:48.942  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 0.5%~1.0% : 10.0%
+     * 2018-08-15 23:00:49.035  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 1.0%~1.5% : 20.0%
+     * 2018-08-15 23:00:49.039  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 1.5%~2.0% : 20.0%
+     * 2018-08-15 23:00:49.044  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 2.0%~2.5% : 20.0%
+     * 2018-08-15 23:00:49.053  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 2.5%~3.0% : 20.0%
+     * 2018-08-15 23:00:49.063  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 3.0%~4.0% : 5.0%
+     * 2018-08-15 23:00:49.070  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 4.0%~100.0% : 5.0%
+     * @param gridService
+     */
     public static void initETHGrid(GridService gridService) {
         log.info("================== init grid ================");
         if (gridService.findGridsBySymbol(ETH_USDT).isEmpty()) {
