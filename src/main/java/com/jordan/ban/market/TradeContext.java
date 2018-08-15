@@ -22,7 +22,7 @@ public class TradeContext {
 
     private float avgFloatPercent = 0.1f;
 
-    private double wareHouseDiff = 0.006;
+    private double wareHouseDiff = 0.008;
     private float minTradeFloat = 0.025f;
 
     private double a2bCurrentPercent;
@@ -54,7 +54,7 @@ public class TradeContext {
     public void setB2aCurrentPercent(double b2aCurrentPercent) {
         this.b2aCurrentPercent = b2aCurrentPercent;
     }
-    private int orderTryTimes = 5;
+    private int orderTryTimes = 10;
 
     public int getOrderTryTimes() {
         return orderTryTimes;

@@ -130,12 +130,12 @@ public class TradeServiceBTC {
         // // FIXME:Do not use direct A2B; 正向匹配网格
         if (TradeDirect.B2A != tradeResult.getTradeDirect()) {
             GridMatch gridMatch = this.gridService.matchGrid(diffPercent, minTradeVolume, this.symbol);
-            minTradeVolume = gridMatch.getMatchResult();
-            this.grid = gridMatch.getGrid();
-            log.info("++match grid volume:{}", minTradeVolume);
-            if (minTradeVolume == 0) {
-                log.info("++trade volume：{} less than min trade volume，not deal！", minTradeVolume);
+            if (!gridMatch.isMatch()) {
+                log.info("Not match any grid.");
                 return false;
+            } else {
+                this.grid = gridMatch.getGrid();
+                log.info("++match grid volume:{}", minTradeVolume);
             }
         } else {// 逆向出仓
             // 检查仓位，准备出库

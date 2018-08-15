@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
@@ -72,7 +73,9 @@ public class WarehouseService {
         if (grid == null) {
             throw new RuntimeException("Can not find any grid!");
         }
-        grid.setLastVolume(grid.getLastVolume() + result);
+        // fixme:
+        double fillGridVolume = grid.getLastVolume() + result;
+        grid.setLastVolume(fillGridVolume > grid.getQuota() ? grid.getQuota() : fillGridVolume);
         log.info("fill back grid data:{}", grid);
         this.gridRepository.save(grid);
         log.info("out warehouse volume:{}", result);

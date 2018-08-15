@@ -177,23 +177,24 @@ public class OrderService {
         }
     }
 
-    private String placeOrder(OrderRequest orderRequest, MarketParser market, int times) {
+    private String placeOrder(OrderRequest orderRequest, MarketParser market) {
         String orderId = "";
         int i = 0;
-        while (i < times) {
+        while (i < tradeContext.getOrderTryTimes()) {
             try {
                 orderId = market.placeOrder(orderRequest);
                 return orderId;
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 try {
                     log.info("After 2 seconds, try to place order again.");
-                    Thread.sleep(5000);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
                 e.printStackTrace();
+            } finally {
+                i++;
             }
-            i++;
         }
         return orderId;
     }
@@ -207,7 +208,7 @@ public class OrderService {
      */
 //    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算yue
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
-        String orderAid = this.placeOrder(orderRequest, market, tradeContext.getOrderTryTimes());
+        String orderAid = this.placeOrder(orderRequest, market);
         if (StringUtils.isEmpty(orderAid)) {
             slackService.sendMessage("Order", "Create Order failed！");
             throw new TradeException("Create Order failed！");
