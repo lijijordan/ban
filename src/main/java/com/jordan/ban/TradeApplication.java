@@ -49,8 +49,14 @@ public class TradeApplication {
 
     /**
      * ================== init grid ================
-    5 23:00:49.070  INFO 22638 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 4.0%~100.0% : 5.0%
-     *
+     * 2018-08-15 23:24:25.063  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 0.0%~0.5% : 10.0%
+     * 2018-08-15 23:24:25.160  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 0.5%~1.0% : 20.0%
+     * 2018-08-15 23:24:25.170  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 1.0%~1.5% : 20.0%
+     * 2018-08-15 23:24:25.174  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 1.5%~2.0% : 20.0%
+     * 2018-08-15 23:24:25.179  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 2.0%~2.5% : 10.0%
+     * 2018-08-15 23:24:25.190  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 2.5%~3.0% : 10.0%
+     * 2018-08-15 23:24:25.198  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 3.0%~4.0% : 5.0%
+     * 2018-08-15 23:24:25.206  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 4.0%~100.0% : 5.0%
      * @param gridService
      */
     public static void initETHGrid(GridService gridService) {
