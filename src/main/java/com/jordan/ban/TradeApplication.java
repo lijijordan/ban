@@ -2,6 +2,7 @@ package com.jordan.ban;
 
 import com.jordan.ban.market.TradeApp;
 import com.jordan.ban.service.GridService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -21,6 +22,7 @@ import static com.jordan.ban.common.Constant.ETH_USDT;
 @ComponentScan("com.jordan.ban")
 @EnableJpaRepositories("com.jordan.ban.dao")
 @SpringBootApplication
+@Slf4j
 public class TradeApplication {
 
     @PostConstruct
@@ -33,7 +35,7 @@ public class TradeApplication {
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
 
         GridService gridService = context.getBean(GridService.class);
-//        initETHGrid(gridService);
+        initETHGrid(gridService);
 //        initBTCGrid(gridService);
 
         TradeApp tradeApp = context.getBean(TradeApp.class);
@@ -46,13 +48,16 @@ public class TradeApplication {
 
 
     public static void initETHGrid(GridService gridService) {
+        log.info("================== init grid ================");
         if (gridService.findGridsBySymbol(ETH_USDT).isEmpty()) {
-            final double totalCoin = 2.1022343122678095; // fixme
+            final double totalCoin = 5.14261775; // todo
             gridService.initGrid(ETH_USDT, 0.005f, 0.01f, 0.1f, totalCoin);
-            gridService.initGrid(ETH_USDT, 0.01f, 0.02f, 0.2f, totalCoin);
-            gridService.initGrid(ETH_USDT, 0.02f, 0.03f, 0.3f, totalCoin);
-            gridService.initGrid(ETH_USDT, 0.03f, 0.04f, 0.2f, totalCoin);
-            gridService.initGrid(ETH_USDT, 0.04f, 1f, 0.2f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.01f, 0.015f, 0.2f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.015f, 0.02f, 0.2f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.02f, 0.025f, 0.2f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.025f, 0.03f, 0.2f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.03f, 0.04f, 0.05f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.04f, 1f, 0.05f, totalCoin);
         }
     }
 
