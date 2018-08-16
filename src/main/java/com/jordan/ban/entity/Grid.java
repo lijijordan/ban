@@ -16,7 +16,7 @@ import javax.persistence.Id;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Grid {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long ID;
@@ -37,4 +37,6 @@ public class Grid {
 
     //区间的配额
     private float quota;
+
+    private double totalMatch;
 }

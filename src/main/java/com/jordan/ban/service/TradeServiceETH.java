@@ -59,6 +59,7 @@ public class TradeServiceETH {
 
     public synchronized void preTrade(MockTradeResultIndex tradeResult) {
         this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
+        this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
             log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);

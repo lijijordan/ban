@@ -168,6 +168,8 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td>sum B-A profit</td>
         <td>sum B-A avg(diff)</td>
         <td>sum B-A avg(profit)</td>
+        <td>Total USDT</td>
+        <td>Total CNY</td>
     </tr>
 
     <tr th:each="stat :${profitStatistics}">
@@ -185,7 +187,8 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td th:text="${stat.getSumB2AProfit()}"></td>
         <td th:text="${stat.getAvgB2ADiffPercent()}"></td>
         <td th:text="${stat.getAvgB2AProfit()}"></td>
-
+        <td th:text="${stat.getTotalUSDT()}"></td>
+        <td th:text="${stat.getTotalCNY()}"></td>
     </tr>
 </table>
 

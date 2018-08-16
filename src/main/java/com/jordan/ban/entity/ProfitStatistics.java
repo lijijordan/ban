@@ -60,4 +60,7 @@ public class ProfitStatistics extends BaseEntity {
     private double avgA2BProfit;
     private double avgB2AProfit;
 
+    private double totalUSDT;
+    private double totalCNY;
+
 }

@@ -47,6 +47,7 @@ public class GridService {
         }
         if (isMatch) {
             log.info("match grid update grid:{}", grid);
+            grid.setTotalMatch(grid.getTotalMatch() + result);
             this.gridRepository.save(grid);
         }
         return GridMatch.builder().grid(grid).matchResult(result).isMatch(isMatch).build();

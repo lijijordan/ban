@@ -19,9 +19,8 @@ public class BalanceDto {
     // 可以使用的
     private double available;
     private double frozen;
+    // 总的
     private double balance;
-
-
 
 
     public Balance toBalance(Platform platform) {

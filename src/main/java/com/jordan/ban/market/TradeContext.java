@@ -30,6 +30,15 @@ public class TradeContext {
 
     private double b2aCurrentPercent;
     private double b2aCurrentVolume;
+
+    private double currentEthPrice;
+
+    public double getCurrentEthPrice() {
+        return currentEthPrice;
+    }
+    public void setCurrentEthPrice(double currentEthPrice) {
+        this.currentEthPrice = currentEthPrice;
+    }
     public double getA2bCurrentVolume() {
         return a2bCurrentVolume;
     }

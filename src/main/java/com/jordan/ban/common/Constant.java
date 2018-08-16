@@ -1,5 +1,7 @@
 package com.jordan.ban.common;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 /**
  * User: liji
  * Date: 18/5/17
@@ -42,4 +44,8 @@ public class Constant {
     public static final String XRP_USDT = "XRPUSDT";
 
     public static final String USDT = "USDT";
+
+    public static final String ETH = "ETH";
+
+    public static final float EXCHANGE_RATE = 6.8f;
 }

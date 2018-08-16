@@ -6,6 +6,8 @@ import com.jordan.ban.domain.BalanceDto;
 import com.jordan.ban.domain.CycleType;
 import com.jordan.ban.domain.StatisticRecordDto;
 import com.jordan.ban.entity.ProfitStatistics;
+import com.jordan.ban.market.TradeContext;
+import com.jordan.ban.market.TradeCounter;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.Map;
 
+import static com.jordan.ban.common.Constant.ETH;
+import static com.jordan.ban.common.Constant.EXCHANGE_RATE;
 import static com.jordan.ban.common.Constant.USDT;
 
 @Service
@@ -29,6 +33,9 @@ public class StatisticService {
 
     @Autowired
     private TradeRecordService tradeRecordService;
+
+    @Autowired
+    private TradeContext tradeContext;
 
     @Autowired
     private SlackService slackService;
@@ -59,6 +66,17 @@ public class StatisticService {
             statisticRecordDto = StatisticRecordDto.builder().build();
         }
 
+
+        // static CNY
+        BalanceDto aUsdt = balanceA.get(USDT);
+        BalanceDto bUsdt = balanceB.get(USDT);
+        BalanceDto aEth = balanceA.get(ETH);
+        BalanceDto bEth = balanceB.get(ETH);
+
+        double totalUsdt = aUsdt.getBalance() + bUsdt.getBalance()
+                + ((aEth.getBalance() + bEth.getBalance()) * tradeContext.getCurrentEthPrice());
+
+
         ProfitStatistics after = ProfitStatistics.builder().cycleType(CycleType.day).symbol(symbol)
                 .increase(increase).sumCoin(coinAfter).sumMoney(moneyAfter)
                 .increasePercent(increasePercent).platformA(accountA.getPlatform())
@@ -70,6 +88,7 @@ public class StatisticService {
                 .sumB2AProfit(statisticRecordDto.getSumB2AProfit())
                 .avgA2BProfit(statisticRecordDto.getAvgA2BProfit())
                 .avgB2AProfit(statisticRecordDto.getAvgB2AProfit())
+                .totalUSDT(totalUsdt).totalCNY(EXCHANGE_RATE * totalUsdt)
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);
         slackService.sendMessage("Statistic Profit", after.toString());

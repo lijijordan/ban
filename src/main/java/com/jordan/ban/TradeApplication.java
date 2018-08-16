@@ -27,15 +27,14 @@ public class TradeApplication {
 
     @PostConstruct
     void started() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
     }
 
     public static void main(String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
-        ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
 
+        ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         GridService gridService = context.getBean(GridService.class);
-        initETHGrid(gridService);
+//        initETHGrid(gridService);
 //        initBTCGrid(gridService);
 
         TradeApp tradeApp = context.getBean(TradeApp.class);
@@ -57,6 +56,7 @@ public class TradeApplication {
      * 2018-08-15 23:24:25.190  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 2.5%~3.0% : 10.0%
      * 2018-08-15 23:24:25.198  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 3.0%~4.0% : 5.0%
      * 2018-08-15 23:24:25.206  INFO 23300 --- [  restartedMain] com.jordan.ban.service.GridService       : Init grid web: 4.0%~100.0% : 5.0%
+     *
      * @param gridService
      */
     public static void initETHGrid(GridService gridService) {
