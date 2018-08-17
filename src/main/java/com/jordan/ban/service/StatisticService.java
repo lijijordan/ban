@@ -68,10 +68,10 @@ public class StatisticService {
 
 
         // static CNY
-        BalanceDto aUsdt = balanceA.get(USDT);
-        BalanceDto bUsdt = balanceB.get(USDT);
-        BalanceDto aEth = balanceA.get(ETH);
-        BalanceDto bEth = balanceB.get(ETH);
+        BalanceDto aUsdt = balanceA.get(USDT.toLowerCase());
+        BalanceDto bUsdt = balanceB.get(USDT.toLowerCase());
+        BalanceDto aEth = balanceA.get(ETH.toLowerCase());
+        BalanceDto bEth = balanceB.get(ETH.toLowerCase());
 
         double totalUsdt = aUsdt.getBalance() + bUsdt.getBalance()
                 + ((aEth.getBalance() + bEth.getBalance()) * tradeContext.getCurrentEthPrice());

@@ -20,6 +20,7 @@ public class StatisticTask {
      */
     @Scheduled(cron = "0 0 12 * * ?")
     public void statisticDragonexVSHuobiProfit() {
+        log.info("schedule statistic....");
         String symbol = "ethusdt";
         String coinName = "eth";
         String marketA = Dragonex.PLATFORM_NAME;
