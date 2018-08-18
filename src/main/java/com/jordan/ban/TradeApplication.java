@@ -34,7 +34,7 @@ public class TradeApplication {
 
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         GridService gridService = context.getBean(GridService.class);
-//        initETHGrid(gridService);
+        initETHGrid(gridService);
 //        initBTCGrid(gridService);
 
         TradeApp tradeApp = context.getBean(TradeApp.class);
@@ -63,10 +63,19 @@ public class TradeApplication {
         log.info("================== init grid ================");
         if (gridService.findGridsBySymbol(ETH_USDT).isEmpty()) {
             final double totalCoin = 5.14261775; // todo
+
+            gridService.initGrid(ETH_USDT, -0.005f, 0f, 0.1f, totalCoin);
+            gridService.initGrid(ETH_USDT, -0.01f, -0.005f, 0.1f, totalCoin);
+
+
+            gridService.initGrid(ETH_USDT, 0.01f, 0.015f, 0.1f, totalCoin);
+            gridService.initGrid(ETH_USDT, 0.015f, 0.02f, 0.1f, totalCoin);
+
+
+            // 6
+
             gridService.initGrid(ETH_USDT, 0f, 0.005f, 0.1f, totalCoin);
             gridService.initGrid(ETH_USDT, 0.005f, 0.01f, 0.2f, totalCoin);
-            gridService.initGrid(ETH_USDT, 0.01f, 0.015f, 0.2f, totalCoin);
-            gridService.initGrid(ETH_USDT, 0.015f, 0.02f, 0.2f, totalCoin);
             gridService.initGrid(ETH_USDT, 0.02f, 0.025f, 0.1f, totalCoin);
             gridService.initGrid(ETH_USDT, 0.025f, 0.03f, 0.1f, totalCoin);
             gridService.initGrid(ETH_USDT, 0.03f, 0.04f, 0.05f, totalCoin);

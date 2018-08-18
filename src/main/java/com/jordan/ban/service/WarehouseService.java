@@ -74,8 +74,8 @@ public class WarehouseService {
             throw new RuntimeException("Can not find any grid!");
         }
         // fixme:
-        double fillGridVolume = grid.getLastVolume() + result;
-        grid.setLastVolume(fillGridVolume > grid.getQuota() ? grid.getQuota() : fillGridVolume);
+        grid.setLastVolume(grid.getLastVolume() + result);
+
         log.info("fill back grid data:{}", grid);
         this.gridRepository.save(grid);
         log.info("out warehouse volume:{}", result);
