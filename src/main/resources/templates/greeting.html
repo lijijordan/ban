@@ -204,7 +204,7 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
             // for (var j = 1; j < rows[i].cells.length; j++) {
             //     console.log("第" + (i + 1) + "行，第" + (j + 1) + "列的值是:" + rows[i].cells[j].innerHTML);
             // }
-            if (rows[i].cells[1].innerHTML < 0) {
+            if (rows[i].cells[2].innerHTML == 'B2A') {
                 rows[i].style.color = "red";
             } else {
                 rows[i].style.color = "green";
