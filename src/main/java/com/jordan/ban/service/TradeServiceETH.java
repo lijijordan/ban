@@ -72,7 +72,11 @@ public class TradeServiceETH {
             tradeContext.setB2aCurrentPercent(tradeResult.getEatPercent());
             tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
         }
-        this.trade(tradeResult);
+        try {
+            this.trade(tradeResult);
+        } catch (TradeException e) {
+            log.info("trade exception:" + e.getMessage());
+        }
     }
 
     private AccountDto initAccount(String platName, String symbol, String coinName) {
@@ -105,8 +109,8 @@ public class TradeServiceETH {
         return eatTradeVolume;
     }
 
-    @Transactional
-    public boolean trade(MockTradeResultIndex tradeResult) {
+    @Transactional(rollbackOn = TradeException.class)
+    public boolean trade(MockTradeResultIndex tradeResult) throws TradeException {
         this.symbol = tradeResult.getSymbol();
         MarketParser marketA = MarketFactory.getMarket(tradeResult.getPlatformA());
         MarketParser marketB = MarketFactory.getMarket(tradeResult.getPlatformB());
@@ -129,11 +133,11 @@ public class TradeServiceETH {
 
         if (minTradeVolume <= 0) {
             log.info("trade volume is 0!");
-            return false;
+            throw new TradeException("trade volume is 0");
         }
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
             log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-            return false;
+            throw new TradeException("less than min trade volume，not deal！");
         }
         // // FIXME:Do not use direct A2B; 正向匹配网格
         if (TradeDirect.B2A == tradeResult.getTradeDirect()) {
@@ -143,7 +147,7 @@ public class TradeServiceETH {
             log.info("match grid volume:{}", minTradeVolume);
             if (minTradeVolume == 0) {
                 log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-                return false;
+                throw new TradeException("less than min trade volume，not deal！");
             }
         }
         // 逆向出仓
@@ -152,7 +156,7 @@ public class TradeServiceETH {
             minTradeVolume = this.warehouseService.checkAndOutWareHouse(tradeResult.getEatPercent(), minTradeVolume, symbol);
             if (minTradeVolume == 0) {
                 log.info("Not any assets!");
-                return false;
+                throw new TradeException("Not any assets!");
             } else {
                 log.info("Asserts:[{}] ready to come out!", minTradeVolume);
             }
@@ -176,11 +180,11 @@ public class TradeServiceETH {
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
             log.info("Money is not enough！!");
-            return false;
+            throw new TradeException("Money is not enough！!");
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
             log.info("Coin is not enough！!");
-            return false;
+            throw new TradeException("Coin is not enough！!");
         }
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         log.info("============================ PLACE ORDER ============================");
