@@ -39,13 +39,13 @@ public class HttpUtils {
             result = sb.toString();
             log.info("response:{}", result);
         } catch (Exception e) {
-            System.out.println("[request error][address:" + uri + "][error msg:" + e.getMessage() + "]");
+            e.printStackTrace();
         } finally {
             try {
                 if (null != in)
                     in.close();
             } catch (Exception e2) {
-                System.out.println("[close stream error][error msg:" + e2.getMessage() + "]");
+                e2.printStackTrace();
             }
         }
         return result;
@@ -89,7 +89,7 @@ public class HttpUtils {
             result = bs.toString();
             log.info("response:{}", result);
         } catch (Exception e) {
-            System.out.println("[request error][address:" + path + "][params:" + jsonData + "][error msg:" + e.getMessage() + "]");
+            e.printStackTrace();
         } finally {
             try {
                 if (null != in)
@@ -97,7 +97,7 @@ public class HttpUtils {
                 if (null != out)
                     out.close();
             } catch (Exception e2) {
-                System.out.println("[close stream error][error msg:" + e2.getMessage() + "]");
+                e2.printStackTrace();
             }
         }
         return result;
