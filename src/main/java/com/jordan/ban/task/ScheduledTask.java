@@ -24,7 +24,7 @@ public class ScheduledTask {
     @Autowired
     private HealthChecker healthChecker;
 
-    private static final long CHECK_ORDER_RATE = 5000;//5 second
+    private static final long CHECK_ORDER_RATE = 50000;//50 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
 
     private static final long HOURS_ONE = 1000 * 60 * 60; // 1 hour
