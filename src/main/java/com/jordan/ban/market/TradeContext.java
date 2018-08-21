@@ -22,7 +22,7 @@ public class TradeContext {
 
     private float avgFloatPercent = 0.1f;
 
-    private double wareHouseDiff = 0.008;
+    private double wareHouseDiff = 0.006;
     private float minTradeFloat = 0.025f;
 
     private double a2bCurrentPercent;
