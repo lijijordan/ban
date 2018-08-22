@@ -44,7 +44,12 @@ public class BanProductApplication {
 //        productApplication.diffTask(Constant.LTC_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BTC_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
         productApplication.diffTask(Constant.BCH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 2000);
+
+
+        // double monitor
         productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
+        productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
+
 //        productApplication.diffTask(Constant.XRP_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 3000);
 
         System.out.println("Product application Started!");

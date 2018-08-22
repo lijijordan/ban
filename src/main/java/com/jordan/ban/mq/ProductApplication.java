@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -37,8 +38,9 @@ public class ProductApplication {
                     Map<String, Object> mockTrade = new HashMap<>();
                     // FIXME: use asynchronous
                     long start = System.currentTimeMillis();
-                    Depth depth1 = m1.getDepth(symbol);
-                    Depth depth2 = m2.getDepth(symbol);
+                    Depth depth1 = CompletableFuture.supplyAsync(() -> m1.getDepth(symbol)).get();
+                    Depth depth2 = CompletableFuture.supplyAsync(() -> m2.getDepth(symbol)).get();
+
                     double d1ask = depth1.getAsks().get(0).getPrice();
                     double d1askVolume = depth1.getAsks().get(0).getVolume();
                     double d1bid = depth1.getBids().get(0).getPrice();
