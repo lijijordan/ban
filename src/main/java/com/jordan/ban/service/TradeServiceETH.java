@@ -50,7 +50,7 @@ public class TradeServiceETH {
     private String symbol;
 
     private TradeCounter tradeCounter;
-    private String tradeResultIdMark;
+    private String tradeResultIdMark = "";
 
     public synchronized boolean preTrade(MockTradeResultIndex tradeResult) {
 
