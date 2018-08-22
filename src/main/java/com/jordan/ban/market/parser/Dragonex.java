@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleBinaryOperator;
 
@@ -148,14 +150,38 @@ public class Dragonex extends BaseMarket implements MarketParser {
      */
     @Override
     public Depth getDepth(String symbol) {
+
         Depth depth = new Depth();
         depth.setTime(new Date());
         depth.setSymbol(symbol);
         depth.setPlatform(PLATFORM_NAME);
+
+        CompletableFuture<List<Ticker>> bidsFuture = CompletableFuture.supplyAsync(() -> {
+            List<Ticker> list = null;
+            try {
+                list = getBids(symbol);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return list;
+        });
+
+        CompletableFuture<List<Ticker>> asksFuture = CompletableFuture.supplyAsync(() -> {
+            List<Ticker> list = null;
+            try {
+                list = getAsks(symbol);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return list;
+        });
+
         try {
-            depth.setBids(getBids(symbol));
-            depth.setAsks(getAsks(symbol));
-        } catch (JSONException e) {
+            depth.setBids(bidsFuture.get());
+            depth.setAsks(asksFuture.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
         return depth;
