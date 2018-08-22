@@ -108,6 +108,7 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td>diff percent</td>
         <td>cost</td>
         <td>volume</td>
+        <td>order key</td>
     </tr>
 
     <tr th:each="record :${recordList.getRecordList()}">
@@ -117,6 +118,7 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td th:text="${record.eatDiffPercent}"></td>
         <td th:text="${record.tradeCostMoney}"></td>
         <td th:text="${record.volume}"></td>
+        <td th:text="${record.orderPairKey}"></td>
     </tr>
 </table>
 

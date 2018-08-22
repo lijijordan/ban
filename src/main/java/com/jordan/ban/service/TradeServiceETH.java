@@ -59,7 +59,7 @@ public class TradeServiceETH {
             tradeContext.setA2bCurrentVolume(tradeResult.getEatTradeVolume());
 
             if (tradeResultIdMarkA2B.equals(tradeResult.getId())) {
-                log.info("same id :{} ", tradeResult.getId());
+                log.info("same id A2B :{} ", tradeResult.getId());
                 return false;
             }
             tradeResultIdMarkA2B = tradeResult.getId();
@@ -68,7 +68,7 @@ public class TradeServiceETH {
             tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
 
             if (tradeResultIdMarkB2A.equals(tradeResult.getId())) {
-                log.info("same id :{} ", tradeResult.getId());
+                log.info("same id B2A :{} ", tradeResult.getId());
                 return false;
             }
             tradeResultIdMarkB2A = tradeResult.getId();
@@ -238,6 +238,7 @@ public class TradeServiceETH {
         record.setTotalMoney(totalMoney);
         record.setDownPercent(tradeContext.getDownPoint());
         record.setUpPercent(tradeContext.getUpPoint());
+        record.setOrderPairKey(pair);
         this.tradeRecordRepository.save(record);
         // build warehouse
         if (tradeResult.getTradeDirect() == TradeDirect.B2A) {

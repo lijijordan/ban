@@ -48,4 +48,6 @@ public class TradeRecord extends BaseEntity {
     private double upMax;
     private double downMax;
 
+    private String orderPairKey;
+
 }
