@@ -50,15 +50,29 @@ public class TradeServiceETH {
     private String symbol;
 
     private TradeCounter tradeCounter;
-    private String tradeResultIdMark = "";
+    private String tradeResultIdMarkA2B = "";
+    private String tradeResultIdMarkB2A = "";
 
     public synchronized boolean preTrade(MockTradeResultIndex tradeResult) {
+        if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
+            tradeContext.setA2bCurrentPercent(tradeResult.getEatPercent());
+            tradeContext.setA2bCurrentVolume(tradeResult.getEatTradeVolume());
 
-        if (tradeResultIdMark.equals(tradeResult.getId())) {
-            log.info("same id :{} ", tradeResult.getId());
-            return false;
+            if (tradeResultIdMarkA2B.equals(tradeResult.getId())) {
+                log.info("same id :{} ", tradeResult.getId());
+                return false;
+            }
+            tradeResultIdMarkA2B = tradeResult.getId();
+        } else {
+            tradeContext.setB2aCurrentPercent(tradeResult.getEatPercent());
+            tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
+
+            if (tradeResultIdMarkB2A.equals(tradeResult.getId())) {
+                log.info("same id :{} ", tradeResult.getId());
+                return false;
+            }
+            tradeResultIdMarkB2A = tradeResult.getId();
         }
-        tradeResultIdMark = tradeResult.getId();
         this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
         this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
         // 过滤交易数小于最小交易量的数据
@@ -66,13 +80,7 @@ public class TradeServiceETH {
             log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
             return false;
         }
-        if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
-            tradeContext.setA2bCurrentPercent(tradeResult.getEatPercent());
-            tradeContext.setA2bCurrentVolume(tradeResult.getEatTradeVolume());
-        } else {
-            tradeContext.setB2aCurrentPercent(tradeResult.getEatPercent());
-            tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
-        }
+
         try {
             return this.trade(tradeResult);
         } catch (TradeException e) {
