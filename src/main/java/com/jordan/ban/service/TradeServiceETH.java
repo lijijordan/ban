@@ -1,11 +1,9 @@
 package com.jordan.ban.service;
 
 import com.jordan.ban.dao.TradeRecordRepository;
-import com.jordan.ban.dao.WareHouseRepository;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.Grid;
 import com.jordan.ban.entity.TradeRecord;
-import com.jordan.ban.entity.WareHouse;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.FeeUtils;
 import com.jordan.ban.market.TradeContext;
@@ -16,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -55,9 +50,15 @@ public class TradeServiceETH {
     private String symbol;
 
     private TradeCounter tradeCounter;
-
+    private String tradeResultIdMark;
 
     public synchronized boolean preTrade(MockTradeResultIndex tradeResult) {
+
+        if (tradeResultIdMark.equals(tradeResult.getId())) {
+            log.info("same id :{} ", tradeResult.getId());
+            return false;
+        }
+        tradeResultIdMark = tradeResult.getId();
         this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
         this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
         // 过滤交易数小于最小交易量的数据
@@ -200,14 +201,14 @@ public class TradeServiceETH {
         String pair = UUID.randomUUID().toString();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
-            double fees = 1 - FeeUtils.getFee(marketA.getName());
-            buyOrder.setAmount(buyOrder.getAmount() / fees);
+            /*double fees = 1 - FeeUtils.getFee(marketA.getName());
+            buyOrder.setAmount(buyOrder.getAmount() / fees);*/
             orderService.createOrder(buyOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(sellOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         } else {  // 市场B买. 市场A卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
-            double fees = 1 - FeeUtils.getFee(marketB.getName());
-            buyOrder.setAmount(buyOrder.getAmount() / fees);
+            /*double fees = 1 - FeeUtils.getFee(marketB.getName());
+            buyOrder.setAmount(buyOrder.getAmount() / fees);*/
             orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
             orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
         }

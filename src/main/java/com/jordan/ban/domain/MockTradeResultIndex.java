@@ -15,6 +15,8 @@ import java.util.Date;
 @NoArgsConstructor
 public class MockTradeResultIndex {
 
+    private String id;
+
     /**
      * 价差
      */
