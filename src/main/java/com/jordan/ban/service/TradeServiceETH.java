@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import static com.jordan.ban.market.trade.TradeHelper.TRADE_FEES;
 
@@ -211,14 +212,23 @@ public class TradeServiceETH {
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             /*double fees = 1 - FeeUtils.getFee(marketA.getName());
             buyOrder.setAmount(buyOrder.getAmount() / fees);*/
-            orderService.createOrder(buyOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
-            orderService.createOrder(sellOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
+            try {
+                orderService.createOrderAsync(buyOrder, sellOrder, marketA, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
+            } catch (Exception e) {
+                throw new TradeException("Create order failed！!");
+            }
+
         } else {  // 市场B买. 市场A卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
             /*double fees = 1 - FeeUtils.getFee(marketB.getName());
             buyOrder.setAmount(buyOrder.getAmount() / fees);*/
-            orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
-            orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
+//            orderService.createOrder(sellOrder, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
+//            orderService.createOrder(buyOrder, marketB, pair, tradeResult.getTradeDirect(), diffPercent);
+            try {
+                orderService.createOrderAsync(buyOrder, sellOrder, marketB, marketA, pair, tradeResult.getTradeDirect(), diffPercent);
+            } catch (Exception e) {
+                throw new TradeException("Create order failed！!");
+            }
         }
         log.info("Trade done!");
         // 记录Record
@@ -248,5 +258,7 @@ public class TradeServiceETH {
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start));
         return true;
     }
+
+
 
 }

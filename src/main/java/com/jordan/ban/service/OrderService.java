@@ -25,6 +25,7 @@ import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 import static com.jordan.ban.common.Constant.USDT;
 
@@ -53,6 +54,8 @@ public class OrderService {
 
     @Autowired
     private ProfitStatisticsRepository profitStatisticsRepository;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public List<Order> queryOrder(String symbol, Date date) {
         return this.orderRepository.findAllByCreateTime(date);
@@ -203,6 +206,18 @@ public class OrderService {
         return orderId;
     }
 
+    public boolean createOrderAsync(OrderRequest buyOrder, OrderRequest sellOrder, MarketParser marketA, MarketParser marketB, String pair, TradeDirect direct, double diff) throws ExecutionException, InterruptedException {
+        OrderPlace buy = new OrderPlace(buyOrder, marketA, pair, direct, diff);
+        OrderPlace sell = new OrderPlace(sellOrder, marketB, pair, direct, diff);
+        FutureTask<Order> buyTask = new FutureTask(buy);
+        FutureTask<Order> sellTask = new FutureTask(sell);
+        executorService.execute(buyTask);
+        executorService.execute(sellTask);
+        Order a = buyTask.get();
+        Order b = sellTask.get();
+        return a != null && b != null;
+    }
+
 
     /**
      * @param orderRequest
@@ -273,5 +288,27 @@ public class OrderService {
             this.orderRepository.delete(origin);
         }
         return order;
+    }
+
+
+    class OrderPlace implements Callable<Order> {
+        OrderRequest orderRequest;
+        MarketParser market;
+        String pair;
+        TradeDirect direct;
+        double diffPercent;
+        OrderService orderService;
+
+        public OrderPlace(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
+            this.orderRequest = orderRequest;
+            this.market = market;
+            this.pair = pair;
+            this.direct = direct;
+            this.diffPercent = diffPercent;
+        }
+        @Override
+        public Order call() throws Exception {
+            return orderService.createOrder(orderRequest, market, pair, direct, diffPercent);
+        }
     }
 }
