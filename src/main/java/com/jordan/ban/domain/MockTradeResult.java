@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class MockTradeResult {
+
+
     public MockTradeResult(double tradeDiff, double tradePercent, TradeDirect tradeDirect, double minTradeVolume) {
         this.tradeDiff = tradeDiff;
         this.tradePercent = tradePercent;
