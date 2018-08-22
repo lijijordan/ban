@@ -42,11 +42,11 @@ public class StatisticService {
 
     public void statistic(String marketA, String marketB, String symbol, String coinName) {
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(marketA);
-        AccountDto accountA = AccountDto.builder().money(balanceA.get(USDT.toLowerCase()).getAvailable()).platform(marketA).symbol(symbol)
-                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getAvailable() : 0).build();
+        AccountDto accountA = AccountDto.builder().money(balanceA.get(USDT.toLowerCase()).getBalance()).platform(marketA).symbol(symbol)
+                .virtualCurrency(balanceA.get(coinName) != null ? balanceA.get(coinName).getBalance() : 0).build();
         Map<String, BalanceDto> balanceB = accountService.findBalancesCache(marketB);
-        AccountDto accountB = AccountDto.builder().money(balanceB.get(USDT.toLowerCase()).getAvailable()).platform(marketB).symbol(symbol)
-                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getAvailable() : 0).build();
+        AccountDto accountB = AccountDto.builder().money(balanceB.get(USDT.toLowerCase()).getBalance()).platform(marketB).symbol(symbol)
+                .virtualCurrency(balanceB.get(coinName) != null ? balanceB.get(coinName).getBalance() : 0).build();
 
         ProfitStatistics before = profitStatisticsRepository.findTopBySymbolAndAndPlatformAAndAndPlatformBOrderByCreateTimeDesc(symbol, Huobi.PLATFORM_NAME, Fcoin.PLATFORM_NAME);
         double moneyBefore, increase, increasePercent, moneyAfter, coinAfter;
