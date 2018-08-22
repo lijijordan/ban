@@ -54,8 +54,9 @@ public class TradeApp {
                 log.info("[{}]second ago,pass it!", costTime / 1000);
                 return;
             }
-            System.out.println("-------------------------------start trade ---------------------------");
+            log.info("-------------------------------start trade ---------------------------");
             long start = System.currentTimeMillis();
+
             try {
 //                System.out.println(json);
                 MockTradeResultIndex tradeResult = JSONUtil.getEntity(json, MockTradeResultIndex.class);
@@ -65,12 +66,16 @@ public class TradeApp {
                     this.tradeServiceBTC.preTrade(tradeResult);
                 }
                 if (symbol.equals(ETH_USDT)) {
-                    this.tradeServiceETH.preTrade(tradeResult);
+                    boolean b = this.tradeServiceETH.preTrade(tradeResult);
+                    if (b) {
+                        log.info("trade cost time:[" +
+                                (System.currentTimeMillis() - start) + "]ms");
+                    }
                 }
             } catch (TradeException e) {
                 e.printStackTrace();
             }
-            System.out.println("---------------------------------- end ------------------------------- " +
+            log.info("---------------------------------- end ------------------------------- " +
                     (System.currentTimeMillis() - start) + "ms");
         }
     }

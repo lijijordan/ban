@@ -57,13 +57,13 @@ public class TradeServiceETH {
     private TradeCounter tradeCounter;
 
 
-    public synchronized void preTrade(MockTradeResultIndex tradeResult) {
+    public synchronized boolean preTrade(MockTradeResultIndex tradeResult) {
         this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
         this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
             log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
-            return;
+            return false;
         }
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
             tradeContext.setA2bCurrentPercent(tradeResult.getEatPercent());
@@ -73,10 +73,11 @@ public class TradeServiceETH {
             tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
         }
         try {
-            this.trade(tradeResult);
+            return this.trade(tradeResult);
         } catch (TradeException e) {
             log.info("trade exception:" + e.getMessage());
         }
+        return false;
     }
 
     private AccountDto initAccount(String platName, String symbol, String coinName) {
