@@ -110,6 +110,7 @@ public class ProductApplication {
         indexBA.setBuyCost(eatBA.getBuyCost());
         indexBA.setBuyPrice(eatBA.getBuyPrice());
         indexBA.setSellPrice(eatBA.getSellPrice());
+        indexBA.setId(marketDepth.toString());
         return indexBA;
     }
 
