@@ -55,8 +55,6 @@ public class OrderService {
     @Autowired
     private ProfitStatisticsRepository profitStatisticsRepository;
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(2);
-
     public List<Order> queryOrder(String symbol, Date date) {
         return this.orderRepository.findAllByCreateTime(date);
     }
@@ -206,18 +204,12 @@ public class OrderService {
         return orderId;
     }
 
-    public boolean createOrderAsync(OrderRequest buyOrder, OrderRequest sellOrder, MarketParser marketA, MarketParser marketB, String pair, TradeDirect direct, double diff) throws ExecutionException, InterruptedException {
-        OrderPlace buy = new OrderPlace(buyOrder, marketA, pair, direct, diff);
-        OrderPlace sell = new OrderPlace(sellOrder, marketB, pair, direct, diff);
-        FutureTask<Order> buyTask = new FutureTask(buy);
-        FutureTask<Order> sellTask = new FutureTask(sell);
-        executorService.execute(buyTask);
-        executorService.execute(sellTask);
-        Order a = buyTask.get();
-        Order b = sellTask.get();
-        return a != null && b != null;
+    public void createOrderAsync(OrderRequest buyOrder, OrderRequest sellOrder, MarketParser marketA, MarketParser marketB, String pair, TradeDirect direct, double diff) throws ExecutionException, InterruptedException {
+        CompletableFuture<Order> future1 = CompletableFuture.supplyAsync(() -> this.createOrder(buyOrder, marketA, pair, direct, diff));
+        CompletableFuture<Order> future2 = CompletableFuture.supplyAsync(() -> this.createOrder(sellOrder, marketB, pair, direct, diff));
+        CompletableFuture<Void> f = CompletableFuture.allOf(future1, future2);
+        f.get();
     }
-
 
     /**
      * @param orderRequest
@@ -291,24 +283,4 @@ public class OrderService {
     }
 
 
-    class OrderPlace implements Callable<Order> {
-        OrderRequest orderRequest;
-        MarketParser market;
-        String pair;
-        TradeDirect direct;
-        double diffPercent;
-        OrderService orderService;
-
-        public OrderPlace(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
-            this.orderRequest = orderRequest;
-            this.market = market;
-            this.pair = pair;
-            this.direct = direct;
-            this.diffPercent = diffPercent;
-        }
-        @Override
-        public Order call() throws Exception {
-            return orderService.createOrder(orderRequest, market, pair, direct, diffPercent);
-        }
-    }
 }
