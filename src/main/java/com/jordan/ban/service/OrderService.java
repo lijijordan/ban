@@ -12,6 +12,7 @@ import com.jordan.ban.exception.ResourceException;
 import com.jordan.ban.exception.StatisticException;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.market.TradeContext;
+import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ import static com.jordan.ban.common.Constant.USDT;
 @Service
 public class OrderService {
 
+
     @Autowired
     private OrderRepository orderRepository;
 
@@ -45,6 +47,8 @@ public class OrderService {
 
     @Autowired
     private TradeContext tradeContext;
+
+    private static final float TRADE_PRICE_FLOAT = 0.00001f;
 
 
     @Autowired
@@ -208,7 +212,14 @@ public class OrderService {
      */
 //    @Async FIXME：创建订单不能用异步，会导致新的交易进来不能准确计算yue
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
+
+        // Fixme: dragonex
+        if (market.getName().equals(Dragonex.PLATFORM_NAME)) {
+            this.renderOrder(orderRequest, TRADE_PRICE_FLOAT);
+        }
+
         String orderAid = this.placeOrder(orderRequest, market);
+
         if (StringUtils.isEmpty(orderAid)) {
             slackService.sendMessage("Order", "Create Order failed！");
             throw new TradeException("Create Order failed！");
@@ -221,6 +232,18 @@ public class OrderService {
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair).diffPercent(diffPercent).tradeDirect(direct)
                 .platform(market.getName())
                 .orderId(orderAid).build());
+    }
+
+    private void renderOrder(OrderRequest orderRequest, float f) {
+        double price = orderRequest.getPrice();
+        if (orderRequest.getType() == OrderType.BUY_LIMIT) {
+            orderRequest.setPrice(price * (1 + f));
+            log.info("Dragonex render buy order from:[{}] to [{}]", price, orderRequest.getPrice());
+        }
+        if (orderRequest.getType() == OrderType.SELL_LIMIT) {
+            orderRequest.setPrice(price * (1 - f));
+            log.info("Dragonex render sell order from:[{}] to [{}]", price, orderRequest.getPrice());
+        }
     }
 
     public Order findByOrderId(String orderId) {
