@@ -60,7 +60,7 @@ public class TradeApplication {
      * @param gridService
      */
     public static void initETHGrid(GridService gridService) {
-        log.info("================== init grid ================");
+        log.info("init grid.....");
         if (gridService.findGridsBySymbol(ETH_USDT).isEmpty()) {
             final double totalCoin = 5.14261775; // todo
 
@@ -85,7 +85,7 @@ public class TradeApplication {
 
 
     public static void initETHGridPercentOne(GridService gridService) {
-        log.info("================== init grid ================");
+        log.info("init grid....");
         if (gridService.findGridsBySymbol(ETH_USDT).isEmpty()) {
             final double totalCoin = 5.1486035310270015; // todo
             float f = 0.001f;
