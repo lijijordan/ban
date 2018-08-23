@@ -33,7 +33,7 @@ public class TradeApplication {
     public static void main(String[] args) {
 
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
-        GridService gridService = context.getBean(GridService.class);
+        /*GridService gridService = context.getBean(GridService.class);
         initETHGridPercentOne(gridService);
 //        initBTCGrid(gridService);
 
@@ -42,7 +42,7 @@ public class TradeApplication {
         tradeApp.receiveDiff(BTC_USDT);
 
         System.out.println("Listener Started!");
-        System.out.println(new Date());
+        System.out.println(new Date());*/
     }
 
 

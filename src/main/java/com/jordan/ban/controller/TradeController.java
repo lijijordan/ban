@@ -52,6 +52,11 @@ public class TradeController {
     private TradeRecordService tradeRecordService;
 
 
+    @GetMapping("/index")
+    public String index(Model model, HttpServletRequest request) {
+        return "index";
+    }
+
     @GetMapping("/greeting")
     public String greetingForm(Model model, HttpServletRequest request) {
         // Last 24 hours

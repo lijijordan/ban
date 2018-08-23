@@ -110,7 +110,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
         } else {
             request.setSide("buy");
         }
-        request.setSymbol(orderRequest.getSymbol());
+        request.setSymbol(orderRequest.getSymbol().toLowerCase());
         request.setType("limit");
         return this.placeOrder(request);
     }
