@@ -68,7 +68,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         this.initSymbol();
         try {
             this.setToken();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

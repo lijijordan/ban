@@ -57,21 +57,14 @@ public class WarehouseService {
         double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
         if (comeVolume >= leftVolume) {  // 剩余库存全部出去
             wareHouse.setState(WareHouseState.out);
-            wareHouse.setVolumeOut(leftVolume + wareHouse.getVolumeOut());
-            result += leftVolume;
-            wareHouse.setTimeOut(new Date());
+            result = leftVolume;
         } else { // 部分出库
             wareHouse.setState(WareHouseState.partOut);
-            wareHouse.setVolumeOut(comeVolume + wareHouse.getVolumeOut());
-            result += comeVolume;
-            wareHouse.setTimeOut(new Date());
+            result = comeVolume;
         }
-        if (result <= TradeServiceETH.MIN_TRADE_AMOUNT) {
-            log.info("not enough coin in warehouse.");
-            return 0;
-        }
+        wareHouse.setVolumeOut(result + wareHouse.getVolumeOut());
+        wareHouse.setTimeOut(new Date());
         this.wareHouseRepository.save(wareHouse);
-
         // 恢复网格数据
         Grid grid = this.gridRepository.findById(wareHouse.getGridId()).get();
         if (grid == null) {
@@ -79,7 +72,6 @@ public class WarehouseService {
         }
         // fixme:
         grid.setLastVolume(grid.getLastVolume() + result);
-
         log.info("fill back grid data:{}", grid);
         this.gridRepository.save(grid);
         log.info("out warehouse volume:{}", result);

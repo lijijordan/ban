@@ -17,6 +17,11 @@ public class GridService {
     @Autowired
     private GridRepository gridRepository;
 
+
+    public void save(Grid grid) {
+        this.gridRepository.save(grid);
+    }
+
     public void initGrid(String symbol, float low, float high, float quota, double totalCoin) {
         log.info("Init grid web: {}%~{}% : {}%", low * 100, high * 100, quota * 100);
         this.gridRepository.save(Grid.builder().symbol(symbol).low(low).high(high).quota(quota).volume(totalCoin * quota)
@@ -48,6 +53,7 @@ public class GridService {
         if (isMatch) {
             log.info("match grid update grid:{}", grid);
             grid.setTotalMatch(grid.getTotalMatch() + result);
+            // after place order .then save
             this.gridRepository.save(grid);
         }
         return GridMatch.builder().grid(grid).matchResult(result).isMatch(isMatch).build();
