@@ -160,9 +160,7 @@ public class TradeServiceETH {
             if (minTradeVolume == 0) {
                 throw new TradeException("less than min trade volume，not deal！");
             }
-        }
-        // 逆向出仓
-        if (TradeDirect.A2B == direct) {
+        } else {// 逆向出仓
             // 检查仓位，准备出库
             minTradeVolume = this.warehouseService.checkAndOutWareHouse(diffPercent, minTradeVolume, symbol);
         }
