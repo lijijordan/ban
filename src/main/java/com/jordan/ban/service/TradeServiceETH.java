@@ -124,7 +124,7 @@ public class TradeServiceETH {
     }
     private double reduceMinTradeVolume(TradeDirect direct, AccountDto accountA,
                                         AccountDto accountB, double eatTradeVolume, double buyPrice, double diffPercent) {
-        //计算最小量
+        //reduce by account
         double canBuyCoin;
         if (direct == TradeDirect.A2B) { // 市场A买. 市场B卖
             // B市场卖出币量
@@ -143,16 +143,14 @@ public class TradeServiceETH {
         if (canBuyCoin < eatTradeVolume) {
             eatTradeVolume = canBuyCoin;
         }
-
-        //  ==================== Validate min trade volume ====================
-        double minTradeVolume = eatTradeVolume;
-        if (minTradeVolume <= 0) {
+        if (eatTradeVolume <= 0) {
             log.info("trade volume is 0!");
             throw new TradeException("trade volume is 0");
         }
 
-        // // FIXME:Do not use direct A2B; 正向匹配网格
-        if (TradeDirect.B2A == direct) {
+        // reduce by grid & warehouse
+        double minTradeVolume = eatTradeVolume;
+        if (TradeDirect.B2A == direct) {  // match grid.
             GridMatch gridMatch = this.gridService.matchGrid(diffPercent, minTradeVolume, this.symbol);
             minTradeVolume = gridMatch.getMatchResult();
             this.grid = gridMatch.getGrid();
@@ -160,8 +158,8 @@ public class TradeServiceETH {
             if (minTradeVolume == 0) {
                 throw new TradeException("less than min trade volume，not deal！");
             }
-        } else {// 逆向出仓
-            // 检查仓位，准备出库
+        } else {
+            // check warehouse ready for out.
             minTradeVolume = this.warehouseService.checkAndOutWareHouse(diffPercent, minTradeVolume, symbol);
         }
 
@@ -189,7 +187,6 @@ public class TradeServiceETH {
         double buyCost = (buyPrice * minTradeVolume) + (buyPrice * minTradeVolume * TRADE_FEES);
 
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) { // 市场A买. 市场B卖
-            // TODO:计算交易数量
             accountA.setVirtualCurrency(accountA.getVirtualCurrency() + minTradeVolume);
             accountA.setMoney(accountA.getMoney() - buyCost);
             accountB.setVirtualCurrency(accountB.getVirtualCurrency() - minTradeVolume);
@@ -202,12 +199,12 @@ public class TradeServiceETH {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-            log.info("Money is not enough！!");
-            throw new TradeException("Money is not enough！!");
+            log.info("Money is not enough!!!!");
+            throw new TradeException("Money is not enough!!!");
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-            log.info("Coin is not enough！!");
-            throw new TradeException("Coin is not enough！!");
+            log.info("Coin is not enough!!!!");
+            throw new TradeException("Coin is not enough!!!");
         }
         long start = System.currentTimeMillis();
         log.info("============================ PLACE ORDER ============================");
