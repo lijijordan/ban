@@ -1,5 +1,9 @@
 package com.jordan.ban.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.jordan.ban.market.parser.MarketParser;
+import com.jordan.ban.utils.JSONUtil;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -11,6 +15,7 @@ import java.util.Map;
 @Data
 public class MarketDepth {
 
+    @JsonIgnore
     private Map<Double, Double> orderMap;
 
     public MarketDepth() {
@@ -56,27 +61,6 @@ public class MarketDepth {
 
     @Override
     public String toString() {
-        return "MarketDepth{" +
-                "orderMap=" + orderMap +
-                ", d1ask=" + d1ask +
-                ", d1askVolume=" + d1askVolume +
-                ", d1bid=" + d1bid +
-                ", d1bidVolume=" + d1bidVolume +
-                ", d2ask=" + d2ask +
-                ", d2askVolume=" + d2askVolume +
-                ", d2bid=" + d2bid +
-                ", d2bidVolume=" + d2bidVolume +
-                '}';
+        return JSONUtil.toJsonString(this);
     }
-
-
-    /*@Override
-    public String toString() {
-        return "MarketDepth{" +
-                "d1ask=" + d1ask +
-                ", d1bid=" + d1bid +
-                ", d2ask=" + d2ask +
-                ", d2bid=" + d2bid +
-                '}';
-    }*/
 }
