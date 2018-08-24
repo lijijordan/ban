@@ -13,7 +13,6 @@ import java.util.Objects;
  * d1_ask:57.16, d1_bid:57.15     d2_ask:56.4918, d2_bid:57.2247
  */
 @Data
-@Builder
 public class MarketDepth {
 
     private Map<Double, Double> orderMap;
@@ -59,16 +58,7 @@ public class MarketDepth {
     }
     @Override
     public int hashCode() {
-
         return Objects.hash(orderMap, d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
     }
 
-    public static void main(String[] args) {
-        MarketDepth m1 = MarketDepth.builder().d1ask(1).d1askVolume(2).d2ask(3).d2askVolume(4).d1bid(5).d1bidVolume(6).d2bid(7).d2bidVolume(8).build();
-//        MarketDepth m2 = MarketDepth.builder().d1ask(2).d1askVolume(2).d2ask(3).d2askVolume(4).d1bid(5).d1bidVolume(6).d2bid(7).d2bidVolume(8).build();
-        MarketDepth m2 = MarketDepth.builder().d1ask(2).build();
-
-//        m1.setD1ask(1.1);
-        System.out.println(m2.notEqualsAll(m1));
-    }
 }

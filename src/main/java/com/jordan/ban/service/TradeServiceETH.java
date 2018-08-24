@@ -288,6 +288,7 @@ public class TradeServiceETH {
         return pair;
     }
 
+    // fixme: testing.
     // true: all not equal.  it is fresh.
     private boolean isFresh(String json) {
         MarketDepth current = MarketDepth.parse(json);
