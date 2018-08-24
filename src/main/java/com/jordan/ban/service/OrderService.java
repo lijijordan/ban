@@ -221,9 +221,9 @@ public class OrderService {
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
 
         // Fixme: dragonex
-        if (market.getName().equals(Dragonex.PLATFORM_NAME)) {
-            this.renderOrder(orderRequest, TRADE_PRICE_FLOAT);
-        }
+//        if (market.getName().equals(Dragonex.PLATFORM_NAME)) {
+        this.renderOrder(orderRequest, TRADE_PRICE_FLOAT);
+//        }
 
         String orderAid = this.placeOrder(orderRequest, market);
 
@@ -241,6 +241,8 @@ public class OrderService {
                 .orderId(orderAid).build());
     }
 
+
+    // add match Probability
     private void renderOrder(OrderRequest orderRequest, float f) {
         double price = orderRequest.getPrice();
         if (orderRequest.getType() == OrderType.BUY_LIMIT) {
