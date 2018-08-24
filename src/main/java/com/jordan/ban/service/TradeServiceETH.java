@@ -64,6 +64,9 @@ public class TradeServiceETH {
 
     private double moneyBefore;
 
+    // last trade order depth.
+    private MarketDepth orderDepth;
+
     public synchronized boolean preTrade(MockTradeResultIndex tradeResult) {
         this.symbol = tradeResult.getSymbol();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
@@ -208,6 +211,9 @@ public class TradeServiceETH {
         }
         long start = System.currentTimeMillis();
         log.info("============================ PLACE ORDER ============================");
+        if (!this.isFresh(tradeResult.getId())) {
+            throw new TradeException("Depth is not fresh. Stop.");
+        }
         String pair = this.placeOrder(buyPrice, sellPrice, minTradeVolume, direct, diffPercent);
         log.info("================================ DONE ===============================");
 
@@ -280,6 +286,17 @@ public class TradeServiceETH {
             }
         }
         return pair;
+    }
+
+    // true: all not equal.  it is fresh.
+    private boolean isFresh(String json) {
+        MarketDepth current = MarketDepth.parse(json);
+        if (this.orderDepth == null) {
+            orderDepth = current;
+            return true;
+        }
+        return current.notEqualsAll(orderDepth);
+
     }
 
 
