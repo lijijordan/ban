@@ -57,10 +57,26 @@ public class MarketDepth {
     @Override
     public String toString() {
         return "MarketDepth{" +
+                "orderMap=" + orderMap +
+                ", d1ask=" + d1ask +
+                ", d1askVolume=" + d1askVolume +
+                ", d1bid=" + d1bid +
+                ", d1bidVolume=" + d1bidVolume +
+                ", d2ask=" + d2ask +
+                ", d2askVolume=" + d2askVolume +
+                ", d2bid=" + d2bid +
+                ", d2bidVolume=" + d2bidVolume +
+                '}';
+    }
+
+
+    /*@Override
+    public String toString() {
+        return "MarketDepth{" +
                 "d1ask=" + d1ask +
                 ", d1bid=" + d1bid +
                 ", d2ask=" + d2ask +
                 ", d2bid=" + d2bid +
                 '}';
-    }
+    }*/
 }
