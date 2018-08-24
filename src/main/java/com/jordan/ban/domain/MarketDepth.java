@@ -38,14 +38,15 @@ public class MarketDepth {
 
     public boolean notEqualsAll(Object o) {
         MarketDepth that = (MarketDepth) o;
-        return (Double.compare(that.d1ask, d1ask) != 0 &&
+        return (
+//               Double.compare(that.d1ask, d1ask) != 0 &&
                 Double.compare(that.d1askVolume, d1askVolume) != 0 &&
-                Double.compare(that.d1bid, d1bid) != 0 &&
-                Double.compare(that.d1bidVolume, d1bidVolume) != 0 &&
-                Double.compare(that.d2ask, d2ask) != 0 &&
-                Double.compare(that.d2askVolume, d2askVolume) != 0 &&
-                Double.compare(that.d2bid, d2bid) != 0 &&
-                Double.compare(that.d2bidVolume, d2bidVolume) != 0);
+//                Double.compare(that.d1bid, d1bid) != 0 &&
+                        Double.compare(that.d1bidVolume, d1bidVolume) != 0 &&
+//                Double.compare(that.d2ask, d2ask) != 0 &&
+                        Double.compare(that.d2askVolume, d2askVolume) != 0 &&
+//                Double.compare(that.d2bid, d2bid) != 0 &&
+                        Double.compare(that.d2bidVolume, d2bidVolume) != 0);
     }
     @Override
     public int hashCode() {
