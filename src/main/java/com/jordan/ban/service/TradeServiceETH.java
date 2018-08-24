@@ -291,12 +291,9 @@ public class TradeServiceETH {
     // true: all not equal.  it is fresh.
     private boolean isFresh(String json) {
         MarketDepth current = MarketDepth.parse(json);
-        if (this.orderDepth == null) {
-            orderDepth = current;
-            return true;
-        }
-        return current.notEqualsAll(orderDepth);
-
+        boolean result = current.notEqualsAll(orderDepth);
+        this.orderDepth = current;
+        return result;
     }
 
 

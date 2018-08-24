@@ -36,7 +36,16 @@ public class MarketDepth {
         return JSONUtil.getEntity(json, MarketDepth.class);
     }
 
+    /**
+     * All not equals
+     *
+     * @param o
+     * @return
+     */
     public boolean notEqualsAll(Object o) {
+        if (o == null) {
+            return true;
+        }
         MarketDepth that = (MarketDepth) o;
         return (
 //               Double.compare(that.d1ask, d1ask) != 0 &&
