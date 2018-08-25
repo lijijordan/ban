@@ -98,7 +98,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
     public Symbol getPrice(String symbol) {
         int symbolId = getSymbolId(symbol);
         String url = String.format(PRICE_URL_TEMPLATE, symbolId);
-        log.info("load url:" + url);
+        log.debug("load url:" + url);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Content-Type", "application/json");
         CloseableHttpResponse response = null;
@@ -177,10 +177,10 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     public void setToken() throws IOException {
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
-        log.info("Get token response:{}", response);
+        log.debug("Get token response:{}", response);
         this.token = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexToken>>() {
         }).checkAndReturn();
-        log.info("Set token to http params!");
+        log.debug("Set token to http params!");
         HttpParams.setToken(this.token.getToken());
     }
 
@@ -189,7 +189,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         String path = "/api/v1/user/own/";
         AtomicReference<BalanceDto> dto = new AtomicReference();
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
-        log.info(response);
+        log.debug(response);
         DragonexBalance dragonexBalance[] = null;
         try {
             dragonexBalance = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexBalance[]>>() {
@@ -212,7 +212,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         List<BalanceDto> list = new ArrayList<>();
         String path = "/api/v1/user/own/";
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
-        log.info(response);
+        log.debug(response);
         DragonexBalance dragonexBalance[] = null;
         try {
             dragonexBalance = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexBalance[]>>() {
@@ -318,7 +318,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     private void initSymbol() {
         if (this.symbolIdCache.isEmpty() || this.symbolCache.isEmpty()) {
-            log.info("Init dragonex symbols.....");
+            log.debug("Init dragonex symbols.....");
             JSONObject jsonObject = super.parseJSONByURL("https://openapi.dragonex.im/api/v1/symbol/all/");
             try {
                 DragonexSymbol[] symbols = JSONUtil.readValue(jsonObject.toString(), new TypeReference<DragonexApiResponse<DragonexSymbol[]>>() {
@@ -331,7 +331,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            log.info("Init dragonex symbols.....Done!!");
+            log.debug("Init dragonex symbols.....Done!!");
         }
     }
 

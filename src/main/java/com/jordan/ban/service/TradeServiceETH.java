@@ -146,7 +146,7 @@ public class TradeServiceETH {
         }
         if (eatTradeVolume <= 0) {
             log.debug("trade volume is 0!");
-            throw new TradeException("trade volume is 0");
+            throw new TradeException("trade volume is 0.");
         }
 
         // reduce by grid & warehouse
@@ -157,7 +157,7 @@ public class TradeServiceETH {
             minTradeVolume = gridMatch.getMatchResult();
             log.debug("match grid volume:{}", minTradeVolume);
             if (minTradeVolume == 0) {
-                throw new TradeException("less than min trade volume，not deal！");
+                throw new TradeException("Miss match grid.");
             }
         } else {
             // check warehouse ready for out.
