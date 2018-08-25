@@ -16,7 +16,7 @@
 
 
     <root>
-        <level value="ERROR"/>
+        <level value="INFO"/>
         <appender-ref ref="stdout"/>
     </root>
 
