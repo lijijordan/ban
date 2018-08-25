@@ -100,7 +100,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
     @Override
     public String placeOrder(OrderRequest orderRequest) {
-        log.info("【Fcoin】place order:" + orderRequest.toString());
+        log.debug("【Fcoin】place order:" + orderRequest.toString());
         FcoinOrderRequest request = new FcoinOrderRequest();
         request.setAmount(orderRequest.getAmount());
         request.setPrice(orderRequest.getPrice());
@@ -256,7 +256,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
             Request request = builder.build();
             Response response = client.newCall(request).execute();
             String s = response.body().string();
-            log.info("response:" + s);
+            log.debug("response:" + s);
             if (ref == null) {
                 return null;
             }
@@ -282,11 +282,11 @@ public class Fcoin extends BaseMarket implements MarketParser {
             POST_BODY = request.toString();
         }
         String signatureString = HTTP_METHOD + HTTP_REQUEST_URI + TIMESTAMP + POST_BODY;
-        log.info("signatureString:" + signatureString);
+        log.debug("signatureString:" + signatureString);
         signatureString = Base64.getEncoder().encodeToString(signatureString.getBytes(ENCODING));
-        log.info("signature string base64:" + signatureString);
+        log.debug("signature string base64:" + signatureString);
         String actualSign = Base64.getEncoder().encodeToString(hmacSHA1Encrypt(signatureString, this.accessKeySecret));
-        log.info("actualSign:" + actualSign);
+        log.debug("actualSign:" + actualSign);
         params.put("FC-ACCESS-KEY", this.accessKeyId);
         params.put("FC-ACCESS-SIGNATURE", actualSign);
         params.put("FC-ACCESS-TIMESTAMP", String.valueOf(timestamp));

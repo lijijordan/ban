@@ -2,16 +2,6 @@ package service;
 
 
 import com.jordan.ban.TradeApplication;
-import com.jordan.ban.domain.MockTradeResultIndex;
-import com.jordan.ban.domain.OrderState;
-import com.jordan.ban.domain.OrderType;
-import com.jordan.ban.entity.Order;
-import com.jordan.ban.market.parser.Huobi;
-import com.jordan.ban.market.parser.MarketFactory;
-import com.jordan.ban.service.OrderService;
-import com.jordan.ban.service.TradeServiceBTC;
-import com.jordan.ban.service.TradeServiceETH;
-import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class TradeServiceBTCTest {
 
     @Autowired
-    private TradeServiceBTC tradeService;
+//    private TradeServiceBTC tradeService;
 
 
     @Test
@@ -67,6 +57,6 @@ public class TradeServiceBTCTest {
                 "}";
 
 
-        this.tradeService.trade(JSONUtil.getEntity(jsonB2A, MockTradeResultIndex.class));
+//        this.tradeService.trade(JSONUtil.getEntity(jsonB2A, MockTradeResultIndex.class));
     }
 }
