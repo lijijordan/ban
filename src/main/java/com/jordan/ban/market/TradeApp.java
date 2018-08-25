@@ -5,7 +5,6 @@ import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.mq.MessageReceiver;
 import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
-import com.jordan.ban.service.TradeServiceBTC;
 import com.jordan.ban.service.TradeServiceETH;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +26,11 @@ public class TradeApp {
     @Autowired
     private TradeServiceETH tradeServiceETH;
 
-    @Autowired
-    private TradeServiceBTC tradeServiceBTC;
-
     public void receiveDepthDiff(String topic) {
         MessageReceiver receiver = new MessageReceiver((t, message) -> {
-//            log.info(topic + ":" + message);
+//            log.debug(topic + ":" + message);
             JSONObject jsonObject = new JSONObject(message);
-//            log.info(message);
+//            log.debug(message);
             this.doDepthDiff(jsonObject.getString("a2b"));
             this.doDepthDiff(jsonObject.getString("b2a"));
         });
@@ -51,10 +47,10 @@ public class TradeApp {
         if (mockTradeResultIndex.getDiffPlatform().equals("Dragonex-Fcoin")) {
             long costTime = System.currentTimeMillis() - mockTradeResultIndex.getCreateTime().getTime();
             if (costTime > 5000) {
-                log.info("[{}]second ago,pass it!", costTime / 1000);
+                log.debug("[{}]second ago,pass it!", costTime / 1000);
                 return;
             }
-            log.info("-------------------------------start trade ---------------------------");
+            log.debug("-------------------------------start trade ---------------------------");
             long start = System.currentTimeMillis();
 
             try {
@@ -63,19 +59,19 @@ public class TradeApp {
                 String symbol = tradeResult.getSymbol();
                 // fixme:do not use hard code
                 if (symbol.equals(BTC_USDT)) {
-                    this.tradeServiceBTC.preTrade(tradeResult);
+//                    this.tradeServiceBTC.preTrade(tradeResult);
                 }
                 if (symbol.equals(ETH_USDT)) {
                     boolean b = this.tradeServiceETH.preTrade(tradeResult);
                     if (b) {
-                        log.info("trade cost time:[" +
+                        log.debug("trade cost time:[" +
                                 (System.currentTimeMillis() - start) + "]ms");
                     }
                 }
             } catch (TradeException e) {
                 e.printStackTrace();
             }
-            log.info("---------------------------------- end ------------------------------- " +
+            log.debug("---------------------------------- end ------------------------------- " +
                     (System.currentTimeMillis() - start) + "ms");
         }
     }
@@ -83,7 +79,7 @@ public class TradeApp {
 
     public void receiveDiff(String symbol) {
         String topic = symbol + TRADE_TOPIC_SUFFIX;
-        log.info("Listening Topic:" + topic);
+        log.debug("Listening Topic:" + topic);
         this.receiveDepthDiff(topic);
     }
 

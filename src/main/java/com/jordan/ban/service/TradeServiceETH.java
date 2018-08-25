@@ -48,8 +48,6 @@ public class TradeServiceETH {
     @Autowired
     private GridService gridService;
 
-    private Grid grid;
-
     private String symbol;
 
     private TradeCounter tradeCounter;
@@ -64,6 +62,9 @@ public class TradeServiceETH {
 
     private double moneyBefore;
 
+    // last trade order depth.
+    private MarketDepth orderDepth;
+
     public synchronized boolean preTrade(MockTradeResultIndex tradeResult) {
         this.symbol = tradeResult.getSymbol();
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
@@ -71,7 +72,7 @@ public class TradeServiceETH {
             tradeContext.setA2bCurrentVolume(tradeResult.getEatTradeVolume());
 
             if (tradeResultIdMarkA2B.equals(tradeResult.getId())) {
-                log.info("same id A2B :{} ", tradeResult.getId());
+                log.debug("same id A2B :{} ", tradeResult.getId());
                 return false;
             }
             tradeResultIdMarkA2B = tradeResult.getId();
@@ -80,7 +81,7 @@ public class TradeServiceETH {
             tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
 
             if (tradeResultIdMarkB2A.equals(tradeResult.getId())) {
-                log.info("same id B2A :{} ", tradeResult.getId());
+                log.debug("same id B2A :{} ", tradeResult.getId());
                 return false;
             }
             tradeResultIdMarkB2A = tradeResult.getId();
@@ -89,7 +90,7 @@ public class TradeServiceETH {
         this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {
-            log.info("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
+            log.debug("Trade volume [{}] is less than min volume[{}]", tradeResult.getTradeVolume(), MIN_TRADE_AMOUNT);
             return false;
         }
 
@@ -97,7 +98,7 @@ public class TradeServiceETH {
             this.initAccount(tradeResult);
             return this.trade(tradeResult);
         } catch (TradeException e) {
-            log.info("trade exception:" + e.getMessage());
+            log.info("Trade info:" + e.getMessage());
         }
         return false;
     }
@@ -144,19 +145,19 @@ public class TradeServiceETH {
             eatTradeVolume = canBuyCoin;
         }
         if (eatTradeVolume <= 0) {
-            log.info("trade volume is 0!");
-            throw new TradeException("trade volume is 0");
+            log.debug("trade volume is 0!");
+            throw new TradeException("Accounts can trade volume is 0.");
         }
 
         // reduce by grid & warehouse
         double minTradeVolume = eatTradeVolume;
         if (TradeDirect.B2A == direct) {  // match grid.
-            GridMatch gridMatch = this.gridService.matchGrid(diffPercent, minTradeVolume, this.symbol);
+            GridMatch gridMatch = this.gridService.matchGrid(diffPercent, minTradeVolume,
+                    this.symbol, this.tradeContext.getWareHouseDiff());
             minTradeVolume = gridMatch.getMatchResult();
-            this.grid = gridMatch.getGrid();
-            log.info("match grid volume:{}", minTradeVolume);
+            log.debug("match grid volume:{}", minTradeVolume);
             if (minTradeVolume == 0) {
-                throw new TradeException("less than min trade volume，not deal！");
+                throw new TradeException("Miss match grid.");
             }
         } else {
             // check warehouse ready for out.
@@ -164,8 +165,8 @@ public class TradeServiceETH {
         }
 
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
-            log.info("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-            throw new TradeException("less than min trade volume，not deal！");
+            log.debug("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
+            throw new TradeException("Less than min trade volume.");
         }
         return minTradeVolume;
     }
@@ -199,14 +200,18 @@ public class TradeServiceETH {
         }
 
         if (accountA.getMoney() < 0 || accountB.getMoney() < 0) {
-            log.info("Money is not enough!!!!");
+            log.debug("Money is not enough!!!!");
             throw new TradeException("Money is not enough!!!");
         }
         if (accountA.getVirtualCurrency() < 0 || accountB.getVirtualCurrency() < 0) {
-            log.info("Coin is not enough!!!!");
+            log.debug("Coin is not enough!!!!");
             throw new TradeException("Coin is not enough!!!");
         }
         long start = System.currentTimeMillis();
+        if (!this.isFresh(tradeResult.getId())) {
+            log.info("Depth is not fresh. Stop.");
+            throw new TradeException("Depth is not fresh. Stop.");
+        }
         log.info("============================ PLACE ORDER ============================");
         String pair = this.placeOrder(buyPrice, sellPrice, minTradeVolume, direct, diffPercent);
         log.info("================================ DONE ===============================");
@@ -215,17 +220,13 @@ public class TradeServiceETH {
         // 记录Record
         TradeRecord record = this.createOrderRecord(direct, diff,
                 diffPercent, minTradeVolume, buyCost + sellCost, pair);
-        // build warehouse
-        if (tradeResult.getTradeDirect() == TradeDirect.B2A) {
-            this.warehouseService.buildWareHouse(record,
-                    this.tradeContext.getWareHouseDiff(), this.grid.getID(), symbol);
-        }
+
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start));
         return true;
     }
 
     private TradeRecord createOrderRecord(TradeDirect direct, double diff, double diffPercent, double minTradeVolume, double totalCost, String pair) {
-        log.info("Record trade information:");
+        log.debug("Record trade information:");
         double moneyAfter = accountA.getMoney() + accountB.getMoney();
         double profit = moneyAfter - moneyBefore;
         double totalMoney = accountA.getMoney() + accountB.getMoney();
@@ -255,7 +256,7 @@ public class TradeServiceETH {
                 .price(buyPrice).symbol(symbol).type(OrderType.BUY_LIMIT).build();
         OrderRequest sellOrder = OrderRequest.builder().amount(minTradeVolume)
                 .price(sellPrice).symbol(symbol).type(OrderType.SELL_LIMIT).build();
-        log.info("Place order, buy:" + buyOrder + "sell:" + sellOrder);
+        log.debug("Place order, buy:" + buyOrder + "sell:" + sellOrder);
         String pair = UUID.randomUUID().toString();
         if (direct == TradeDirect.A2B) { // 市场A买. 市场B卖
             // 买入时，为了保持总币量不变，把扣除的手续费部分加入到买单量
@@ -280,6 +281,15 @@ public class TradeServiceETH {
             }
         }
         return pair;
+    }
+
+    // fixme: testing.
+    // true: all not equal.  it is fresh.
+    private boolean isFresh(String json) {
+        MarketDepth current = MarketDepth.parse(json);
+        boolean result = current.notEqualsAll(orderDepth);
+        this.orderDepth = current;
+        return result;
     }
 
 

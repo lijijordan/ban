@@ -1,11 +1,14 @@
 package com.jordan.ban.service;
 
+import com.jordan.ban.dao.GridOperationalLogRepository;
 import com.jordan.ban.dao.GridRepository;
 import com.jordan.ban.dao.WareHouseRepository;
 import com.jordan.ban.domain.WareHouseState;
 import com.jordan.ban.entity.Grid;
+import com.jordan.ban.entity.GridOperationalLog;
 import com.jordan.ban.entity.TradeRecord;
 import com.jordan.ban.entity.WareHouse;
+import com.jordan.ban.exception.TradeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,9 @@ public class WarehouseService {
 
     @Autowired
     private WareHouseRepository wareHouseRepository;
+
+    @Autowired
+    private GridOperationalLogRepository gridOperationalLogRepository;
 
     @Autowired
     private GridRepository gridRepository;
@@ -39,7 +45,7 @@ public class WarehouseService {
                 WareHouse wareHouse = wareHouses.get(i);
                 // 进入购买位置
                 if (comeDiffPercent > wareHouse.getDiffPercentOut()) {
-                    double out = this.outWareHouse(comeVolume, wareHouse, comeDiffPercent);
+                    double out = this.outWareHouse(comeVolume, wareHouse);
                     volume += out;
                     comeVolume = comeVolume - out;
                     if (comeVolume <= 0) {
@@ -51,9 +57,9 @@ public class WarehouseService {
         return volume;
     }
 
-    private double outWareHouse(double comeVolume, WareHouse wareHouse, double comeDiffPercent) {
+    private double outWareHouse(double comeVolume, WareHouse wareHouse) {
         double result = 0; // out volume
-        log.info("out warehouse:[{}],[{}]", comeVolume, wareHouse.getID());
+        log.debug("out warehouse:[{}],[{}]", comeVolume, wareHouse.getID());
         double leftVolume = wareHouse.getVolumeIn() - wareHouse.getVolumeOut();
         if (comeVolume >= leftVolume) {  // 剩余库存全部出去
             wareHouse.setState(WareHouseState.out);
@@ -68,21 +74,21 @@ public class WarehouseService {
         // 恢复网格数据
         Grid grid = this.gridRepository.findById(wareHouse.getGridId()).get();
         if (grid == null) {
-            throw new RuntimeException("Can not find any grid!");
+            throw new TradeException("Can not find any grid!");
         }
-        // fixme:
         grid.setLastVolume(grid.getLastVolume() + result);
-        log.info("fill back grid data:{}", grid);
         this.gridRepository.save(grid);
-        log.info("out warehouse volume:{}", result);
+        this.gridOperationalLogRepository.save(GridOperationalLog.builder().gridId(grid.getID()).matchVolume(result)
+                .wareHouseId(wareHouse.getID()).operationalType(GridOperationalLog.OPERATIONAL_TYPE_PLUS).build());
+
         return result;
     }
 
 
-    public void buildWareHouse(TradeRecord tradeRecord, double diff, long gridId, String symbol) {
-        double diffOut = (tradeRecord.getEatDiffPercent() * -1) + diff;
-        wareHouseRepository.save(WareHouse.builder().diffPercentIn(tradeRecord.getEatDiffPercent())
-                .timeIn(new Date()).state(WareHouseState.in).volumeIn(tradeRecord.getVolume()).gridId(gridId)
+    public WareHouse buildWareHouse(double eatPercent, double volume, double warehouseOutDiff, long gridId, String symbol) {
+        double diffOut = (eatPercent * -1) + warehouseOutDiff;
+        return wareHouseRepository.save(WareHouse.builder().diffPercentIn(eatPercent)
+                .timeIn(new Date()).state(WareHouseState.in).volumeIn(volume).gridId(gridId)
                 .diffPercentOut(diffOut).symbol(symbol)
                 .build());
     }

@@ -37,7 +37,7 @@ public class HttpUtils {
                 sb.append(line);
             }
             result = sb.toString();
-            log.info("response:{}", result);
+            log.debug("response:{}", result);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -87,7 +87,7 @@ public class HttpUtils {
                 bs.append(line);
             }
             result = bs.toString();
-            log.info("response:{}", result);
+            log.debug("response:{}", result);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

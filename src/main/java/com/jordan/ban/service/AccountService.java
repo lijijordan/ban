@@ -32,7 +32,7 @@ public class AccountService {
      */
     // TODO:use cache
     public Map<String, BalanceDto> refreshBalancesCache(String platformName) {
-        log.info("update {} balances!", platformName);
+        log.debug("update {} balances!", platformName);
         Map<String, BalanceDto> map = new HashMap<>();
         MarketParser market = MarketFactory.getMarket(platformName);
         if (market instanceof Huobi) {
@@ -52,7 +52,7 @@ public class AccountService {
         }
         if (!map.isEmpty()) {
             synchronized (balanceCache) {
-                log.info("update balance cache,{}:{}", platformName, map);
+                log.debug("update balance cache,{}:{}", platformName, map);
                 balanceCache.put(platformName, map);
             }
         }

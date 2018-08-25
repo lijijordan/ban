@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import static com.jordan.ban.common.Constant.ETH_USDT;
 import static com.jordan.ban.common.Constant.USDT;
 
 @Slf4j
@@ -72,7 +73,7 @@ public class OrderService {
     //    @Transactional(Pro=Propagation.REQUIRED, readOnly=true, noRollbackFor=Exception.class)
 //    @Async
     public void refreshOrderState(Order order) {
-        log.info("refreshOrderState");
+        log.debug("refreshOrderState");
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
         if (orderResponse != null) {
@@ -88,7 +89,7 @@ public class OrderService {
                 }
                 this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s", msg);
                 // 等待5s以后再刷新余额：等待网站更新
-                log.info("wait for 5s! update balance.");
+                log.debug("wait for 5s! update balance.");
                 try {
                     Thread.sleep(1000 * 5);
                 } catch (InterruptedException e) {
@@ -128,7 +129,7 @@ public class OrderService {
             sellOrder = list.get(0);
         }
         if (buyOrder.getState() != OrderState.filled || sellOrder.getState() != OrderState.filled) {// 有订单未完成
-            log.info("Order :{} waiting for trade, can not statistic.", order);
+            log.debug("Order :{} waiting for trade, can not statistic.", order);
             return;
         }
 
@@ -191,7 +192,7 @@ public class OrderService {
                 return orderId;
             } catch (Exception e) {
                 try {
-                    log.info("After 2 seconds, try to place order again.");
+                    log.debug("After 2 seconds, try to place order again.");
                     Thread.sleep(2000);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
@@ -221,7 +222,7 @@ public class OrderService {
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
 
         // Fixme: dragonex
-        if (market.getName().equals(Dragonex.PLATFORM_NAME)) {
+        if (market.getName().equals(Dragonex.PLATFORM_NAME) && orderRequest.getSymbol().equals(ETH_USDT)) {
             this.renderOrder(orderRequest, TRADE_PRICE_FLOAT);
         }
 
@@ -241,15 +242,17 @@ public class OrderService {
                 .orderId(orderAid).build());
     }
 
+
+    // add match Probability
     private void renderOrder(OrderRequest orderRequest, float f) {
         double price = orderRequest.getPrice();
         if (orderRequest.getType() == OrderType.BUY_LIMIT) {
-            orderRequest.setPrice(price * (1 + f));
-            log.info("Dragonex render buy order from:[{}] to [{}]", price, orderRequest.getPrice());
+            orderRequest.setPrice(price + 0.0001);
+            log.debug("Dragonex render buy order from:[{}] to [{}]", price, orderRequest.getPrice());
         }
         if (orderRequest.getType() == OrderType.SELL_LIMIT) {
-            orderRequest.setPrice(price * (1 - f));
-            log.info("Dragonex render sell order from:[{}] to [{}]", price, orderRequest.getPrice());
+            orderRequest.setPrice(price - 0.0001);
+            log.debug("Dragonex render sell order from:[{}] to [{}]", price, orderRequest.getPrice());
         }
     }
 
