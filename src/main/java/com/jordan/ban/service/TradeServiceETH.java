@@ -146,7 +146,7 @@ public class TradeServiceETH {
         }
         if (eatTradeVolume <= 0) {
             log.debug("trade volume is 0!");
-            throw new TradeException("trade volume is 0.");
+            throw new TradeException("Accounts can trade volume is 0.");
         }
 
         // reduce by grid & warehouse
@@ -166,7 +166,7 @@ public class TradeServiceETH {
 
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
             log.debug("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-            throw new TradeException("less than min trade volume，not deal！");
+            throw new TradeException("Less than min trade volume.");
         }
         return minTradeVolume;
     }
