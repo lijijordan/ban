@@ -143,13 +143,13 @@ public class TradeServiceETH {
             minTradeVolume = gridMatch.getMatchResult();
             log.debug("match grid volume:{}", minTradeVolume);
             if (minTradeVolume == 0) {
-                throw new TradeException("Miss match grid.");
+                throw new TradeException("+++++Miss match grid.");
             }
         } else {
             // check warehouse ready for out.
             minTradeVolume = this.warehouseService.checkAndOutWareHouse(diffPercent, minTradeVolume, symbol);
             if(minTradeVolume == 0){
-                throw new TradeException("Not any warehouse.");
+                throw new TradeException("----------Not any warehouse.");
             }
         }
 
