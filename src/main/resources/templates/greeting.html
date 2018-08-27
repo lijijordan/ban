@@ -157,38 +157,24 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
 <table th:object="${profitStatistics}" id="statTable" border="1">
     <tr>
         <td>create time</td>
-        <td>platform A</td>
-        <td>platform B</td>
         <td>sum coin</td>
         <td>sum money</td>
         <td>symbol</td>
         <td>sum profit</td>
         <td>sum cost</td>
-        <td>sum A-B profit</td>
-        <td>sum A-B avg(diff)</td>
-        <td>sum A-B avg(profit)</td>
-        <td>sum B-A profit</td>
-        <td>sum B-A avg(diff)</td>
-        <td>sum B-A avg(profit)</td>
+        <td>price</td>
         <td>Total USDT</td>
         <td>Total CNY</td>
     </tr>
 
     <tr th:each="stat :${profitStatistics}">
         <td th:text="${stat.createTime}"></td>
-        <td th:text="${stat.platformA}"></td>
-        <td th:text="${stat.platformB}"></td>
         <td th:text="${stat.sumCoin}"></td>
         <td th:text="${stat.sumMoney}"></td>
         <td th:text="${stat.symbol}"></td>
         <td th:text="${stat.getSumProfit()}"></td>
         <td th:text="${stat.getSumCostMoney()}"></td>
-        <td th:text="${stat.getSumA2BProfit()}"></td>
-        <td th:text="${stat.getAvgA2BDiffPercent()}"></td>
-        <td th:text="${stat.getAvgA2BProfit()}"></td>
-        <td th:text="${stat.getSumB2AProfit()}"></td>
-        <td th:text="${stat.getAvgB2ADiffPercent()}"></td>
-        <td th:text="${stat.getAvgB2AProfit()}"></td>
+        <td th:text="${stat.getPrice()}"></td>
         <td th:text="${stat.getTotalUSDT()}"></td>
         <td th:text="${stat.getTotalCNY()}"></td>
     </tr>

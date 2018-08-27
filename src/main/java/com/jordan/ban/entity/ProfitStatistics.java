@@ -63,4 +63,5 @@ public class ProfitStatistics extends BaseEntity {
     private double totalUSDT;
     private double totalCNY;
 
+    private double price;
 }

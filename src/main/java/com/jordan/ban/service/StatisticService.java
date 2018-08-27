@@ -88,6 +88,7 @@ public class StatisticService {
                 .sumB2AProfit(statisticRecordDto.getSumB2AProfit())
                 .avgA2BProfit(statisticRecordDto.getAvgA2BProfit())
                 .avgB2AProfit(statisticRecordDto.getAvgB2AProfit())
+                .price(this.tradeContext.getCurrentEthPrice())
                 .totalUSDT(totalUsdt).totalCNY(EXCHANGE_RATE * totalUsdt)
                 .platformB(accountB.getPlatform()).build();
         this.profitStatisticsRepository.save(after);

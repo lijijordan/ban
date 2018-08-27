@@ -148,6 +148,9 @@ public class TradeServiceETH {
         } else {
             // check warehouse ready for out.
             minTradeVolume = this.warehouseService.checkAndOutWareHouse(diffPercent, minTradeVolume, symbol);
+            if(minTradeVolume == 0){
+                throw new TradeException("Not any warehouse.");
+            }
         }
 
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
