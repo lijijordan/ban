@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -24,6 +25,8 @@ public class ProductApplication {
 
     @Autowired
     private Sender sender;
+
+    private static ConcurrentHashMap<String, String> DEPTH_ID = new ConcurrentHashMap<>();
 
     private void getDepth(String symbol, String marketName1, String marketName2, long period) {
         String depthTopic = symbol + "-depth";
@@ -50,17 +53,21 @@ public class ProductApplication {
                     double d2bid = depth2.getBids().get(0).getPrice();
                     double d2bidVolume = depth2.getBids().get(0).getVolume();
                     MarketDepth marketDepth = new MarketDepth(d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
-                    mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                    mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
 
-                    String json = JSONUtil.toJsonString(mockTrade);
-                    sender.send(depthTopic, json);
-
-                    //FIXME: ethusdt发送到交易队列
-                    if (symbol.toLowerCase().equals("ethusdt")) {
-                        sender.send(depthTopic + "-trade", json);
+                    String depthId = marketDepth.toString();
+                    // check id
+                    if (DEPTH_ID.get(symbol) == null || !DEPTH_ID.get(symbol).equals(depthId)) {
+                        mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                        mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                        String json = JSONUtil.toJsonString(mockTrade);
+                        // analysis topic
+                        sender.send(depthTopic, json);
+                        //FIXME: trade topic
+                        if (symbol.toLowerCase().equals("ethusdt")) {
+                            sender.send(depthTopic + "-trade", json);
+                        }
                     }
-
+                    DEPTH_ID.put(symbol, depthId);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -89,7 +96,7 @@ public class ProductApplication {
         indexAB.setBuyCost(eatAB.getBuyCost());
         indexAB.setBuyPrice(eatAB.getBuyPrice());
         indexAB.setSellPrice(eatAB.getSellPrice());
-        indexAB.setId(marketDepth.toString());
+//        indexAB.setId(marketDepth.toString());
         return indexAB;
     }
 
@@ -112,7 +119,7 @@ public class ProductApplication {
         indexBA.setBuyCost(eatBA.getBuyCost());
         indexBA.setBuyPrice(eatBA.getBuyPrice());
         indexBA.setSellPrice(eatBA.getSellPrice());
-        indexBA.setId(marketDepth.toString());
+//        indexBA.setId(marketDepth.toString());
         return indexBA;
     }
 
