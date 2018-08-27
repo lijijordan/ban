@@ -51,8 +51,6 @@ public class TradeServiceETH {
     private String symbol;
 
     private TradeCounter tradeCounter;
-    private String tradeResultIdMarkA2B = "";
-    private String tradeResultIdMarkB2A = "";
 
     private AccountDto accountA;
     private AccountDto accountB;
@@ -70,21 +68,9 @@ public class TradeServiceETH {
         if (tradeResult.getTradeDirect() == TradeDirect.A2B) {
             tradeContext.setA2bCurrentPercent(tradeResult.getEatPercent());
             tradeContext.setA2bCurrentVolume(tradeResult.getEatTradeVolume());
-
-            if (tradeResultIdMarkA2B.equals(tradeResult.getId())) {
-                log.debug("same id A2B :{} ", tradeResult.getId());
-                return false;
-            }
-            tradeResultIdMarkA2B = tradeResult.getId();
         } else {
             tradeContext.setB2aCurrentPercent(tradeResult.getEatPercent());
             tradeContext.setB2aCurrentVolume(tradeResult.getEatTradeVolume());
-
-            if (tradeResultIdMarkB2A.equals(tradeResult.getId())) {
-                log.debug("same id B2A :{} ", tradeResult.getId());
-                return false;
-            }
-            tradeResultIdMarkB2A = tradeResult.getId();
         }
         this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
         this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
