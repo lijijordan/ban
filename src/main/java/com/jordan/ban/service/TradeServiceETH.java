@@ -152,7 +152,7 @@ public class TradeServiceETH {
 
         if (minTradeVolume <= MIN_TRADE_AMOUNT) {
             log.debug("trade volume：{} less than min trade volume，not deal！", minTradeVolume);
-            throw new TradeException("Less than min trade volume.");
+            throw new TradeException("Less than min trade volume [" + minTradeVolume + "]");
         }
         return minTradeVolume;
     }
@@ -194,17 +194,17 @@ public class TradeServiceETH {
             throw new TradeException("Coin is not enough!!!");
         }
         long start = System.currentTimeMillis();
-        if (!this.isFresh(tradeResult.getId())) {
-            log.info("Depth is not fresh. Stop.");
-            throw new TradeException("Depth is not fresh. Stop.");
-        }
+//        if (tradeResult.getId() != null && !this.isFresh(tradeResult.getId())) {
+//            log.info("Depth is not fresh. Stop.");
+//            throw new TradeException("Depth is not fresh. Stop.");
+//        }
         log.info("============================ PLACE ORDER ============================");
         String pair = this.placeOrder(buyPrice, sellPrice, minTradeVolume, direct, diffPercent);
         log.info("================================ DONE ===============================");
 
 
         // 记录Record
-        TradeRecord record = this.createOrderRecord(direct, diff,
+        this.createOrderRecord(direct, diff,
                 diffPercent, minTradeVolume, buyCost + sellCost, pair);
 
         log.info("Record done! cost time:[{}]s", (System.currentTimeMillis() - start));
