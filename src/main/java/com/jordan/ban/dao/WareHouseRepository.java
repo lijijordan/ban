@@ -10,4 +10,7 @@ public interface WareHouseRepository extends CrudRepository<WareHouse, Long> {
 
 
     List<WareHouse> findAllByStateIsNotAndSymbol(WareHouseState wareHouseState, String symbol);
+
+
+    List<WareHouse> findAllByGridId(Long gridId);
 }
