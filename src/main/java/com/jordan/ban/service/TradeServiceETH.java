@@ -197,10 +197,10 @@ public class TradeServiceETH {
             throw new TradeException("Coin is not enough!!!");
         }
         long start = System.currentTimeMillis();
-//        if (tradeResult.getId() != null && !this.isFresh(tradeResult.getId())) {
-//            log.info("Depth is not fresh. Stop.");
-//            throw new TradeException("Depth is not fresh. Stop.");
-//        }
+        if (tradeResult.getId() != null && !this.isFresh(tradeResult.getId())) {
+            log.info("Depth is not fresh. Stop.");
+            throw new TradeException("Depth is not fresh. Do not place it.");
+        }
         log.info("============================ PLACE ORDER ============================");
         String pair = this.placeOrder(buyPrice, sellPrice, minTradeVolume, direct, diffPercent);
         log.info("================================ DONE ===============================");
