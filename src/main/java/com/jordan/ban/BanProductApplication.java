@@ -47,7 +47,7 @@ public class BanProductApplication {
 
 
         // double monitor
-        productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
+//        productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
         productApplication.diffTask(Constant.ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 1000);
 
 //        productApplication.diffTask(Constant.XRP_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 3000);
