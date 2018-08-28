@@ -57,8 +57,8 @@ public class ProductApplication {
                     String depthId = marketDepth.toString();
                     // check id
                     if (DEPTH_ID.get(symbol) == null || !DEPTH_ID.get(symbol).equals(depthId)) {
-                        mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
-                        mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis()));
+                        mockTrade.put("a2b", a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis(), depthId));
+                        mockTrade.put("b2a", b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis(), depthId));
                         String json = JSONUtil.toJsonString(mockTrade);
                         // analysis topic
                         sender.send(depthTopic, json);
@@ -77,7 +77,7 @@ public class ProductApplication {
         }, 0, period);
     }
 
-    private MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
+    private MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {
         MockTradeResult eatAB = TradeHelper.eatA2B(marketDepth);
         MockTradeResult tradeAB = TradeHelper.tradeA2B(marketDepth);
         MockTradeResultIndex indexAB = new MockTradeResultIndex();
@@ -96,11 +96,11 @@ public class ProductApplication {
         indexAB.setBuyCost(eatAB.getBuyCost());
         indexAB.setBuyPrice(eatAB.getBuyPrice());
         indexAB.setSellPrice(eatAB.getSellPrice());
-//        indexAB.setId(marketDepth.toString());
+        indexAB.setId(id);
         return indexAB;
     }
 
-    private MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime) {
+    private MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {
         MockTradeResult eatBA = TradeHelper.eatB2A(marketDepth);
         MockTradeResult tradeBA = TradeHelper.tradeB2A(marketDepth);
         MockTradeResultIndex indexBA = new MockTradeResultIndex();
@@ -119,7 +119,7 @@ public class ProductApplication {
         indexBA.setBuyCost(eatBA.getBuyCost());
         indexBA.setBuyPrice(eatBA.getBuyPrice());
         indexBA.setSellPrice(eatBA.getSellPrice());
-//        indexBA.setId(marketDepth.toString());
+        indexBA.setId(id);
         return indexBA;
     }
 
