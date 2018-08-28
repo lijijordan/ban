@@ -3,6 +3,7 @@ package com.jordan.ban.service;
 import com.jordan.ban.dao.GridOperationalLogRepository;
 import com.jordan.ban.dao.GridRepository;
 import com.jordan.ban.dao.WareHouseRepository;
+import com.jordan.ban.domain.out.GridDto;
 import com.jordan.ban.entity.Grid;
 import com.jordan.ban.entity.GridOperationalLog;
 import com.jordan.ban.entity.WareHouse;
@@ -35,7 +36,13 @@ public class AdminService {
         return this.wareHouseRepository.findAllByGridId(gridId);
     }
 
-    public List<GridOperationalLog> gridOperationalLogs(Long gridId){
+    public List<GridOperationalLog> gridOperationalLogs(Long gridId) {
         return this.gridOperationalLogRepository.findAllByGridId(gridId);
+    }
+
+
+    public GridDto fetchGridData(Long gridId) {
+        return GridDto.builder().gridId(gridId).grids(listGrids())
+                .gridOperationalLogs(gridOperationalLogs(gridId)).wareHouses(wareHouses(gridId)).build();
     }
 }
