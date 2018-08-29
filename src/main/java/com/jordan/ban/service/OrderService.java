@@ -222,7 +222,7 @@ public class OrderService {
     public Order createOrder(OrderRequest orderRequest, MarketParser market, String pair, TradeDirect direct, double diffPercent) {
 
         // Fixme: dragonex
-        if (market.getName().equals(Dragonex.PLATFORM_NAME) && orderRequest.getSymbol().equals(ETH_USDT)) {
+        if (market.getName().equals(Dragonex.PLATFORM_NAME)) {
             this.renderOrder(orderRequest, TRADE_PRICE_FLOAT);
         }
 
