@@ -247,12 +247,13 @@ public class OrderService {
     private void renderOrder(OrderRequest orderRequest, float f) {
         double price = orderRequest.getPrice();
         if (orderRequest.getType() == OrderType.BUY_LIMIT) {
-            orderRequest.setPrice(price + 0.0001);
-            log.debug("Dragonex render buy order from:[{}] to [{}]", price, orderRequest.getPrice());
+            // Dragonex miss too much.
+            orderRequest.setPrice(price * (1 + f));
+            log.info("Dragonex render buy order from:[{}] to [{}]", price, orderRequest.getPrice());
         }
         if (orderRequest.getType() == OrderType.SELL_LIMIT) {
-            orderRequest.setPrice(price - 0.0001);
-            log.debug("Dragonex render sell order from:[{}] to [{}]", price, orderRequest.getPrice());
+            orderRequest.setPrice(price * (1 - f));
+            log.info("Dragonex render sell order from:[{}] to [{}]", price, orderRequest.getPrice());
         }
     }
 
