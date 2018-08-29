@@ -18,7 +18,6 @@
 </head>
 
 <body>
-
     <!-- Start your project here-->
     <div style="height: 100vh">
         <div class="flex-center flex-column">
@@ -27,8 +26,25 @@
             <h5 class="animated fadeIn mb-3">Thank you for using our product. We're glad you're with us.</h5>
 
             <p class="animated fadeIn text-muted">MDB Team</p>
+            <div>
+                <div>
+                    <button id="connect">Connect</button>
+                    <button id="disconnect">Disconnect</button>
+                </div>
+                <div id="sendDiv">
+                    <label for="message">message</label>
+                    <input type="text" id="message"/>
+                    <button id="send">send</button>
+                </div>
+                <div id="response">
+
+                </div>
+            </div>
         </div>
+
     </div>
+
+
     <!-- /Start your project here-->
 
     <!-- SCRIPTS -->
@@ -41,5 +57,74 @@
     <!-- MDB core JavaScript -->
     <script type="text/javascript" src="js/mdb.min.js"></script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var stompClient;
 
+        $('#sendDiv').hide();
+        $('#response').hide();
+        $('#disconnect').attr('disabled', true);
+
+        $('#connect').click(function () {
+            connect();
+        });
+
+        $('#disconnect').click(function () {
+            disconnect();
+        });
+
+        $('#send').click(function () {
+            sendMessage();
+        });
+
+        function connect() {
+            // 指定连接SockJS的endpoint名称为"/endpointAir"
+            var socket = new SockJS('/ws');
+            // 使用STOMP子协议
+            stompClient = Stomp.over(socket);
+            // 连接WebSocket服务端
+            stompClient.connect({}, function (frame) {
+                setConnected(true);
+                console.log('Connected: ' + frame);
+                // 订阅目标"/topic/getResponse"发送的消息
+                stompClient.subscribe('/topic/getResponse', function (response) {
+                    showResponse(JSON.parse(response.body).message)
+                });
+            });
+        }
+
+        function disconnect() {
+            // 断开连接
+            if (stompClient) {
+                stompClient.disconnect();
+            }
+            setConnected(false);
+            console.log("Disconnected");
+        }
+
+        function sendMessage() {
+            // 向目标"/welcome"发送消息
+            stompClient.send('/welcome', {}, JSON.stringify({'message': $('#message').val()}));
+        }
+
+        function showResponse(message) {
+            $('#response').append("<p>" + message + "</p>");
+        }
+
+        function setConnected(connected) {
+            if (connected) {
+                $('#sendDiv').show();
+                $('#response').show();
+            } else {
+                $('#sendDiv').hide().find('input').val('');
+                $('#response').html('').hide();
+            }
+            $('#connect').attr('disabled', connected);
+            $('#disconnect').attr('disabled', !connected);
+        }
+    });
+</script>
 </html>
