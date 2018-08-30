@@ -17,7 +17,7 @@ public class HealthChecker {
     @Autowired
     private SlackService slackService;
 
-    private static final int MAX_ERROR_COUNT = 50;
+    private static final int MAX_ERROR_COUNT = 200;
 
     public void check() {
         double d = tradeCounter.getCurrentDiffPercent();

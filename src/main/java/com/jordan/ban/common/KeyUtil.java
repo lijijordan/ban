@@ -15,7 +15,7 @@ public class KeyUtil {
 
     private static Map<String, String> keys;
 
-    private static final String FILE_PATH = "/root/kkk";
+    private static final String FILE_PATH = "/home/liji/kkk";
 
     public static String getKey(String platform, String keyType) throws KeyException {
         if (keys == null || keys.isEmpty()) {
