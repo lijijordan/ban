@@ -33,6 +33,7 @@ public class MarketDepth {
 
 
     public MarketDepth(double d1ask, double d1askVolume, double d1bid, double d1bidVolume, double d2ask, double d2askVolume, double d2bid, double d2bidVolume) {
+        orderMap = new HashMap<>();
         this.d1ask = d1ask;
         this.d1askVolume = d1askVolume;
         this.d1bid = d1bid;
@@ -41,7 +42,13 @@ public class MarketDepth {
         this.d2askVolume = d2askVolume;
         this.d2bid = d2bid;
         this.d2bidVolume = d2bidVolume;
+        orderMap.put(d1ask, d1askVolume);
+        orderMap.put(d2ask, d2askVolume);
+        orderMap.put(d1bid, d1bidVolume);
+        orderMap.put(d2bid, d2bidVolume);
     }
+
+
     public static MarketDepth parse(String json) {
         return JSONUtil.getEntity(json, MarketDepth.class);
     }
@@ -71,5 +78,11 @@ public class MarketDepth {
     public int hashCode() {
         return Objects.hash(orderMap, d1ask, d1askVolume, d1bid, d1bidVolume, d2ask, d2askVolume, d2bid, d2bidVolume);
     }
+
+    @Override
+    public String toString() {
+        return JSONUtil.toJsonString(this);
+    }
+
 
 }
