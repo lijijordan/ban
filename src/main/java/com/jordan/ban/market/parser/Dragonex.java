@@ -8,7 +8,6 @@ import com.jordan.ban.domain.*;
 import com.jordan.ban.exception.ApiException;
 import com.jordan.ban.http.HttpClientFactory;
 import com.jordan.ban.utils.JSONUtil;
-import io.netty.handler.codec.json.JsonObjectDecoder;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.DoubleBinaryOperator;
 
 import static com.jordan.ban.common.HttpUtils.sendPost;
 
@@ -68,7 +68,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         this.initSymbol();
         try {
             this.setToken();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -98,7 +98,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
     public Symbol getPrice(String symbol) {
         int symbolId = getSymbolId(symbol);
         String url = String.format(PRICE_URL_TEMPLATE, symbolId);
-        log.debug("load url:" + url);
+        log.info("load url:" + url);
         HttpGet httpGet = new HttpGet(url);
         httpGet.setHeader("Content-Type", "application/json");
         CloseableHttpResponse response = null;
@@ -148,14 +148,38 @@ public class Dragonex extends BaseMarket implements MarketParser {
      */
     @Override
     public Depth getDepth(String symbol) {
+
         Depth depth = new Depth();
         depth.setTime(new Date());
         depth.setSymbol(symbol);
         depth.setPlatform(PLATFORM_NAME);
+
+        CompletableFuture<List<Ticker>> bidsFuture = CompletableFuture.supplyAsync(() -> {
+            List<Ticker> list = null;
+            try {
+                list = getBids(symbol);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return list;
+        });
+
+        CompletableFuture<List<Ticker>> asksFuture = CompletableFuture.supplyAsync(() -> {
+            List<Ticker> list = null;
+            try {
+                list = getAsks(symbol);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return list;
+        });
+
         try {
-            depth.setBids(getBids(symbol));
-            depth.setAsks(getAsks(symbol));
-        } catch (JSONException e) {
+            depth.setBids(bidsFuture.get());
+            depth.setAsks(asksFuture.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
         return depth;
@@ -177,10 +201,10 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     public void setToken() throws IOException {
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, GET_TOKEN);
-        log.debug("Get token response:{}", response);
+        log.info("Get token response:{}", response);
         this.token = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexToken>>() {
         }).checkAndReturn();
-        log.debug("Set token to http params!");
+        log.info("Set token to http params!");
         HttpParams.setToken(this.token.getToken());
     }
 
@@ -189,7 +213,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         String path = "/api/v1/user/own/";
         AtomicReference<BalanceDto> dto = new AtomicReference();
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
-        log.debug(response);
+        log.info(response);
         DragonexBalance dragonexBalance[] = null;
         try {
             dragonexBalance = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexBalance[]>>() {
@@ -212,7 +236,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         List<BalanceDto> list = new ArrayList<>();
         String path = "/api/v1/user/own/";
         String response = sendPost(this.accessKeyId, this.accessKeySecret, MAIN_HOST, path);
-        log.debug(response);
+        log.info(response);
         DragonexBalance dragonexBalance[] = null;
         try {
             dragonexBalance = JSONUtil.readValue(response, new TypeReference<DragonexApiResponse<DragonexBalance[]>>() {
@@ -318,7 +342,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     private void initSymbol() {
         if (this.symbolIdCache.isEmpty() || this.symbolCache.isEmpty()) {
-            log.debug("Init dragonex symbols.....");
+            log.info("Init dragonex symbols.....");
             JSONObject jsonObject = super.parseJSONByURL("https://openapi.dragonex.im/api/v1/symbol/all/");
             try {
                 DragonexSymbol[] symbols = JSONUtil.readValue(jsonObject.toString(), new TypeReference<DragonexApiResponse<DragonexSymbol[]>>() {
@@ -331,7 +355,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            log.debug("Init dragonex symbols.....Done!!");
+            log.info("Init dragonex symbols.....Done!!");
         }
     }
 
@@ -346,10 +370,10 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
-        dragonex.validateToken();
+//        dragonex.validateToken();
 //        dragonex.setToken();
 
         /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
@@ -371,6 +395,13 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
         System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));*/
 
+
+        while (true) {
+            long start = System.currentTimeMillis();
+            System.out.println(JSONUtil.toJsonString(dragonex.getDepth("ethusdt")));
+            System.out.println("cost time:" + (System.currentTimeMillis() - start));
+            Thread.sleep(1000);
+        }
     }
 
 

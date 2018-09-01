@@ -31,6 +31,17 @@ public class MarketDepth {
     private double d2bid;
     private double d2bidVolume;
 
+
+    public MarketDepth(double d1ask, double d1askVolume, double d1bid, double d1bidVolume, double d2ask, double d2askVolume, double d2bid, double d2bidVolume) {
+        this.d1ask = d1ask;
+        this.d1askVolume = d1askVolume;
+        this.d1bid = d1bid;
+        this.d1bidVolume = d1bidVolume;
+        this.d2ask = d2ask;
+        this.d2askVolume = d2askVolume;
+        this.d2bid = d2bid;
+        this.d2bidVolume = d2bidVolume;
+    }
     public static MarketDepth parse(String json) {
         return JSONUtil.getEntity(json, MarketDepth.class);
     }

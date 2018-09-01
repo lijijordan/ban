@@ -1,6 +1,8 @@
 package com.jordan.ban;
 
-import com.jordan.ban.market.TradeApp;
+import com.jordan.ban.market.parser.Dragonex;
+import com.jordan.ban.market.parser.Fcoin;
+import com.jordan.ban.mq.ProductTradeApplication;
 import com.jordan.ban.service.GridService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -11,7 +13,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -39,9 +40,9 @@ public class TradeApplication {
         initETHGridPercentOne(gridService, totalCoin);
 //        initBTCGrid(gridService);
 
-        TradeApp tradeApp = context.getBean(TradeApp.class);
-        tradeApp.receiveDiff(ETH_USDT);
-        tradeApp.receiveDiff(BTC_USDT);
+        ProductTradeApplication tradeApp = context.getBean(ProductTradeApplication.class);
+
+        tradeApp.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 500);
 
         System.out.println("Listener Started!");
         System.out.println(new Date());
