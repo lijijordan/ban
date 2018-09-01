@@ -1,5 +1,6 @@
 package com.jordan.ban.mq.spring;
 
+import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Any;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -18,5 +19,10 @@ public class Sender {
 //        log.info(message);
 //        log.info("topic:{}, message:{}", topic, message);
         this.amqpTemplate.convertAndSend(topic, message);
+    }
+
+    public void send(String topic, Object object) {
+        String json = JSONUtil.toJsonString(object);
+        this.amqpTemplate.convertAndSend(topic, json);
     }
 }
