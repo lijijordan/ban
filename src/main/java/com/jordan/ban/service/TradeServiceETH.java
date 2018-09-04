@@ -295,6 +295,4 @@ public class TradeServiceETH {
         return result;
     }
 
-
-
 }
