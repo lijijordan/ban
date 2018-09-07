@@ -32,17 +32,17 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 /** This example demonstrates how to create a websocket connection to a server. Only the most important callbacks are overloaded. */
-public class ExampleClient extends WebSocketClient {
+public class FcoinClient extends WebSocketClient {
 
-	public ExampleClient(URI serverUri , Draft draft ) {
+	public FcoinClient(URI serverUri , Draft draft ) {
 		super( serverUri, draft );
 	}
 
-	public ExampleClient( URI serverURI ) {
+	public FcoinClient(URI serverURI ) {
 		super( serverURI );
 	}
 
-	public ExampleClient(URI serverUri, Map<String, String> httpHeaders ) {
+	public FcoinClient(URI serverUri, Map<String, String> httpHeaders ) {
 		super(serverUri, httpHeaders);
 	}
 
@@ -79,7 +79,7 @@ public class ExampleClient extends WebSocketClient {
 	}
 
 	public static void main( String[] args ) throws URISyntaxException {
-		ExampleClient c = new ExampleClient( new URI( "wss://api.fcoin.com/v2/ws" )); // more about drafts here: http://github.com/TooTallNate/Java-WebSocket/wiki/Drafts
+		FcoinClient c = new FcoinClient( new URI( "wss://api.fcoin.com/v2/ws" )); // more about drafts here: http://github.com/TooTallNate/Java-WebSocket/wiki/Drafts
 		c.setConnectionLostTimeout(30);
 		c.connect();
 

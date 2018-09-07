@@ -31,53 +31,55 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-/** This example demonstrates how to create a websocket connection to a server. Only the most important callbacks are overloaded. */
+/**
+ * This example demonstrates how to create a websocket connection to a server. Only the most important callbacks are overloaded.
+ */
 public class DragonexClient extends WebSocketClient {
 
-	public DragonexClient(URI serverUri , Draft draft ) {
-		super( serverUri, draft );
-	}
+    public DragonexClient(URI serverUri, Draft draft) {
+        super(serverUri, draft);
+    }
 
-	public DragonexClient(URI serverURI ) {
-		super( serverURI );
-	}
+    public DragonexClient(URI serverURI) {
+        super(serverURI);
+    }
 
-	public DragonexClient(URI serverUri, Map<String, String> httpHeaders ) {
-		super(serverUri, httpHeaders);
-	}
+    public DragonexClient(URI serverUri, Map<String, String> httpHeaders) {
+        super(serverUri, httpHeaders);
+    }
 
-	@Override
-	public void onOpen( ServerHandshake handshakedata ) {
+    @Override
+    public void onOpen(ServerHandshake handshakedata) {
 //		send("Hello, it is me. Mario :)");
 //		send("{\"cmd\": \"login\", \"value\": \"{\\\"path\\\": \\\"/ws\\\", \\\"headers\\\": {\\\"token\\\": \\\"A8dPdAIWbOZXZC/QVK7PJ/pRmeg=\\\", \\\"Date\\\": \\\"Thu, 17 May 2018 06:17:45 GMT\\\", \\\"Content-Type\\\": \\\"application/json\\\", \\\"Auth\\\": \\\"42be04a2f49e507db56b7ca65a64acac:3A2S8Q/zVCkLGEBdbk8HDY3BolI=\\\"}, \\\"method\\\": \\\"\\\"}\"}");
-		send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-buy-coin-103\\\"}\", \"cmd\": \"sub\"}");
-		send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-sell-coin-103\\\"}\", \"cmd\": \"sub\"}");
-		System.out.println( "opened connection" );
+        send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-buy-coin-103\\\"}\", \"cmd\": \"sub\"}");
+        send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-sell-coin-103\\\"}\", \"cmd\": \"sub\"}");
+        System.out.println("opened connection");
 
-		// if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
-	}
+        // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
+    }
 
-	@Override
-	public void onMessage( String message ) {
-		System.out.println( "received: " + message );
-	}
+    @Override
+    public void onMessage(String message) {
+        System.out.println("received: " + message);
+    }
 
-	@Override
-	public void onClose(int code, String reason, boolean remote ) {
-		// The codecodes are documented in class org.java_websocket.framing.CloseFrame
-		System.out.println( "Connection closed by " + ( remote ? "remote peer" : "us" ) + " Code: " + code + " Reason: " + reason );
-	}
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        // The codecodes are documented in class org.java_websocket.framing.CloseFrame
+        System.out.println("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+    }
 
-	@Override
-	public void onError( Exception ex ) {
-		ex.printStackTrace();
-		// if the error is fatal then onClose will be called additionally
-	}
+    @Override
+    public void onError(Exception ex) {
+        ex.printStackTrace();
+        // if the error is fatal then onClose will be called additionally
+    }
 
-	public static void main( String[] args ) throws URISyntaxException {
-		DragonexClient c = new DragonexClient( new URI( "wss://openapiws.dragonex.im/ws" )); // more about drafts here: http://github.com/TooTallNate/Java-WebSocket/wiki/Drafts
-		c.setConnectionLostTimeout(0);
-		c.connect();
-	}
+    public static void main(String[] args) throws URISyntaxException {
+        DragonexClient c = new DragonexClient(new URI("wss://openapiws.dragonex.im/ws")); // more about drafts here: http://github.com/TooTallNate/Java-WebSocket/wiki/Drafts
+        c.setConnectionLostTimeout(0);
+        c.connect();
+    }
 
 }

@@ -15,11 +15,14 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -52,14 +55,24 @@ public class Dragonex extends BaseMarket implements MarketParser {
     private String accessKeyId;
     private String accessKeySecret;
 
-    public Dragonex() {
+    private Depth depthContext;
+
+    public Depth getDepthContext() {
+        return depthContext;
+    }
+    private static final String WS_URL = "wss://openapiws.dragonex.im/ws";
+
+
+    public Dragonex() throws URISyntaxException {
+        super(new URI(WS_URL));
         this.balanceCache = new ConcurrentHashMap();
         this.symbolCache = new ConcurrentHashMap();
         this.symbolIdCache = new ConcurrentHashMap();
         this.initSymbol();
     }
 
-    public Dragonex(String accessKeyId, String accessKeySecret) {
+    public Dragonex(String accessKeyId, String accessKeySecret) throws URISyntaxException {
+        super(new URI(WS_URL));
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.balanceCache = new ConcurrentHashMap();
@@ -405,6 +418,35 @@ public class Dragonex extends BaseMarket implements MarketParser {
     }
 
 
+    @Override
+    public void onOpen(ServerHandshake handshakedata) {
+//		send("Hello, it is me. Mario :)");
+//		send("{\"cmd\": \"login\", \"value\": \"{\\\"path\\\": \\\"/ws\\\", \\\"headers\\\": {\\\"token\\\": \\\"A8dPdAIWbOZXZC/QVK7PJ/pRmeg=\\\", \\\"Date\\\": \\\"Thu, 17 May 2018 06:17:45 GMT\\\", \\\"Content-Type\\\": \\\"application/json\\\", \\\"Auth\\\": \\\"42be04a2f49e507db56b7ca65a64acac:3A2S8Q/zVCkLGEBdbk8HDY3BolI=\\\"}, \\\"method\\\": \\\"\\\"}\"}");
+        send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-buy-coin-103\\\"}\", \"cmd\": \"sub\"}");
+        send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-sell-coin-103\\\"}\", \"cmd\": \"sub\"}");
+        System.out.println("opened connection");
+
+        // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
+    }
+
+    @Override
+    public void onMessage(String message) {
+
+        System.out.println("received: " + message);
+        depthContext =
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        // The codecodes are documented in class org.java_websocket.framing.CloseFrame
+        System.out.println("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+    }
+
+    @Override
+    public void onError(Exception ex) {
+        ex.printStackTrace();
+        // if the error is fatal then onClose will be called additionally
+    }
 }
 
 @Data

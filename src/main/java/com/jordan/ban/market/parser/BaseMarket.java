@@ -11,24 +11,32 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.java_websocket.client.WebSocketClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class BaseMarket {
+public abstract class BaseMarket extends WebSocketClient {
 
     static final int CONN_TIMEOUT = 5;
     static final int READ_TIMEOUT = 5;
     static final int WRITE_TIMEOUT = 5;
 
     static final MediaType JSON = MediaType.parse("application/json");
+
     static final OkHttpClient client = createOkHttpClient();
+
+    public BaseMarket(URI serverUri) {
+        super(serverUri);
+        super.setConnectionLostTimeout(0);
+    }
 
     // create OkHttpClient:
     static OkHttpClient createOkHttpClient() {

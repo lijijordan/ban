@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +19,8 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -39,7 +42,10 @@ public class Fcoin extends BaseMarket implements MarketParser {
     String accessKeyId;
     String accessKeySecret;
 
-    public Fcoin(String accessKeyId, String accessKeySecret) {
+    private static final String WS_URL = "wss://api.fcoin.com/v2/ws";
+
+    public Fcoin(String accessKeyId, String accessKeySecret) throws URISyntaxException {
+        super(new URI(WS_URL));
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.balanceCache = new ConcurrentHashMap();
@@ -307,7 +313,35 @@ public class Fcoin extends BaseMarket implements MarketParser {
     }
 
 
-    public Fcoin() {
+    public Fcoin() throws URISyntaxException {
+        super(new URI(WS_URL));
+    }
+
+
+    @Override
+    public void onOpen(ServerHandshake handshakedata) {
+        System.out.println("opened connection");
+        //"{"cmd":"topic"}"
+//		send("\"{\"topic\":\"123\"}");
+        send("{\"cmd\":\"sub\",\"args\":[\"depth.L20.ethusdt\"],\"id\":\"1\"}");
+
+    }
+
+    @Override
+    public void onMessage(String message) {
+        System.out.println("received: " + message);
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        // The codecodes are documented in class org.java_websocket.framing.CloseFrame
+        System.out.println("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+    }
+
+    @Override
+    public void onError(Exception ex) {
+        ex.printStackTrace();
+        // if the error is fatal then onClose will be called additionally
     }
 
     public static void main(String[] args) {

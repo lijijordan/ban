@@ -1,13 +1,17 @@
 package com.jordan.ban.market.parser;
 
 import com.jordan.ban.common.KeyUtil;
+import lombok.extern.slf4j.Slf4j;
 
+import java.net.URISyntaxException;
 import java.security.KeyException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.jordan.ban.common.Constant.KEY;
 import static com.jordan.ban.common.Constant.KEY_SEC;
 
+
+@Slf4j
 public class MarketFactory {
 
     private static ConcurrentHashMap<String, MarketParser> instanceMap = new ConcurrentHashMap<>();
@@ -29,7 +33,12 @@ public class MarketFactory {
             marketParser = new Huobi();
         }
         if (market.equals(Dragonex.class.getSimpleName())) {
-            marketParser = new Dragonex(key, sec);
+            try {
+                marketParser = new Dragonex(key, sec);
+            } catch (URISyntaxException e) {
+                log.error("Initial dragonex websocket failed.");
+                e.printStackTrace();
+            }
         }
         if (market.equals(Okex.class.getSimpleName())) {
             marketParser = new Okex();
@@ -44,7 +53,12 @@ public class MarketFactory {
             marketParser = new Exmo();
         }
         if (market.equals(Fcoin.class.getSimpleName())) {
-            marketParser = new Fcoin(key, sec);
+            try {
+                marketParser = new Fcoin(key, sec);
+            } catch (URISyntaxException e) {
+                log.error("Initial fcoin websocket failed.");
+                e.printStackTrace();
+            }
         }
         instanceMap.put(market, marketParser);
         return marketParser;
