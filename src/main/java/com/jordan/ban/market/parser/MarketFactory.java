@@ -41,16 +41,16 @@ public class MarketFactory {
             }
         }
         if (market.equals(Okex.class.getSimpleName())) {
-            marketParser = new Okex();
+            marketParser = new Okex(null);
         }
         if (market.equals(Gateio.class.getSimpleName())) {
             marketParser = new Gateio();
         }
         if (market.equals(BitZ.class.getSimpleName())) {
-            marketParser = new BitZ();
+            marketParser = new BitZ(null);
         }
         if (market.equals(Exmo.class.getSimpleName())) {
-            marketParser = new Exmo();
+            marketParser = new Exmo(null);
         }
         if (market.equals(Fcoin.class.getSimpleName())) {
             try {
