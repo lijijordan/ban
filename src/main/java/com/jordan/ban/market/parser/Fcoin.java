@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.exception.ApiException;
+import com.jordan.ban.market.DepthHelper;
+import com.jordan.ban.utils.ContextWrapper;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.jordan.ban.common.Constant.ETH_USDT;
+
 
 @Slf4j
 public class Fcoin extends BaseMarket implements MarketParser {
@@ -39,6 +43,8 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
     private static String DEPTH_URL_TEMPLATE = "https://api.fcoin.com/v2/market/depth/L20/%s";
 
+    private DepthHelper depthHelper;
+
     String accessKeyId;
     String accessKeySecret;
 
@@ -49,6 +55,8 @@ public class Fcoin extends BaseMarket implements MarketParser {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.balanceCache = new ConcurrentHashMap();
+        this.depthHelper = ContextWrapper.getContext().getBean(DepthHelper.class);
+
     }
 
     @Override
@@ -159,10 +167,10 @@ public class Fcoin extends BaseMarket implements MarketParser {
     private void parseOrder(List<Ticker> tickers, JSONArray jsonArray) throws JSONException {
         for (int i = 0; i < jsonArray.length(); i = i + 2) {
             double price = jsonArray.getDouble(i);
-            double size = jsonArray.getDouble(i + 1);
+            double volume = jsonArray.getDouble(i + 1);
             Ticker order1 = new Ticker();
             order1.setPrice(price);
-            order1.setVolume(size);
+            order1.setVolume(volume);
             tickers.add(order1);
         }
     }
@@ -315,6 +323,29 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
     public Fcoin() throws URISyntaxException {
         super(new URI(WS_URL));
+        this.depthHelper = ContextWrapper.getContext().getBean(DepthHelper.class);
+    }
+
+    private Depth parseDepth(String json) throws JSONException {
+        JSONObject jsonObject = new JSONObject(json);
+        Depth depth = new Depth();
+        List<Ticker> bidList = new ArrayList();
+        List<Ticker> askList = new ArrayList();
+        try {
+            long time = jsonObject.getLong("ts");
+            JSONArray bids = jsonObject.getJSONArray("bids");
+            JSONArray asks = jsonObject.getJSONArray("asks");
+            parseOrder(bidList, bids);
+            parseOrder(askList, asks);
+            depth.setBids(bidList);
+            depth.setAsks(askList);
+            depth.setPlatform(PLATFORM_NAME);
+            depth.setSymbol(ETH_USDT);
+            depth.setTime(new Date(time));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return depth;
     }
 
 
@@ -327,10 +358,25 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
     }
 
+    // ask=sell bid=buy
     @Override
     public void onMessage(String message) {
-        System.out.println("received: " + message);
+//        System.out.println("received: " + message);
+        if (message.indexOf("{\"type\":\"hello\"") != -1) {
+            return;
+        }
+        if (message.indexOf("\"type\":\"topics\",\"topics\":[\"depth.L20.ethusdt\"]") != -1) {
+            return;
+        }
+        try {
+            Depth depth = this.parseDepth(message);
+            this.depthHelper.setFcoinSell(depth.getAsks());
+            this.depthHelper.setFcoinBuy(depth.getBids());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
+
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
@@ -345,37 +391,9 @@ public class Fcoin extends BaseMarket implements MarketParser {
     }
 
     public static void main(String[] args) {
-        Fcoin fcoin = (Fcoin) MarketFactory.getMarket("Fcoin");
-
-        /*List<BalanceDto> list = fcoin.getBalances();
-        System.out.println(list.toString());*/
-
-//        fcoin.matchresults("12");
-
-//        fcoin.getOrdersDetail("1");
-
-        List<BalanceDto> balanceDtos = fcoin.getBalances();
-        System.out.println(balanceDtos);
-
-        /*FcoinOrderRequest request = new FcoinOrderRequest();
-        request.setAmount(0.01);
-        request.setPrice(458.31);
-        request.setSide("buy");
-        request.setSymbol("ethusdt");
-        request.setType("limit");
-        fcoin.placeOrder(request);
-
-        fcoin.getBalances();*/
-
-        /*OrderRequest request = new OrderRequest();
-        request.setAmount(0.01);
-        request.setPrice(94.55);
-        request.setType(OrderType.BUY_LIMIT);
-        request.setSymbol("ltcusdt");
-        fcoin.placeOrder(request);*/
-
-        /*FcoinOrdersDetailResponse response = fcoin.getOrdersDetail("zM_cP9WUmovRYP20wZdewkUWDooaSaBztE7dm0jkbc8=");
-        response.getAmount();*/
+//        Fcoin fcoin = (Fcoin) MarketFactory.getMarket("Fcoin");
+//        fcoin.connect();
+        System.out.println(new Date(1536592598008l));
     }
 }
 

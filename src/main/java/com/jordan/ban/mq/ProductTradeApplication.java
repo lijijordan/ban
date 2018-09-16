@@ -76,14 +76,14 @@ public class ProductTradeApplication {
     }
 
     @Async
-    protected void send(String topic, MockTradeResultIndex a2b, MockTradeResultIndex b2a) {
+    public void send(String topic, MockTradeResultIndex a2b, MockTradeResultIndex b2a) {
         Map<String, Object> mockTrade = new HashMap<>();
         mockTrade.put("a2b", a2b);
         mockTrade.put("b2a", b2a);
         this.sender.send(topic, mockTrade);
     }
 
-    private MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {
+    public MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {
         MockTradeResult eatAB = TradeHelper.eatA2B(marketDepth);
         MockTradeResult tradeAB = TradeHelper.tradeA2B(marketDepth);
         MockTradeResultIndex indexAB = new MockTradeResultIndex();
@@ -106,7 +106,7 @@ public class ProductTradeApplication {
         return indexAB;
     }
 
-    private MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {
+    public MockTradeResultIndex b2a(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {
         MockTradeResult eatBA = TradeHelper.eatB2A(marketDepth);
         MockTradeResult tradeBA = TradeHelper.tradeB2A(marketDepth);
         MockTradeResultIndex indexBA = new MockTradeResultIndex();

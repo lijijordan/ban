@@ -7,6 +7,8 @@ import com.jordan.ban.common.HttpUtils;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.exception.ApiException;
 import com.jordan.ban.http.HttpClientFactory;
+import com.jordan.ban.market.DepthHelper;
+import com.jordan.ban.utils.ContextWrapper;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.jordan.ban.common.Constant.ETH_USDT;
 import static com.jordan.ban.common.HttpUtils.sendPost;
 
 @Slf4j
@@ -57,28 +60,33 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     private Depth depthContext;
 
+    private DepthHelper depthHelper;
+
     public Depth getDepthContext() {
         return depthContext;
     }
+
     private static final String WS_URL = "wss://openapiws.dragonex.im/ws";
 
 
     public Dragonex() throws URISyntaxException {
         super(new URI(WS_URL));
+        this.init();
+    }
+
+    private void init() throws URISyntaxException {
         this.balanceCache = new ConcurrentHashMap();
         this.symbolCache = new ConcurrentHashMap();
         this.symbolIdCache = new ConcurrentHashMap();
+        this.depthHelper = ContextWrapper.getContext().getBean(DepthHelper.class);
         this.initSymbol();
     }
 
     public Dragonex(String accessKeyId, String accessKeySecret) throws URISyntaxException {
         super(new URI(WS_URL));
+        this.init();
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
-        this.balanceCache = new ConcurrentHashMap();
-        this.symbolCache = new ConcurrentHashMap();
-        this.symbolIdCache = new ConcurrentHashMap();
-        this.initSymbol();
         try {
             this.setToken();
         } catch (IOException e) {
@@ -384,37 +392,24 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
-
-        Dragonex dragonex = (Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME);
-//        dragonex.validateToken();
-//        dragonex.setToken();
-
-        /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
-                .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
-        String orderId = dragonex.placeOrder(orderRequest);*/
-//        List<BalanceDto> balanceDtos = dragonex.getBalances();
-        System.out.println("done!");
-
-        // get symbol
-//        System.out.println(dragonex.getSymbolId("ethusdt"));
-
-//        System.out.println(dragonex.getBalance("usdt"));
-
-        //place order
-        /*OrderRequest orderRequest = OrderRequest.builder().symbol("ethusdt")
-                .price(458.3161).amount(0.0025).type(OrderType.BUY_LIMIT).build();
-        String orderId = dragonex.placeOrder(orderRequest);
-        System.out.println("order id:" + orderId);
-
-        System.out.println(dragonex.getFilledOrder(orderId, "ethusdt"));*/
-
-
-        while (true) {
-            long start = System.currentTimeMillis();
-            System.out.println(JSONUtil.toJsonString(dragonex.getDepth("ethusdt")));
-            System.out.println("cost time:" + (System.currentTimeMillis() - start));
-            Thread.sleep(1000);
+        String json = "{\"room_id\":\"market-quote-multi-buy-coin-103\",\"msg_type\":\"market-quote-multi-buy\",\"coin_id\":103,\"data\":[\"204.3665\",\"7.0135\",\"204.2362\",\"5.1400\",\"204.1089\",\"1.2012\",\"203.9777\",\"6.1930\",\"203.8493\",\"7.1020\",\"203.7190\",\"12.5372\",\"203.5488\",\"4.1800\",\"203.4599\",\"6.0400\",\"203.4198\",\"5.5700\",\"203.2892\",\"0.6200\"],\"timestamp\":1536935268766399097}";
+        List<Ticker> list = new ArrayList<>();
+        String msgType = "";
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray array = jsonObject.getJSONArray("data");
+            msgType = jsonObject.getString("msg_type");
+            for (int i = 0; i < array.length() - 1; i++) {
+                Ticker ticker = new Ticker();
+                ticker.setPrice(Double.valueOf(array.getString(i)));
+                ticker.setVolume(Double.valueOf(array.getString(i + 1)));
+                list.add(ticker);
+                i++;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+        System.out.println(list.toString());
     }
 
 
@@ -431,9 +426,31 @@ public class Dragonex extends BaseMarket implements MarketParser {
 
     @Override
     public void onMessage(String message) {
-
-        System.out.println("received: " + message);
-        depthContext =
+        if (message.indexOf("\"ok\":true,\"code\":1,\"msg\":\"\"") != -1) {
+            return;
+        }
+        List<Ticker> list = new ArrayList<>();
+        String msgType = "";
+        try {
+            JSONObject jsonObject = new JSONObject(message);
+            JSONArray array = jsonObject.getJSONArray("data");
+            msgType = jsonObject.getString("msg_type");
+            for (int i = 0; i < array.length() - 1; i++) {
+                Ticker ticker = new Ticker();
+                ticker.setPrice(Double.valueOf(array.getString(i)));
+                ticker.setVolume(Double.valueOf(array.getString(i + 1)));
+                list.add(ticker);
+                i++;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if (msgType.equals("market-quote-multi-buy")) {
+            this.depthHelper.setDragonexBuy(list);
+        }
+        if (msgType.equals("market-quote-multi-sell")) {
+            this.depthHelper.setDragonexSell(list);
+        }
     }
 
     @Override
@@ -567,4 +584,6 @@ class DragonexOrderDetailResponse {
     @JsonProperty("trade_volume")
     String tradeVolume;
     String volume;
+
 }
+

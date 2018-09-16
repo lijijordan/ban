@@ -6,6 +6,7 @@ import com.jordan.ban.market.gateio.IStockRestApi;
 import com.jordan.ban.market.gateio.StockRestApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpException;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +29,7 @@ public class Gateio extends BaseMarket implements MarketParser {
     IStockRestApi stockPost;
 
     public Gateio(String accessKeyId, String accessKeySecret) {
+        super(null);
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         stockPost = new StockRestApi(TRADE_URL);
@@ -35,6 +37,7 @@ public class Gateio extends BaseMarket implements MarketParser {
     }
 
     public Gateio() {
+        super(null);
     }
 
     @Override
@@ -214,5 +217,25 @@ public class Gateio extends BaseMarket implements MarketParser {
 
         // query order  :946157366
         gateio.getFilledOrder("946157366", symbol);
+    }
+
+    @Override
+    public void onOpen(ServerHandshake serverHandshake) {
+
+    }
+
+    @Override
+    public void onMessage(String s) {
+
+    }
+
+    @Override
+    public void onClose(int i, String s, boolean b) {
+
+    }
+
+    @Override
+    public void onError(Exception e) {
+
     }
 }

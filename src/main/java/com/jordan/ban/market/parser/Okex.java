@@ -9,11 +9,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -27,6 +29,10 @@ public class Okex extends BaseMarket implements MarketParser {
 
     private static String PRICE_URL_TEMPLATE = "";
     private static String DEPTH_URL_TEMPLATE = "https://www.okex.com/api/v1/depth.do?symbol=%s";
+
+    public Okex(URI serverUri) {
+        super(serverUri);
+    }
 
     @Override
     public String getName() {
@@ -104,5 +110,25 @@ public class Okex extends BaseMarket implements MarketParser {
         symbol = symbol.substring(0, 3) + "_" + symbol.substring(3, symbol.length());
         System.out.println(symbol);
 //        System.out.println(JSONUtil.toJsonString(new Okex().getDepth("EOS_USDT")));
+    }
+
+    @Override
+    public void onOpen(ServerHandshake serverHandshake) {
+
+    }
+
+    @Override
+    public void onMessage(String s) {
+
+    }
+
+    @Override
+    public void onClose(int i, String s, boolean b) {
+
+    }
+
+    @Override
+    public void onError(Exception e) {
+
     }
 }

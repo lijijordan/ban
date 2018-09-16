@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URISyntaxException;
+
 @Log
 public class DragonexParserTest {
 
@@ -14,7 +16,11 @@ public class DragonexParserTest {
 
     @Before
     public void init() {
-        dragonexParser = new Dragonex();
+        try {
+            dragonexParser = new Dragonex();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

@@ -3,10 +3,12 @@ package com.jordan.ban.market.parser;
 import com.jordan.ban.domain.*;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -20,6 +22,10 @@ public class BitZ extends BaseMarket implements MarketParser {
 
     private static String PRICE_URL_TEMPLATE = "";
     private static String DEPTH_URL_TEMPLATE = "https://www.bit-z.com/api_v1/depth?coin=%s";
+
+    public BitZ(URI serverUri) {
+        super(serverUri);
+    }
 
     @Override
     public String getName() {
@@ -99,7 +105,23 @@ public class BitZ extends BaseMarket implements MarketParser {
     }
 
 
-    public static void main(String[] args) {
-        System.out.println(JSONUtil.toJsonString(new BitZ().getDepth("EOSBTC")));
+    @Override
+    public void onOpen(ServerHandshake serverHandshake) {
+
+    }
+
+    @Override
+    public void onMessage(String s) {
+
+    }
+
+    @Override
+    public void onClose(int i, String s, boolean b) {
+
+    }
+
+    @Override
+    public void onError(Exception e) {
+
     }
 }

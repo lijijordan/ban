@@ -3,7 +3,6 @@ package com.jordan.ban.market;
 import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.exception.TradeException;
 import com.jordan.ban.mq.MessageReceiver;
-import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
 import com.jordan.ban.service.TradeServiceETH;
 import com.jordan.ban.utils.JSONUtil;

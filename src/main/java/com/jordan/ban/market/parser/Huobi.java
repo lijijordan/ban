@@ -20,6 +20,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,6 +62,7 @@ public class Huobi extends BaseMarket implements MarketParser {
     static final String API_URL = "https://" + API_HOST;
 
     public Huobi(String accessKeyId, String accessKeySecret) {
+        super(null);
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.assetPassword = null;
@@ -330,6 +332,7 @@ public class Huobi extends BaseMarket implements MarketParser {
     }
 
     public Huobi() {
+        super(null);
     }
 
     public static void main(String[] args) {
@@ -425,6 +428,26 @@ public class Huobi extends BaseMarket implements MarketParser {
         } catch (IOException e) {
             throw new RuntimeException("Get json failed: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void onOpen(ServerHandshake serverHandshake) {
+
+    }
+
+    @Override
+    public void onMessage(String s) {
+
+    }
+
+    @Override
+    public void onClose(int i, String s, boolean b) {
+
+    }
+
+    @Override
+    public void onError(Exception e) {
+
     }
 }
 

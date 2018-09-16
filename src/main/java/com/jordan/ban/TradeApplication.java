@@ -2,6 +2,7 @@ package com.jordan.ban;
 
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Fcoin;
+import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.mq.ProductTradeApplication;
 import com.jordan.ban.service.GridService;
 import lombok.extern.slf4j.Slf4j;
@@ -35,17 +36,11 @@ public class TradeApplication {
 
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         GridService gridService = context.getBean(GridService.class);
+        ((Fcoin)MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).connect();
+        ((Dragonex)MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
 
-        final double totalCoin = 4.0846; // todo
-        initETHGridPercentOne(gridService, totalCoin);
-//        initBTCGrid(gridService);
 
-        ProductTradeApplication tradeApp = context.getBean(ProductTradeApplication.class);
-
-        tradeApp.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 500);
-
-        System.out.println("Listener Started!");
-        System.out.println(new Date());
+        System.out.println("-------------------------- APP STARTED --------------------------------");
     }
 
 
