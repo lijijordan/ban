@@ -30,7 +30,7 @@ public class DepthHelper {
     private TradeApp tradeApp;
 
     private static final String symbol = ETH_USDT;
-
+    private static final String TOPIC = "ETHUSDT-depth";
     @Autowired
     private ProductTradeApplication productTradeApplication;
 
@@ -109,7 +109,7 @@ public class DepthHelper {
             // analysis topic
 
 
-            productTradeApplication.send(symbol, a2b, b2a);
+            productTradeApplication.send(TOPIC, a2b, b2a);
         }
         this.comparedID = depthId;
 //        log.info("Analysis depth and trade. Cost time:[{}]ms.", System.currentTimeMillis() - start);
