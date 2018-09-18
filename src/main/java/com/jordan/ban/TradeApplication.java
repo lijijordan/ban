@@ -42,7 +42,7 @@ public class TradeApplication {
         ((Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
 
         //Rest API market trade
-        productTradeApplication.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 500);
+//        productTradeApplication.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 500);
         System.out.println("------------------ App started ------------------");
     }
 
