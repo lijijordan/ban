@@ -14,7 +14,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
-import java.util.Date;
 import java.util.TimeZone;
 
 import static com.jordan.ban.common.Constant.BTC_USDT;
@@ -36,11 +35,15 @@ public class TradeApplication {
 
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
         GridService gridService = context.getBean(GridService.class);
-        ((Fcoin)MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).connect();
-        ((Dragonex)MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
+        ProductTradeApplication productTradeApplication = context.getBean(ProductTradeApplication.class);
 
+        // websocket market trade
+        ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).connect();
+        ((Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
 
-        System.out.println("-------------------------- APP STARTED --------------------------------");
+        //Rest API market trade
+        productTradeApplication.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 500);
+        System.out.println("------------------ App started ------------------");
     }
 
 

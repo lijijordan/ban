@@ -42,6 +42,16 @@ public class DepthHelper {
 
     private List<Ticker> dragonexSellList;
 
+    public void setDragonexDepth(Depth dragonexDepth) {
+        this.dragonexDepth = dragonexDepth;
+        this.trade();
+    }
+
+    public void setFcoinDepth(Depth fcoinDepth) {
+        this.fcoinDepth = fcoinDepth;
+        this.trade();
+    }
+
     // ask=sell bid=buy
     @PostConstruct
     public void init() {
@@ -107,8 +117,6 @@ public class DepthHelper {
             tradeApp.execute(a2b);
             tradeApp.execute(b2a);
             // analysis topic
-
-
             productTradeApplication.send(TOPIC, a2b, b2a);
         }
         this.comparedID = depthId;
