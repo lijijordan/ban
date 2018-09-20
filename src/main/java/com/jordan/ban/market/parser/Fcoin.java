@@ -351,7 +351,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        System.out.println("opened connection");
+        log.info("opened connection");
         //"{"cmd":"topic"}"
 //		send("\"{\"topic\":\"123\"}");
         send("{\"cmd\":\"sub\",\"args\":[\"depth.L20.ethusdt\"],\"id\":\"1\"}");
@@ -361,7 +361,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
     // ask=sell bid=buy
     @Override
     public void onMessage(String message) {
-//        System.out.println("received: " + message);
+//        log.info("received: " + message);
         if (message.indexOf("{\"type\":\"hello\"") != -1) {
             return;
         }
@@ -381,7 +381,13 @@ public class Fcoin extends BaseMarket implements MarketParser {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         // The codecodes are documented in class org.java_websocket.framing.CloseFrame
-        System.out.println("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+        log.info("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+        try {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.connect();
     }
 
     @Override
@@ -390,11 +396,6 @@ public class Fcoin extends BaseMarket implements MarketParser {
         // if the error is fatal then onClose will be called additionally
     }
 
-    public static void main(String[] args) {
-//        Fcoin fcoin = (Fcoin) MarketFactory.getMarket("Fcoin");
-//        fcoin.connect();
-        System.out.println(new Date(1536592598008l));
-    }
 }
 
 /**

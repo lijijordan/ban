@@ -409,7 +409,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        System.out.println(list.toString());
+        log.info(list.toString());
     }
 
 
@@ -419,7 +419,7 @@ public class Dragonex extends BaseMarket implements MarketParser {
 //		send("{\"cmd\": \"login\", \"value\": \"{\\\"path\\\": \\\"/ws\\\", \\\"headers\\\": {\\\"token\\\": \\\"A8dPdAIWbOZXZC/QVK7PJ/pRmeg=\\\", \\\"Date\\\": \\\"Thu, 17 May 2018 06:17:45 GMT\\\", \\\"Content-Type\\\": \\\"application/json\\\", \\\"Auth\\\": \\\"42be04a2f49e507db56b7ca65a64acac:3A2S8Q/zVCkLGEBdbk8HDY3BolI=\\\"}, \\\"method\\\": \\\"\\\"}\"}");
         send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-buy-coin-103\\\"}\", \"cmd\": \"sub\"}");
         send("{\"value\": \"{\\\"roomid\\\": \\\"market-quote-multi-sell-coin-103\\\"}\", \"cmd\": \"sub\"}");
-        System.out.println("opened connection");
+        log.info("opened connection");
 
         // if you plan to refuse connection based on ip or httpfields overload: onWebsocketHandshakeReceivedAsClient
     }
@@ -456,7 +456,13 @@ public class Dragonex extends BaseMarket implements MarketParser {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         // The codecodes are documented in class org.java_websocket.framing.CloseFrame
-        System.out.println("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+        log.info("Connection closed by " + (remote ? "remote peer" : "us") + " Code: " + code + " Reason: " + reason);
+        try {
+            Thread.sleep(1000l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.connect();
     }
 
     @Override

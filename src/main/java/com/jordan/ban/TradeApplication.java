@@ -39,6 +39,7 @@ public class TradeApplication {
 
         // websocket market trade
         ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).connect();
+        ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).setConnectionLostTimeout(-1);
         ((Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
 
         //Rest API market trade
