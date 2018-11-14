@@ -2,8 +2,6 @@ package com.jordan.ban.market;
 
 import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.exception.TradeException;
-import com.jordan.ban.mq.MessageReceiver;
-import com.jordan.ban.service.MockTradeService;
 import com.jordan.ban.service.TradeServiceETH;
 import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -25,20 +23,6 @@ public class TradeApp {
     @Autowired
     private TradeServiceETH tradeServiceETH;
 
-    public void receiveDepthDiff(String topic) {
-        MessageReceiver receiver = new MessageReceiver((t, message) -> {
-//            log.debug(topic + ":" + message);
-            JSONObject jsonObject = new JSONObject(message);
-//            log.debug(message);
-            this.doDepthDiff(jsonObject.getString("a2b"));
-            this.doDepthDiff(jsonObject.getString("b2a"));
-        });
-        try {
-            receiver.onReceived(topic);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     //TODO： 异步？
     private void doDepthDiff(String json) {
@@ -76,11 +60,7 @@ public class TradeApp {
     }
 
 
-    public void receiveDiff(String symbol) {
-        String topic = symbol + TRADE_TOPIC_SUFFIX;
-        log.debug("Listening Topic:" + topic);
-        this.receiveDepthDiff(topic);
-    }
+
 
 
 }

@@ -2,17 +2,12 @@ package com.jordan.ban.market.policy;
 
 import com.jordan.ban.domain.Differ;
 import com.jordan.ban.domain.Symbol;
-import com.jordan.ban.es.ElasticSearchClient;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
-import com.jordan.ban.mq.MessageSender;
-import com.jordan.ban.utils.JSONUtil;
 import lombok.extern.java.Log;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.*;
 
 @Log
