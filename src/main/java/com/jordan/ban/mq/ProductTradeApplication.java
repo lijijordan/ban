@@ -8,13 +8,13 @@ import com.jordan.ban.market.TradeApp;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
 import com.jordan.ban.market.trade.TradeHelper;
-import com.jordan.ban.mq.spring.Sender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,9 +26,6 @@ public class ProductTradeApplication {
 
     @Autowired
     private TradeApp tradeApp;
-
-    @Autowired
-    private Sender sender;
 
     private void getDepthAndTrade(String symbol, String marketName1, String marketName2, long period) {
         MarketParser m1 = MarketFactory.getMarket(marketName1);
@@ -60,7 +57,6 @@ public class ProductTradeApplication {
                         tradeApp.execute(a2b);
                         tradeApp.execute(b2a);
                         // analysis topic
-                        send(depthTopic, a2b, b2a);
                     }
                     DEPTH_ID.put(symbol, depthId);
                     log.info("Analysis depth and trade. Cost time:[{}]ms.", System.currentTimeMillis() - start);
@@ -72,14 +68,6 @@ public class ProductTradeApplication {
 
             }
         }, 0, period);
-    }
-
-    @Async
-    public void send(String topic, MockTradeResultIndex a2b, MockTradeResultIndex b2a) {
-        Map<String, Object> mockTrade = new HashMap<>();
-        mockTrade.put("a2b", a2b);
-        mockTrade.put("b2a", b2a);
-        this.sender.send(topic, mockTrade);
     }
 
     public MockTradeResultIndex a2b(MarketDepth marketDepth, Depth depth1, Depth depth2, long costTime, long createTime, String id) {

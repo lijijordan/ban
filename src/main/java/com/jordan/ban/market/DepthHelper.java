@@ -117,7 +117,6 @@ public class DepthHelper {
             tradeApp.execute(a2b);
             tradeApp.execute(b2a);
             // analysis topic
-            productTradeApplication.send(TOPIC, a2b, b2a);
         }
         this.comparedID = depthId;
 //        log.info("Analysis depth and trade. Cost time:[{}]ms.", System.currentTimeMillis() - start);

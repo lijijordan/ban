@@ -135,6 +135,7 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td>trade direct</td>
         <td>price</td>
         <td>diff percent%</td>
+        <td>current price</td>
     </tr>
 
     <tr th:each="order :${orderList}">
@@ -148,7 +149,7 @@ sum profit=<b th:text="${recordList.getSumProfit()}"/>
         <td th:text="${order.tradeDirect}"></td>
         <td th:text="${order.price}"></td>
         <td th:text="${order.diffPercent}"></td>
-
+        <td th:text="${currentPrice}"></td>
     </tr>
 </table>
 

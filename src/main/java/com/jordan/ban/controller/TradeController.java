@@ -99,6 +99,7 @@ public class TradeController {
         model.addAttribute("b2aAvgPercent", formatPercent(this.tradeContext.getB2aCurrentPercent(), 3) + "__" + this.tradeContext.getB2aCurrentVolume());
         model.addAttribute("suggest", "none");
         model.addAttribute("profitStatistics", this.orderService.queryProfitStatistics());
+        model.addAttribute("currentPrice", this.tradeContext.getCurrentEthPrice());
         return "greeting";
     }
 

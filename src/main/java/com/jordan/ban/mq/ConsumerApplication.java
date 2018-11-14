@@ -2,7 +2,6 @@ package com.jordan.ban.mq;
 
 import com.jordan.ban.common.Constant;
 import com.jordan.ban.es.ElasticSearchClient;
-import com.jordan.ban.mq.spring.Sender;
 import com.jordan.ban.service.MockTradeService;
 import com.jordan.ban.service.TradeServiceETH;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,6 @@ public class ConsumerApplication {
     @Autowired
     private MockTradeService mockTradeService;
 
-    @Autowired
-    private Sender sender;
 
     @Autowired
     private TradeServiceETH tradeService;
@@ -52,8 +49,5 @@ public class ConsumerApplication {
         this.receiveDepthDiff(topic + "-depth");
     }
 
-    public void sendToES(String topic, String message) {
-        sender.send(topic + "-elk", message);
-    }
 }
 

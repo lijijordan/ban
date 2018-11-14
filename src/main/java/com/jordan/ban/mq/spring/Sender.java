@@ -1,3 +1,4 @@
+/*
 package com.jordan.ban.mq.spring;
 
 import com.jordan.ban.utils.JSONUtil;
@@ -26,3 +27,4 @@ public class Sender {
         this.amqpTemplate.convertAndSend(topic, json);
     }
 }
+*/
