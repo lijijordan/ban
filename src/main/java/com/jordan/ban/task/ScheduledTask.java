@@ -21,15 +21,9 @@ public class ScheduledTask {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private HealthChecker healthChecker;
-
     private static final long CHECK_ORDER_RATE = 60000;//60 second
     private static final long CHECK_ORDER_DELAYT = 10000;//10 second
-
     private static final long HOURS_ONE = 1000 * 60 * 60; // 1 hour
-
-
     private static final long THREE_MIN = 1000 * 60 * 3;//3 min
 
     @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
@@ -40,10 +34,9 @@ public class ScheduledTask {
             Context.setUnFilledOrderNum(list.size());
         }
         list.forEach(order -> {
-            this.orderService.refreshOrderState(order);
+            this.orderService.refreshSingleOrderState(order);
         });
     }
-
 
     /**
      * Reset Dragonex token
@@ -59,10 +52,6 @@ public class ScheduledTask {
     }
 
 
-    @Scheduled(initialDelay = HOURS_ONE, fixedRate = THREE_MIN)
-    public void checkHealth() {
-        this.healthChecker.check();
-    }
 
 
 }

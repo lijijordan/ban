@@ -5,6 +5,7 @@ import com.jordan.ban.TradeApplication;
 import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.domain.OrderRequest;
 import com.jordan.ban.domain.OrderType;
+import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.service.TradeServiceETH;
@@ -28,11 +29,11 @@ public class TradeServiceETHTest {
     @Autowired
     private TradeServiceETH tradeService;
 
-    private Huobi huobi;
+    private Fcoin fcoin;
 
     @Before
     public void init() {
-        huobi = (Huobi) MarketFactory.getMarket(Huobi.PLATFORM_NAME);
+        fcoin = (Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME);
     }
 
     @Test
@@ -44,10 +45,16 @@ public class TradeServiceETHTest {
         this.tradeService.trade(JSONUtil.getEntity(jsonObject.getString("a2b"), MockTradeResultIndex.class));
     }
 
+
     @Test
-    public void testHuobiTrade() {
-//        (symbol=ltcusdt, amount=1.0, price=96.01, type=BUY_LIMIT, source=null)sell:OrderRequest(symbol=ltcusdt, amount=1.0, price=96.88, type=SELL_LIMIT, source=null)
-        OrderRequest orderRequest = OrderRequest.builder().amount(0.01).price(96.01).symbol("ltcusdt").type(OrderType.BUY_LIMIT).build();
-        huobi.placeOrder(orderRequest);
+    public void testFcoinPlaceOrder() {
+        OrderRequest orderRequest = OrderRequest.builder().amount(0.001).price(20000.01).symbol("ethusdt").type(OrderType.SELL_LIMIT).build();
+        fcoin.placeOrder(orderRequest);
     }
+
+
+
+
+
+
 }

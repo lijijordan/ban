@@ -34,17 +34,17 @@ public class TradeApplication {
     public static void main(String[] args) {
 
         ConfigurableApplicationContext context = SpringApplication.run(TradeApplication.class, args);
-        GridService gridService = context.getBean(GridService.class);
-        ProductTradeApplication productTradeApplication = context.getBean(ProductTradeApplication.class);
-
-        // websocket market trade
-//        ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).connect();
-//        ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).setConnectionLostTimeout(-1);
-//        ((Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
-
-        //Rest API market trade
-        productTradeApplication.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 250);
-        System.out.println("------------------ App started ------------------");
+//        GridService gridService = context.getBean(GridService.class);
+//        ProductTradeApplication productTradeApplication = context.getBean(ProductTradeApplication.class);
+//
+//        // websocket market trade
+////        ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).connect();
+////        ((Fcoin) MarketFactory.getMarket(Fcoin.PLATFORM_NAME)).setConnectionLostTimeout(-1);
+////        ((Dragonex) MarketFactory.getMarket(Dragonex.PLATFORM_NAME)).connect();
+//
+//        //Rest API market trade
+//        productTradeApplication.depthTrade(ETH_USDT, Dragonex.PLATFORM_NAME, Fcoin.PLATFORM_NAME, 250);
+//        System.out.println("------------------ App started ------------------");
     }
 
 

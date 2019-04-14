@@ -48,3 +48,5 @@ spring:
 #    password: btc@123
 ##    virtual-host: /
 #    port: 5672
+
+order.single.diff: 0.01

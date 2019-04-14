@@ -15,6 +15,7 @@ import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.market.parser.MarketParser;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -112,6 +113,49 @@ public class OrderService {
 //                this.accountService.refreshBalancesCache(order.getPlatform());
                 this.statisticTrade(order);
             }
+        }
+    }
+
+    /**
+     * Watch Single Order State
+     *
+     * @param order
+     */
+    public void refreshSingleOrderState(Order order) {
+        MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
+        OrderResponse orderResponse = marketParser.getFilledOrder(order.getOrderId());
+        if (orderResponse == null) {
+            log.error("Get order status failed! Order id :{}", order.getOrderId());
+        }
+        // 判断订单是否变化，如果变化发送通知
+        if (isChanged(order, orderResponse)) {
+            Date date = order.getCreateTime();
+            long costTime = System.currentTimeMillis() - date.getTime();
+            String msg = String.format("type=%s, date=%s, amount=%s, filled=%s, price=%s diffPercent=%s",
+                    orderResponse.getOrderState(), orderResponse.getCreateTime(), order.getAmount(),
+                    orderResponse.getFilledAmount(), orderResponse.getPrice(), order.getDiffPercent() * 100);
+            if (orderResponse.getFilledAmount() == order.getAmount()) {
+                msg = msg + ",OKey";
+            }
+            this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s", msg);
+        }
+        order.setState(orderResponse.getOrderState());
+        order.setFillFees(orderResponse.getFillFees());
+        order.setFilledAmount(orderResponse.getFilledAmount());
+        order.setUpdateTime(new Date());
+        order.setSymbol(orderResponse.getSymbol());
+        order.setPrice(orderResponse.getPrice());
+        order.setFillFees(orderResponse.getFillFees());
+        this.orderRepository.save(order);
+        // 重新下单
+        if (order.getType() == OrderType.BUY_LIMIT) {
+            this.crateSingleOrder(OrderRequest.builder()
+                    .type(OrderType.SELL_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 + 0.01))
+                    .symbol(order.getSymbol()).build(), MarketFactory.getMarket(order.getPlatform()));
+        } else {
+            this.crateSingleOrder(OrderRequest.builder()
+                    .type(OrderType.BUY_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 - 0.01))
+                    .symbol(order.getSymbol()).build(), MarketFactory.getMarket(order.getPlatform()));
         }
     }
 
@@ -239,6 +283,25 @@ public class OrderService {
         return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
                 .state(OrderState.none).type(orderRequest.getType()).orderPairKey(pair).diffPercent(diffPercent).tradeDirect(direct)
                 .platform(market.getName())
+                .orderId(orderAid).build());
+    }
+
+    /**
+     * Create a single grid order
+     *
+     * @param orderRequest
+     * @param marketParser
+     * @return
+     */
+    public Order crateSingleOrder(OrderRequest orderRequest, MarketParser marketParser) {
+        String orderAid = this.placeOrder(orderRequest, marketParser);
+        if (StringUtils.isEmpty(orderAid)) {
+            throw new TradeException("Create Order failed！");
+        }
+        // record order
+        return this.orderRepository.save(Order.builder().price(orderRequest.getPrice()).amount(orderRequest.getAmount())
+                .state(OrderState.none).type(orderRequest.getType()).orderPairKey("").diffPercent(0).tradeDirect(TradeDirect.NONE)
+                .platform(marketParser.getName())
                 .orderId(orderAid).build());
     }
 
