@@ -24,4 +24,6 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
 
     @Query(value = "select * from trade_order where create_time>=? order by create_time desc", nativeQuery = true)
     List<Order> findAllByCreateTime(Date createTime);
+
+
 }

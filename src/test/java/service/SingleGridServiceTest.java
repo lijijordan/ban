@@ -29,7 +29,7 @@ public class SingleGridServiceTest {
 
     @Test
     public void test_GenerateSingleGrid() {
-        singleGridService.generateSingleGrid(100, 163.88, "ethusdt", 0.1f, 7.1f, Fcoin.PLATFORM_NAME);
+        singleGridService.generateSingleGrid(100, 160.88, "ethusdt", 0.1f, 7.1f, Fcoin.PLATFORM_NAME);
     }
 
 

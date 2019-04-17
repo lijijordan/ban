@@ -114,7 +114,6 @@ public class Fcoin extends BaseMarket implements MarketParser {
 
     @Override
     public String placeOrder(OrderRequest orderRequest) {
-        log.debug("【Fcoin】place order:" + orderRequest.toString());
         FcoinOrderRequest request = new FcoinOrderRequest();
         request.setAmount(orderRequest.getAmount());
         request.setPrice(orderRequest.getPrice());
@@ -223,6 +222,7 @@ public class Fcoin extends BaseMarket implements MarketParser {
      * @return Order id.
      */
     public String placeOrder(FcoinOrderRequest request) {
+        log.info("【Fcoin】place order:" + request.toString());
         FcoinApiResponse<String> resp =
                 post(API_HOST + "orders", request, new TypeReference<FcoinApiResponse<String>>() {
                 });

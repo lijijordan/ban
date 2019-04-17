@@ -38,12 +38,22 @@ public class OrderRequest {
         return round(this.amount);
     }
 
+    public double getPrice(){
+        return round2(this.price);
+    }
+
     public void setAmount(double amount) {
         this.amount = amount;
     }
 
     private static double round(double d) {
         DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.FLOOR);
+        return Double.parseDouble(df.format(d));
+    }
+
+    private static double round2(double d) {
+        DecimalFormat df = new DecimalFormat("#.##");
         df.setRoundingMode(RoundingMode.FLOOR);
         return Double.parseDouble(df.format(d));
     }

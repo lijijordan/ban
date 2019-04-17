@@ -8,10 +8,12 @@ import com.jordan.ban.entity.SingleGrid;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Gateio;
 import com.jordan.ban.market.parser.MarketFactory;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Log
 public class SingleGridService {
 
     @Autowired
@@ -44,11 +46,16 @@ public class SingleGridService {
 //        this.singleGridRepository.save(Grid.builder().symbol(symbol).low(low).high(high).quota(quota).volume(totalCoin * quota)
 //                .lastVolume(totalCoin * quota).build());
 
+        long count = this.orderService.count();
+        if (count > 0) {
+            log.warning("Single grid order is not empty, do nothing!");
+            return;
+        }
 
         float eachGridCoin = totalCoin / splitCount;
         float eachUpPercent = upPercent / splitCount;
 
-        double fromPrice = currentPrice;
+//        double fromPrice = currentPrice;
         for (int i = 1; i <= splitCount; i++) {
             double toPrice = currentPrice * (1 + eachUpPercent * i);
 //            SingleGrid singleGrid = SingleGrid.builder().high(toPrice).low(fromPrice)
@@ -58,7 +65,7 @@ public class SingleGridService {
             orderService.crateSingleOrder(OrderRequest.builder()
                     .type(OrderType.SELL_LIMIT).amount(eachGridCoin).price(toPrice)
                     .symbol(symbol).build(), MarketFactory.getMarket(market));
-            fromPrice = toPrice;
+//            fromPrice = toPrice;
         }
 
     }

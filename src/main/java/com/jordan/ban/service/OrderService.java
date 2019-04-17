@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import static com.jordan.ban.TradeApplication.PERCENT;
+import static com.jordan.ban.TradeApplication.SPLIT_COUNT;
 import static com.jordan.ban.common.Constant.ETH_USDT;
 import static com.jordan.ban.common.Constant.USDT;
 
@@ -147,14 +149,18 @@ public class OrderService {
         order.setPrice(orderResponse.getPrice());
         order.setFillFees(orderResponse.getFillFees());
         this.orderRepository.save(order);
+        // 订单未完成
+        if (order.getState() != OrderState.filled) {
+            return;
+        }
         // 重新下单
         if (order.getType() == OrderType.BUY_LIMIT) {
             this.crateSingleOrder(OrderRequest.builder()
-                    .type(OrderType.SELL_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 + 0.01))
+                    .type(OrderType.SELL_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 + (PERCENT / SPLIT_COUNT)))
                     .symbol(order.getSymbol()).build(), MarketFactory.getMarket(order.getPlatform()));
         } else {
             this.crateSingleOrder(OrderRequest.builder()
-                    .type(OrderType.BUY_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 - 0.01))
+                    .type(OrderType.BUY_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 - (PERCENT / SPLIT_COUNT)))
                     .symbol(order.getSymbol()).build(), MarketFactory.getMarket(order.getPlatform()));
         }
     }
@@ -347,6 +353,11 @@ public class OrderService {
             this.orderRepository.delete(origin);
         }
         return order;
+    }
+
+
+    public long count() {
+        return this.orderRepository.count();
     }
 
 

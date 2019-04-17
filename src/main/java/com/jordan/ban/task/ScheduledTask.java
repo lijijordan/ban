@@ -26,7 +26,7 @@ public class ScheduledTask {
     private static final long HOURS_ONE = 1000 * 60 * 60; // 1 hour
     private static final long THREE_MIN = 1000 * 60 * 3;//3 min
 
-    @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = CHECK_ORDER_RATE)
+    @Scheduled(initialDelay = CHECK_ORDER_DELAYT, fixedRate = THREE_MIN)
     public void watchUnfilledOrder() {
         List<Order> list = orderService.getUnfilledOrders();
         if (list != null && list.size() > 0) {
@@ -34,6 +34,11 @@ public class ScheduledTask {
             Context.setUnFilledOrderNum(list.size());
         }
         list.forEach(order -> {
+            try {
+                Thread.sleep(1000l);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             this.orderService.refreshSingleOrderState(order);
         });
     }
