@@ -43,7 +43,7 @@ public class TradeApplication {
         SingleGridService singleGridService = context.getBean(SingleGridService.class);
 
         // just do it
-        singleGridService.generateSingleGrid(SPLIT_COUNT, 161.77, "ethusdt", PERCENT, 1f, Fcoin.PLATFORM_NAME);
+        singleGridService.generateSingleGrid(SPLIT_COUNT, 172.22, "ethusdt", PERCENT, 6.88f, Fcoin.PLATFORM_NAME);
         System.out.println("------------------ App started ------------------");
     }
 
