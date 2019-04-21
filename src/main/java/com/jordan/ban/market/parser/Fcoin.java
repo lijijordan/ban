@@ -157,9 +157,39 @@ public class Fcoin extends BaseMarket implements MarketParser {
         return null;
     }
 
+
+    /**
+     * 申请撤销订单
+     * const fcoin = require('fcoin');
+     * <p>
+     * let api = fcoin.authorize('key', 'secret', timestamp);
+     * let max = api.orders.submitCancel(2);
+     * 响应结果如下：
+     * <p>
+     * {
+     * "status": 0,
+     * "msg": "string",
+     * "data": true
+     * }
+     * 此 API 用于撤销指定订单，订单撤销过程是异步的，即此 API 的调用成功代表着订单已经进入撤销申请的过程，需要等待撮合的进一步处理，才能进行订单的撤销确认。
+     * <p>
+     * HTTP Request
+     * POST https://api.fcoin.com/v2/orders/{order_id}/submit-cancel
+     * <p>
+     * URL 参数
+     * 参数	解释
+     * order_id	订单 ID
+     *
+     * @param orderId
+     * @return
+     */
     @Override
     public boolean cancelOrder(String orderId) {
-        return false;
+        log.info("【Fcoin】cancel order:" + orderId);
+        FcoinApiResponse<String> resp =
+                post(API_HOST + "orders/" + orderId + "/submit-cancel", null, new TypeReference<FcoinApiResponse<String>>() {
+                });
+        return resp.getStatus().equals("0");
     }
 
 
@@ -259,7 +289,12 @@ public class Fcoin extends BaseMarket implements MarketParser {
         try {
             Request.Builder builder;
             if ("POST".equals(method)) {
-                RequestBody body = RequestBody.create(JSON, JSONUtil.writeValue(obj));
+                RequestBody body;
+                if (obj == null) {
+                    body = RequestBody.create(null, new byte[0]);
+                } else {
+                    body = RequestBody.create(JSON, JSONUtil.writeValue(obj));
+                }
                 builder = new Request.Builder().url(uri).post(body);
             } else {
                 builder = new Request.Builder().url(uri).get();

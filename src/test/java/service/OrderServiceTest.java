@@ -5,6 +5,7 @@ import com.jordan.ban.TradeApplication;
 import com.jordan.ban.domain.OrderRequest;
 import com.jordan.ban.domain.OrderType;
 import com.jordan.ban.entity.Order;
+import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.MarketFactory;
 import com.jordan.ban.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -80,9 +81,10 @@ public class OrderServiceTest {
 
 
     @Test
-    public void cancelOrder(){
-        Order order = this.orderService.findByOrderId("11");
-        Assert.assertNotNull(order);
+    public void cancelOrderFcoin(){
+        Order order = new Order();
+        order.setPlatform(Fcoin.PLATFORM_NAME);
+        order.setOrderId("L4HZrO5Rf71DHzjCToLCFkSXWREhlsZdhBFxWIeUG7qifYl0ElhHed5ECv8_xFF7");
         this.orderService.cancelOrder(order);
     }
 }

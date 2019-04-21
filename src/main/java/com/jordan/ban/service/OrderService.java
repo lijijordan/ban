@@ -223,7 +223,6 @@ public class OrderService {
     }
 
 
-    @Async
     public void cancelOrder(Order order) {
         MarketParser marketParser = MarketFactory.getMarket(order.getPlatform());
         if (marketParser.cancelOrder(order.getOrderId())) {
