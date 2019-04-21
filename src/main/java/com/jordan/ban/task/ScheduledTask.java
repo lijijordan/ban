@@ -34,11 +34,6 @@ public class ScheduledTask {
             Context.setUnFilledOrderNum(list.size());
         }
         list.forEach(order -> {
-            try {
-                Thread.sleep(1000l);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             this.orderService.refreshSingleOrderState(order);
         });
     }
@@ -55,8 +50,6 @@ public class ScheduledTask {
             e.printStackTrace();
         }
     }
-
-
 
 
 }
