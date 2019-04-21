@@ -119,4 +119,18 @@ public class TradeController {
     public Order replaceOrder(@RequestBody ReplaceOrderRequest request) {
         return this.orderService.replaceOrder(request.getOrderId(), request.getPrice());
     }
+
+
+    @PostMapping("/order/cancel/all")
+    @ResponseBody
+    public String resetOrder() {
+        StringBuilder sb = new StringBuilder();
+        this.orderService.getUnfilledOrders().forEach(order -> {
+            this.orderService.cancelOrder(order);
+            sb.append(order.getOrderId()).append(" & ");
+        });
+        return sb.toString();
+    }
+
+
 }

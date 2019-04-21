@@ -77,4 +77,12 @@ public class OrderServiceTest {
     public void queryProfit(){
         Assert.assertNotNull(orderService.queryProfitStatistics());
     }
+
+
+    @Test
+    public void cancelOrder(){
+        Order order = this.orderService.findByOrderId("11");
+        Assert.assertNotNull(order);
+        this.orderService.cancelOrder(order);
+    }
 }
