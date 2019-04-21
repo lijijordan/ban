@@ -1,5 +1,7 @@
 package com.jordan.ban.dao;
 
+import com.jordan.ban.domain.OrderState;
+import com.jordan.ban.domain.OrderType;
 import com.jordan.ban.entity.Order;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -24,6 +26,11 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
 
     @Query(value = "select * from trade_order where create_time>=? order by create_time desc", nativeQuery = true)
     List<Order> findAllByCreateTime(Date createTime);
+
+//    @Query(value = "select count(u) from Order u where u.state=3 and u.type=?1 and u.updateTime > ?2 and u.updateTime < ?3")
+//    long countFilledOrderByType(OrderType type, Date start, Date end);
+
+    long countByTypeAndStateAndUpdateTimeIsBetween(OrderType orderType, OrderState state, Date start, Date end);
 
 
 }

@@ -34,7 +34,7 @@ public class SlackService {
      * @param title
      * @param content
      */
-    @Async
+//    @Async
     public void sendMessage(String title, String content) {
         HttpPost post = new HttpPost(WEB_HOOK_URL);
         try {

@@ -1,15 +1,14 @@
 package com.jordan.ban.service;
 
+import com.jordan.ban.dao.OrderRepository;
 import com.jordan.ban.dao.ProfitStatisticsRepository;
-import com.jordan.ban.domain.AccountDto;
-import com.jordan.ban.domain.BalanceDto;
-import com.jordan.ban.domain.CycleType;
-import com.jordan.ban.domain.StatisticRecordDto;
+import com.jordan.ban.domain.*;
 import com.jordan.ban.entity.ProfitStatistics;
 import com.jordan.ban.market.TradeContext;
 import com.jordan.ban.market.TradeCounter;
 import com.jordan.ban.market.parser.Fcoin;
 import com.jordan.ban.market.parser.Huobi;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +20,10 @@ import static com.jordan.ban.common.Constant.EXCHANGE_RATE;
 import static com.jordan.ban.common.Constant.USDT;
 
 @Service
+@Slf4j
 public class StatisticService {
 
+    public static final long DAY = 1000 * 60 * 60 * 24;
 
     @Autowired
     private AccountService accountService;
@@ -39,6 +40,9 @@ public class StatisticService {
 
     @Autowired
     private SlackService slackService;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     public void statistic(String marketA, String marketB, String symbol, String coinName) {
         Map<String, BalanceDto> balanceA = accountService.findBalancesCache(marketA);
@@ -94,4 +98,17 @@ public class StatisticService {
         this.profitStatisticsRepository.save(after);
         slackService.sendMessage("Statistic Profit", after.toString());
     }
+
+
+    public void singleGridStatistic() {
+        Date now = new Date();
+        Date start = new Date(now.getTime() - DAY * 10);
+        log.info("start:{} , end:{}", start, now);
+        long countSell = this.orderRepository.countByTypeAndStateAndUpdateTimeIsBetween(OrderType.SELL_LIMIT, OrderState.filled, start, now);
+        long countBuy = this.orderRepository.countByTypeAndStateAndUpdateTimeIsBetween(OrderType.BUY_LIMIT, OrderState.filled, start, now);
+        log.info("Sell Order:{}, Buy Order:{}", countSell, countBuy);
+        long totalCount = countSell + countBuy;
+        slackService.sendMessage("STATISTIC ORDER", String.format("Total order:%s, buy(count): %s, sell(count): %s", totalCount, countBuy, countSell));
+    }
+
 }
