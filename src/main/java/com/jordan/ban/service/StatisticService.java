@@ -102,7 +102,7 @@ public class StatisticService {
 
     public void singleGridStatistic() {
         Date now = new Date();
-        Date start = new Date(now.getTime() - DAY * 10);
+        Date start = new Date(now.getTime() - DAY);
         log.info("start:{} , end:{}", start, now);
         long countSell = this.orderRepository.countByTypeAndStateAndUpdateTimeIsBetween(OrderType.SELL_LIMIT, OrderState.filled, start, now);
         long countBuy = this.orderRepository.countByTypeAndStateAndUpdateTimeIsBetween(OrderType.BUY_LIMIT, OrderState.filled, start, now);
