@@ -17,21 +17,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+
 @Slf4j
 @Service
-public class WatchAndTrade {
+public class WatchAndTrader {
 
     private static ConcurrentHashMap<String, String> DEPTH_ID = new ConcurrentHashMap<>();
 
     @Autowired
     private TradeApp tradeApp;
 
-    private void watchTrade(String symbol, String marketName1, String marketName2, long period) {
+    public void watchTrade(String symbol, String marketName1, String marketName2, long period, boolean enableTrade) {
         MarketParser m1 = MarketFactory.getMarket(marketName1);
         MarketParser m2 = MarketFactory.getMarket(marketName2);
-        Timer timer1 = new Timer();
-        String depthTopic = symbol + "-depth";
-        timer1.schedule(new TimerTask() {
+        new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 try {
@@ -53,8 +52,10 @@ public class WatchAndTrade {
                     if (DEPTH_ID.get(symbol) == null || !DEPTH_ID.get(symbol).equals(depthId)) {
                         MockTradeResultIndex a2b = a2b(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis(), depthId);
                         MockTradeResultIndex b2a = b2a(marketDepth, depth1, depth2, (System.currentTimeMillis() - start), System.currentTimeMillis(), depthId);
-                        tradeApp.execute(a2b);
-                        tradeApp.execute(b2a);
+                        if (enableTrade) {
+                            tradeApp.execute(a2b);
+                            tradeApp.execute(b2a);
+                        }
                         // analysis topic
                     }
                     DEPTH_ID.put(symbol, depthId);

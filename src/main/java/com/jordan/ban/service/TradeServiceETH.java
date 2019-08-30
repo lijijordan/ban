@@ -86,7 +86,7 @@ public class TradeServiceETH {
             }
             tradeResultIdMarkB2A = tradeResult.getId();
         }
-        this.tradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
+        TradeCounter.setCurrentDiffPercent(tradeResult.getEatPercent());
         this.tradeContext.setCurrentEthPrice(tradeResult.getBuyPrice());
         // 过滤交易数小于最小交易量的数据
         if (tradeResult.getTradeVolume() < MIN_TRADE_AMOUNT) {

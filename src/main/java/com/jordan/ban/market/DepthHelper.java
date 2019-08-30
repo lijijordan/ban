@@ -6,7 +6,7 @@ import com.jordan.ban.domain.MockTradeResultIndex;
 import com.jordan.ban.domain.Ticker;
 import com.jordan.ban.market.parser.Dragonex;
 import com.jordan.ban.market.parser.Fcoin;
-import com.jordan.ban.mq.ProductTradeApplication;
+import com.jordan.ban.WatchAndTrader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
-import static com.jordan.ban.common.Constant.ETH;
 import static com.jordan.ban.common.Constant.ETH_USDT;
 
 @Service
@@ -32,7 +31,7 @@ public class DepthHelper {
     private static final String symbol = ETH_USDT;
     private static final String TOPIC = "ETHUSDT-depth";
     @Autowired
-    private ProductTradeApplication productTradeApplication;
+    private WatchAndTrader productTradeApplication;
 
     private List<Ticker> fcoinBuyList;
 
