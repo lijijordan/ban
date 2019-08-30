@@ -3,17 +3,14 @@ package com.jordan.ban.service;
 import com.jordan.ban.dao.SingleGridRepository;
 import com.jordan.ban.domain.OrderRequest;
 import com.jordan.ban.domain.OrderType;
-import com.jordan.ban.entity.Grid;
 import com.jordan.ban.entity.SingleGrid;
-import com.jordan.ban.market.parser.Fcoin;
-import com.jordan.ban.market.parser.Gateio;
 import com.jordan.ban.market.parser.MarketFactory;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@Log
+@Slf4j
 public class SingleGridService {
 
     @Autowired
@@ -48,24 +45,28 @@ public class SingleGridService {
 
         long count = this.orderService.count();
         if (count > 0) {
-            log.warning("Single grid order is not empty, do nothing!");
+            log.warn("Single grid order is not empty, do nothing!");
             return;
         }
 
         float eachGridCoin = totalCoin / splitCount;
         float eachUpPercent = upPercent / splitCount;
 
-//        double fromPrice = currentPrice;
+        log.info("split count:{}", splitCount);
+        log.info("each grid coin:{}", eachGridCoin);
+        log.info("each up percent:{}", eachUpPercent);
+
+        double fromPrice = currentPrice;
         for (int i = 1; i <= splitCount; i++) {
             double toPrice = currentPrice * (1 + eachUpPercent * i);
-//            SingleGrid singleGrid = SingleGrid.builder().high(toPrice).low(fromPrice)
-//                    .quota(eachUpPercent).volume(eachGridCoin).symbol(symbol).build();
-//            singleGridRepository.save(singleGrid);
+            SingleGrid singleGrid = SingleGrid.builder().high(toPrice).low(fromPrice)
+                    .quota(eachUpPercent).volume(eachGridCoin).symbol(symbol).build();
+            singleGridRepository.save(singleGrid);
             // place order
             orderService.crateSingleOrder(OrderRequest.builder()
                     .type(OrderType.SELL_LIMIT).amount(eachGridCoin).price(toPrice)
                     .symbol(symbol).build(), MarketFactory.getMarket(market));
-//            fromPrice = toPrice;
+            fromPrice = toPrice;
         }
 
     }

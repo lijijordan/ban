@@ -7,7 +7,7 @@ spring.jmx:
 
 spring.datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ban?autoReconnect=true&useSSL=false&serverTimezone=GMT%2b8
+    url: jdbc:mysql://localhost:3306/ban1?autoReconnect=true&useSSL=false&serverTimezone=GMT%2b8
     username: root
     password: root
 
