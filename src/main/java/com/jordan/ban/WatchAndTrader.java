@@ -1,4 +1,4 @@
-package com.jordan.ban.mq;
+package com.jordan.ban;
 
 import com.jordan.ban.domain.Depth;
 import com.jordan.ban.domain.MarketDepth;
@@ -19,14 +19,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
-public class ProductTradeApplication {
+public class WatchAndTrade {
 
     private static ConcurrentHashMap<String, String> DEPTH_ID = new ConcurrentHashMap<>();
 
     @Autowired
     private TradeApp tradeApp;
 
-    private void getDepthAndTrade(String symbol, String marketName1, String marketName2, long period) {
+    private void watchTrade(String symbol, String marketName1, String marketName2, long period) {
         MarketParser m1 = MarketFactory.getMarket(marketName1);
         MarketParser m2 = MarketFactory.getMarket(marketName2);
         Timer timer1 = new Timer();
@@ -115,8 +115,4 @@ public class ProductTradeApplication {
         return indexBA;
     }
 
-    public void depthTrade(String symbol, String dragonex, String fcoin, long period) {
-//        diffMarket(symbol, market1, market2, period);
-        getDepthAndTrade(symbol, dragonex, fcoin, period);
-    }
 }
