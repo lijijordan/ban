@@ -142,7 +142,6 @@ public class OrderService {
             this.slackService.sendMessage("Order changed:" + "[" + (costTime / 1000) + "]s", msg);
         }
         order.setState(orderResponse.getOrderState());
-        order.setFillFees(orderResponse.getFillFees());
         order.setFilledAmount(orderResponse.getFilledAmount());
         order.setUpdateTime(new Date());
         order.setSymbol(orderResponse.getSymbol());
@@ -153,7 +152,7 @@ public class OrderService {
         if (order.getState() != OrderState.filled) {
             return;
         }
-        // 重新下单
+        // 重新下单????
         if (order.getType() == OrderType.BUY_LIMIT) {
             this.crateSingleOrder(OrderRequest.builder()
                     .type(OrderType.SELL_LIMIT).amount(order.getAmount()).price(order.getPrice() * (1 + (PERCENT / SPLIT_COUNT)))

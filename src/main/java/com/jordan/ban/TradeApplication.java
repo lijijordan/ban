@@ -31,8 +31,8 @@ public class TradeApplication {
     public static final float PERCENT = 0.1f;
     public static final int SPLIT_COUNT = 100;
 
-    public static final double CURRENT_PRICE = 167;
-    public static final float TOTAL_COIN = 10f;
+    public static final double CURRENT_PRICE = 180.8;
+    public static final float TOTAL_COIN = 5f;
 
 
     public static void main(String[] args) {
@@ -46,7 +46,7 @@ public class TradeApplication {
         singleGridService.generateSingleGrid(SPLIT_COUNT, CURRENT_PRICE, "ethusdt", PERCENT, TOTAL_COIN, Fcoin.PLATFORM_NAME);
 
             // trade
-//        trader.watchTrade(Constant.ETH_USDT, Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 1000, false);
+        trader.watchTrade(Constant.ETH_USDT, Fcoin.PLATFORM_NAME, Dragonex.PLATFORM_NAME, 1000, false);
 
         System.out.println("------------------ App started ------------------");
     }
